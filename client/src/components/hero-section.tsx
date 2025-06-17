@@ -7,23 +7,49 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="relative bg-white py-32 lg:py-40">
-      <div className="max-w-6xl mx-auto px-6 lg:px-8">
+    <section className="relative min-h-screen overflow-hidden flex items-center justify-center">
+      {/* Architectural Video Background */}
+      <div className="absolute inset-0 z-0">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-full object-cover"
+        >
+          <source 
+            src="https://player.vimeo.com/external/342571828.hd.mp4?s=54d3f8c7c9bbda03b1b6e28b48c0f9ab3bfb9def&profile_id=175"
+            type="video/mp4"
+          />
+          {/* Fallback architectural image */}
+          <img 
+            src="https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&h=1200"
+            alt="Modern architectural interior"
+            className="w-full h-full object-cover"
+          />
+        </video>
+        
+        {/* Sophisticated overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30"></div>
+      </div>
+
+      <div className="relative z-10 max-w-6xl mx-auto px-6 lg:px-8 py-32 lg:py-40">
         <div className="text-center">
           <div className="mb-8">
-            <span className="text-xs tracking-widest text-gray-500 uppercase luxury-text">
+            <span className="text-xs tracking-widest text-white/80 uppercase luxury-text">
               Artificial Intelligence • Interior Design
             </span>
           </div>
           
-          <h1 className="text-6xl lg:text-8xl font-light text-black mb-12 leading-tight luxury-title">
+          <h1 className="text-6xl lg:text-8xl font-light text-white mb-12 leading-tight luxury-title">
             Transform
             <span className="block font-normal">
               Your Space
             </span>
           </h1>
           
-          <p className="text-lg lg:text-xl text-gray-600 mb-16 max-w-2xl mx-auto leading-relaxed luxury-text">
+          <p className="text-lg lg:text-xl text-white/90 mb-16 max-w-2xl mx-auto leading-relaxed luxury-text">
             Turn your imagination into architectural reality. Upload your space and watch as AI transforms 
             your vision into sophisticated design concepts with professional precision.
           </p>
@@ -32,7 +58,7 @@ export default function HeroSection() {
             <Button 
               onClick={() => scrollToSection('studio')}
               size="lg" 
-              className="bg-black hover:bg-gray-800 text-white px-12 py-4 text-sm tracking-wide luxury-text"
+              className="bg-white hover:bg-gray-100 text-black px-12 py-4 text-sm tracking-wide luxury-text border border-white/20"
             >
               ENTER STUDIO
               <ArrowRight className="w-4 h-4 ml-3" />
@@ -40,7 +66,7 @@ export default function HeroSection() {
             <Button 
               variant="outline" 
               size="lg" 
-              className="border-gray-300 text-gray-700 hover:bg-gray-50 px-12 py-4 text-sm tracking-wide luxury-text"
+              className="border-white/40 text-white hover:bg-white/10 px-12 py-4 text-sm tracking-wide luxury-text backdrop-blur-sm"
             >
               VIEW GALLERY
             </Button>
