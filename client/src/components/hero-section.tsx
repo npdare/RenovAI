@@ -7,7 +7,7 @@ export default function HeroSection() {
   };
 
   return (
-    <section className="gradient-hero py-16">
+    <section className="bg-gradient-to-br from-white to-gray-50 py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-4xl md:text-6xl font-bold text-primary mb-6">
           Transform Your Space
