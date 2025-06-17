@@ -180,8 +180,8 @@ export default function AIVisualization() {
           </h2>
           
           <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed luxury-text">
-            Upload your room photos and let our AI analyze, redesign, and generate 
-            professional design concepts instantly.
+            Transform your imagination into architectural reality. Upload your space and watch 
+            as AI brings your design vision to life with professional precision.
           </p>
         </div>
 
