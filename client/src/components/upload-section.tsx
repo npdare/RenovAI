@@ -100,10 +100,10 @@ export default function UploadSection() {
     <section id="upload" className="py-24 bg-neutral-50">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-16">
-          <Badge className="mb-6 bg-amber-100 text-amber-800 border-amber-200 font-medium">
+          <div className="mb-6 inline-flex items-center px-4 py-2 bg-amber-100 text-amber-800 border border-amber-200 rounded-full text-sm font-medium">
             <Camera className="w-3 h-3 mr-2" />
             AI VISUALIZATION STUDIO
-          </Badge>
+          </div>
           
           <h2 className="text-4xl lg:text-5xl font-bold text-neutral-900 mb-6" style={{ fontFamily: 'Playfair Display' }}>
             Transform Your Space
