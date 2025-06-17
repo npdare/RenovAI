@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Camera, FileImage, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -96,11 +97,21 @@ export default function UploadSection() {
   const floorPlans = photos.filter(p => p.type === 'floorplan');
 
   return (
-    <section id="upload" className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h3 className="text-3xl font-bold text-primary mb-4">Upload Your Home Photos</h3>
-          <p className="text-lg text-secondary">Start by uploading photos of your rooms and floor plans</p>
+    <section id="upload" className="py-24 bg-neutral-50">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <Badge className="mb-6 bg-amber-100 text-amber-800 border-amber-200 font-medium">
+            <Camera className="w-3 h-3 mr-2" />
+            AI VISUALIZATION STUDIO
+          </Badge>
+          
+          <h2 className="text-4xl lg:text-5xl font-bold text-neutral-900 mb-6" style={{ fontFamily: 'Playfair Display' }}>
+            Transform Your Space
+          </h2>
+          
+          <p className="text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed">
+            Upload photos of your rooms and floor plans to begin your AI-powered design transformation journey.
+          </p>
         </div>
         
         <div className="grid md:grid-cols-2 gap-8">

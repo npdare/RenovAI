@@ -1,8 +1,8 @@
-# HomeVision - AI-Powered Home Design Platform
+# HomeVision - Premium AI-Powered Interior Design Platform
 
 ## Overview
 
-HomeVision is a full-stack web application that allows users to upload photos of their homes and explore design possibilities through AI-powered visualization tools. The platform features photo management, inspiration galleries, design boards, and before/after comparison tools.
+HomeVision is a sophisticated full-stack web application targeting interior designers, architects, and design-conscious homeowners. The platform provides AI-powered room visualization, premium design inspiration, curated product marketplace, and comprehensive monetization features including freemium subscriptions and affiliate commerce.
 
 ## System Architecture
 
@@ -36,11 +36,12 @@ HomeVision is a full-stack web application that allows users to upload photos of
 - **Comparisons**: Before/after photo comparisons with design options
 
 ### Core Features
-1. **Photo Upload System**: Multi-file upload with type categorization (home, floorplan, inspiration)
-2. **Inspiration Gallery**: Browse and save design inspiration with sample images
-3. **Design Boards**: Create and manage collections of inspiration photos
-4. **Comparison Tool**: Side-by-side before/after visualization
-5. **File Management**: Secure file storage with size and type validation
+1. **AI Visualization Studio**: Premium photo upload with professional categorization
+2. **Curated Design Marketplace**: Product recommendations with affiliate commerce integration
+3. **Professional Design Collections**: Advanced mood board creation and management
+4. **Advanced Comparison Tools**: Before/after visualization with design application options
+5. **Subscription Management**: Freemium model with tiered professional plans
+6. **Premium User Experience**: Sophisticated UI targeting design professionals
 
 ### API Structure
 - `POST /api/photos/upload` - Multi-file upload with metadata
@@ -93,11 +94,39 @@ HomeVision is a full-stack web application that allows users to upload photos of
 - Environment variables for database connection and file paths
 - PostgreSQL session storage for user state management
 
+## Monetization Strategy
+
+### Current Implementation
+- **Freemium Model**: 3 free visualizations, subscription tiers (Professional $29/mo, Studio $99/mo)
+- **Affiliate Commerce**: Product marketplace with commission-based revenue from premium home decor brands
+- **Premium Design Services**: Professional consultation booking and custom design packages
+- **Enterprise Solutions**: White-label platform for design firms and furniture retailers
+
+### Revenue Streams
+1. Subscription-based access to professional AI visualization tools
+2. Affiliate commissions from curated furniture and decor marketplace
+3. Premium design consultation services and custom design packages
+4. Enterprise licensing for design firms and real estate professionals
+5. Educational content and design masterclasses
+6. Data analytics services for furniture brands and market research
+
+## Design Aesthetic
+
+The platform targets design professionals and architecture-conscious users with:
+- **Typography**: Playfair Display for headings, Montserrat for body text
+- **Color Palette**: Sophisticated neutrals with premium gold/amber accents
+- **Visual Style**: Clean, minimalist design inspired by high-end design studios
+- **User Experience**: Premium interactions, subtle animations, professional-grade interface
+- **Brand Positioning**: Luxury design tool for professionals and serious design enthusiasts
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+Target audience: Interior designers, architects, and design-conscious homeowners seeking premium solutions.
 
 ## Changelog
 
-Changelog:
-- June 17, 2025. Initial setup
+- June 17, 2025: Initial setup with basic home design visualization
+- June 17, 2025: Premium redesign with sophisticated aesthetic targeting design professionals
+- June 17, 2025: Implemented comprehensive monetization strategy with freemium model and affiliate commerce
+- June 17, 2025: Added pricing tiers, product marketplace, and premium design consultation features
