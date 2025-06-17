@@ -166,20 +166,22 @@ export default function AIVisualization() {
   ];
 
   return (
-    <section className="py-24 bg-neutral-50">
+    <section id="studio" className="py-32 bg-gray-50">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <Badge className="mb-6 bg-amber-100 text-amber-800 border-amber-200 font-medium">
-            <Wand2 className="w-3 h-3 mr-2" />
-            AI DESIGN STUDIO
-          </Badge>
+        <div className="text-center mb-24">
+          <div className="mb-6">
+            <span className="text-xs tracking-widest text-gray-500 uppercase luxury-text">
+              AI Design Studio
+            </span>
+          </div>
           
-          <h2 className="text-4xl lg:text-5xl font-bold text-neutral-900 mb-6" style={{ fontFamily: 'Playfair Display' }}>
-            AI-Powered Visualization
+          <h2 className="text-4xl lg:text-5xl font-light text-black mb-8 luxury-title">
+            Visualization Studio
           </h2>
           
-          <p className="text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed">
-            Upload your room photos and let our AI analyze, redesign, and generate professional design concepts instantly.
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed luxury-text">
+            Upload your room photos and let our AI analyze, redesign, and generate 
+            professional design concepts instantly.
           </p>
         </div>
 
@@ -187,11 +189,10 @@ export default function AIVisualization() {
           {/* Upload and Controls */}
           <div className="space-y-8">
             {/* File Upload */}
-            <Card>
+            <Card className="minimal-card">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Camera className="w-5 h-5" />
-                  Upload Room Photo
+                <CardTitle className="luxury-title text-black text-sm tracking-wide">
+                  UPLOAD ROOM PHOTO
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -222,11 +223,13 @@ export default function AIVisualization() {
             </Card>
 
             {/* Style and Room Controls */}
-            <Card>
+            <Card className="minimal-card">
               <CardHeader>
-                <CardTitle>Design Preferences</CardTitle>
+                <CardTitle className="luxury-title text-black text-sm tracking-wide">
+                  DESIGN PREFERENCES
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-2">
                     Design Style

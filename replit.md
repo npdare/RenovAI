@@ -1,8 +1,8 @@
-# HomeVision - Premium AI-Powered Interior Design Platform
+# RenovAI - Minimalist AI-Powered Interior Design Platform
 
 ## Overview
 
-HomeVision is a sophisticated full-stack web application targeting interior designers, architects, and design-conscious homeowners. The platform provides AI-powered room visualization, premium design inspiration, curated product marketplace, and comprehensive monetization features including freemium subscriptions and affiliate commerce.
+RenovAI is a sophisticated full-stack web application targeting interior designers, architects, and design-conscious homeowners. The platform provides AI-powered room visualization with a minimalist black and white aesthetic inspired by luxury design studios like Invilla. Features include genuine AI room analysis using GPT-4o, DALL-E 3 visualization generation, and a premium user experience focused on simplicity and sophistication.
 
 ## System Architecture
 
@@ -112,12 +112,12 @@ HomeVision is a sophisticated full-stack web application targeting interior desi
 
 ## Design Aesthetic
 
-The platform targets design professionals and architecture-conscious users with:
-- **Typography**: Playfair Display for headings, Montserrat for body text
-- **Color Palette**: Sophisticated neutrals with premium gold/amber accents
-- **Visual Style**: Clean, minimalist design inspired by high-end design studios
-- **User Experience**: Premium interactions, subtle animations, professional-grade interface
-- **Brand Positioning**: Luxury design tool for professionals and serious design enthusiasts
+The platform features a minimalist black and white aesthetic inspired by luxury design studios like Invilla:
+- **Typography**: Inter font family for clean, modern typography with luxury spacing and weights
+- **Color Palette**: Pure black and white with subtle gray accents, allowing design content to provide color pops
+- **Visual Style**: Minimalist, luxury aesthetic with clean lines, generous white space, and sophisticated simplicity
+- **User Experience**: Understated elegance with subtle hover effects and refined interactions
+- **Brand Positioning**: RenovAI - Professional AI design tool with luxury minimalist aesthetic
 
 ## User Preferences
 
@@ -163,3 +163,5 @@ Target audience: Interior designers, architects, and design-conscious homeowners
 - June 17, 2025: **Major Update**: Integrated OpenAI GPT-4o and DALL-E 3 for genuine AI-powered room analysis and redesign generation
 - June 17, 2025: **Database Integration**: Implemented PostgreSQL database with Drizzle ORM replacing in-memory storage
 - June 17, 2025: **AI Visualization Studio**: Created comprehensive AI interface for room analysis, redesign generation, and design inspiration
+- June 17, 2025: **RenovAI Rebrand**: Complete platform transformation to minimalist black and white aesthetic inspired by Invilla design studio
+- June 17, 2025: **Luxury Minimalist UI**: Implemented clean typography, sophisticated spacing, and understated elegance throughout the platform
