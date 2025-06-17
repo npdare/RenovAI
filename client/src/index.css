@@ -3,29 +3,27 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(0, 0%, 99%);
-  --foreground: hsl(0, 0%, 10%);
-  --muted: hsl(0, 0%, 96%);
-  --muted-foreground: hsl(0, 0%, 45%);
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(0, 0%, 5%);
+  --muted: hsl(0, 0%, 97%);
+  --muted-foreground: hsl(0, 0%, 40%);
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(0, 0%, 10%);
+  --popover-foreground: hsl(0, 0%, 5%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(0, 0%, 10%);
-  --border: hsl(0, 0%, 90%);
-  --input: hsl(0, 0%, 96%);
-  --primary: hsl(0, 0%, 10%);
-  --primary-foreground: hsl(0, 0%, 98%);
-  --secondary: hsl(0, 0%, 20%);
-  --secondary-foreground: hsl(0, 0%, 85%);
-  --accent: hsl(35, 100%, 50%);
-  --accent-foreground: hsl(0, 0%, 10%);
+  --card-foreground: hsl(0, 0%, 5%);
+  --border: hsl(0, 0%, 92%);
+  --input: hsl(0, 0%, 98%);
+  --primary: hsl(0, 0%, 5%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(0, 0%, 95%);
+  --secondary-foreground: hsl(0, 0%, 10%);
+  --accent: hsl(0, 0%, 5%);
+  --accent-foreground: hsl(0, 0%, 100%);
   --destructive: hsl(0, 84%, 60%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --ring: hsl(0, 0%, 10%);
-  --luxury: hsl(45, 100%, 85%);
-  --warm-grey: hsl(30, 5%, 85%);
+  --destructive-foreground: hsl(0, 0%, 100%);
+  --ring: hsl(0, 0%, 5%);
 
-  --radius: 0.375rem;
+  --radius: 0.125rem;
 }
 
 .dark {
@@ -65,56 +63,50 @@
 
 @layer components {
   .upload-area {
-    background: linear-gradient(135deg, rgb(255 255 255) 0%, rgb(249 250 251) 100%);
-    border: 2px dashed rgb(209 213 219);
-    border-radius: 1rem;
-    padding: 3rem 2rem;
+    background: rgb(255 255 255);
+    border: 1px solid rgb(0 0 0 / 0.1);
+    border-radius: 0.125rem;
+    padding: 4rem 2rem;
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .upload-area::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, transparent 0%, rgba(251, 191, 36, 0.05) 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: all 0.2s ease;
   }
   
   .upload-area:hover {
-    border-color: rgb(251 191 36);
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  }
-  
-  .upload-area:hover::before {
-    opacity: 1;
+    border-color: rgb(0 0 0 / 0.2);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
   }
   
   .upload-area.dragover {
-    border-color: rgb(251 191 36);
-    background: linear-gradient(135deg, rgb(255 255 255) 0%, rgb(254 243 199) 100%);
-    transform: translateY(-2px);
+    border-color: rgb(0 0 0 / 0.3);
+    background: rgb(248 248 248);
   }
   
   .gallery-item {
-    @apply bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer border border-neutral-100;
+    @apply bg-white overflow-hidden transition-all duration-200 cursor-pointer border border-gray-100;
   }
   
   .gallery-item:hover {
-    transform: translateY(-4px);
+    @apply shadow-sm border-gray-200;
   }
   
-  .premium-gradient {
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+  .minimal-card {
+    @apply bg-white border border-gray-100 transition-all duration-200;
   }
   
-  .glass-effect {
-    backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.8);
+  .minimal-card:hover {
+    @apply border-gray-200 shadow-sm;
+  }
+  
+  .luxury-text {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 300;
+    letter-spacing: 0.025em;
+  }
+  
+  .luxury-title {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
   }
 }
