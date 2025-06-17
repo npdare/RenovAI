@@ -1,4 +1,5 @@
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import multer from "multer";
@@ -21,7 +22,7 @@ if (!fs.existsSync(uploadsDir)) {
 const upload = multer({
   storage: multer.diskStorage({
     destination: uploadsDir,
-    filename: (req, file, cb) => {
+    filename: (req: any, file: any, cb: any) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
       cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
     }
@@ -29,7 +30,7 @@ const upload = multer({
   limits: {
     fileSize: 15 * 1024 * 1024 // 15MB limit
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (req: any, file: any, cb: any) => {
     const allowedTypes = /jpeg|jpg|png|webp|pdf/;
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
     const mimetype = allowedTypes.test(file.mimetype);
@@ -44,10 +45,10 @@ const upload = multer({
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Serve uploaded files
-  app.use('/uploads', app.express.static(uploadsDir));
+  app.use('/uploads', express.static(uploadsDir));
 
   // Photo routes
-  app.post('/api/photos/upload', upload.array('photos', 10), async (req, res) => {
+  app.post('/api/photos/upload', upload.array('photos', 10), async (req: any, res: Response) => {
     try {
       if (!req.files || !Array.isArray(req.files)) {
         return res.status(400).json({ message: 'No files uploaded' });

@@ -112,6 +112,7 @@ export class MemStorage implements IStorage {
     const photo: Photo = { 
       ...insertPhoto, 
       id, 
+      category: insertPhoto.category || null,
       uploadedAt: new Date() 
     };
     this.photos.set(id, photo);
@@ -121,11 +122,13 @@ export class MemStorage implements IStorage {
   async deletePhoto(id: number): Promise<void> {
     this.photos.delete(id);
     // Also remove from board photos
-    for (const [key, boardPhoto] of this.boardPhotos.entries()) {
+    const keysToDelete: number[] = [];
+    this.boardPhotos.forEach((boardPhoto, key) => {
       if (boardPhoto.photoId === id) {
-        this.boardPhotos.delete(key);
+        keysToDelete.push(key);
       }
-    }
+    });
+    keysToDelete.forEach(key => this.boardPhotos.delete(key));
   }
 
   // Design board methods
@@ -143,6 +146,7 @@ export class MemStorage implements IStorage {
     const board: DesignBoard = { 
       ...insertBoard, 
       id, 
+      description: insertBoard.description || null,
       createdAt: now,
       updatedAt: now
     };
@@ -166,11 +170,13 @@ export class MemStorage implements IStorage {
   async deleteDesignBoard(id: number): Promise<void> {
     this.designBoards.delete(id);
     // Also remove associated board photos
-    for (const [key, boardPhoto] of this.boardPhotos.entries()) {
+    const keysToDelete: number[] = [];
+    this.boardPhotos.forEach((boardPhoto, key) => {
       if (boardPhoto.boardId === id) {
-        this.boardPhotos.delete(key);
+        keysToDelete.push(key);
       }
-    }
+    });
+    keysToDelete.forEach(key => this.boardPhotos.delete(key));
   }
 
   // Board photo methods
@@ -194,11 +200,14 @@ export class MemStorage implements IStorage {
   }
 
   async removePhotoFromBoard(boardId: number, photoId: number): Promise<void> {
-    for (const [key, boardPhoto] of this.boardPhotos.entries()) {
+    let keyToDelete: number | null = null;
+    this.boardPhotos.forEach((boardPhoto, key) => {
       if (boardPhoto.boardId === boardId && boardPhoto.photoId === photoId) {
-        this.boardPhotos.delete(key);
-        break;
+        keyToDelete = key;
       }
+    });
+    if (keyToDelete !== null) {
+      this.boardPhotos.delete(keyToDelete);
     }
   }
 
@@ -216,6 +225,8 @@ export class MemStorage implements IStorage {
     const comparison: Comparison = {
       ...insertComparison,
       id,
+      afterPhotoId: insertComparison.afterPhotoId || null,
+      designOptions: insertComparison.designOptions || null,
       createdAt: new Date()
     };
     this.comparisons.set(id, comparison);
