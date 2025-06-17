@@ -18,11 +18,15 @@ export default function HeroSection() {
           className="w-full h-full object-cover"
         >
           <source 
-            src="https://videos.pexels.com/video-files/3129671/3129671-uhd_2560_1440_30fps.mp4"
+            src="https://videos.pexels.com/video-files/6764056/6764056-hd_1920_1080_25fps.mp4"
             type="video/mp4"
           />
           <source 
-            src="https://videos.pexels.com/video-files/6010/6010-hd_1920_1080_30fps.mp4"
+            src="https://videos.pexels.com/video-files/6077310/6077310-hd_1920_1080_25fps.mp4"
+            type="video/mp4"
+          />
+          <source 
+            src="https://videos.pexels.com/video-files/4567726/4567726-hd_1920_1080_25fps.mp4"
             type="video/mp4"
           />
           <div 
