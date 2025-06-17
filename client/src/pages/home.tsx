@@ -14,7 +14,7 @@ export default function Home() {
     <div className="min-h-screen bg-white">
       <Header />
       <HeroSection />
-      <UploadSection />
+      <AIVisualization />
       <InspirationGallery />
       <ProductShowcase />
       <DesignBoards />
