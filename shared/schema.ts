@@ -1,4 +1,5 @@
 import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -70,6 +71,35 @@ export const insertComparisonSchema = createInsertSchema(comparisons).omit({
   createdAt: true,
 });
 
+// Relations
+export const usersRelations = relations(users, ({ many }) => ({
+  photos: many(photos),
+  designBoards: many(designBoards),
+  comparisons: many(comparisons),
+}));
+
+export const photosRelations = relations(photos, ({ one, many }) => ({
+  user: one(users, { fields: [photos.userId], references: [users.id] }),
+  boardPhotos: many(boardPhotos),
+}));
+
+export const designBoardsRelations = relations(designBoards, ({ one, many }) => ({
+  user: one(users, { fields: [designBoards.userId], references: [users.id] }),
+  boardPhotos: many(boardPhotos),
+}));
+
+export const boardPhotosRelations = relations(boardPhotos, ({ one }) => ({
+  designBoard: one(designBoards, { fields: [boardPhotos.boardId], references: [designBoards.id] }),
+  photo: one(photos, { fields: [boardPhotos.photoId], references: [photos.id] }),
+}));
+
+export const comparisonsRelations = relations(comparisons, ({ one }) => ({
+  user: one(users, { fields: [comparisons.userId], references: [users.id] }),
+  beforePhoto: one(photos, { fields: [comparisons.beforePhotoId], references: [photos.id] }),
+  afterPhoto: one(photos, { fields: [comparisons.afterPhotoId], references: [photos.id] }),
+}));
+
+// Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertPhoto = z.infer<typeof insertPhotoSchema>;
