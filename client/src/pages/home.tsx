@@ -1,5 +1,6 @@
 import Header from "@/components/header";
 import HeroSection from "@/components/hero-section";
+import AIVisualization from "@/components/ai-visualization";
 import UploadSection from "@/components/upload-section";
 import InspirationGallery from "@/components/inspiration-gallery";
 import ProductShowcase from "@/components/product-showcase";

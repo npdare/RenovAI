@@ -259,6 +259,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Analysis endpoint - analyze uploaded room photo
+  app.post('/api/ai/analyze', upload.single('photo'), async (req: any, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No photo provided' });
+      }
+
+      const analysis = await analyzeRoomPhoto(req.file.path);
+      res.json(analysis);
+    } catch (error) {
+      console.error('AI analysis error:', error);
+      res.status(500).json({ error: 'Failed to analyze photo' });
+    }
+  });
+
+  // AI Redesign endpoint - generate room redesign using DALL-E
+  app.post('/api/ai/redesign', upload.single('photo'), async (req: any, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No photo provided' });
+      }
+
+      const { designStyle = 'modern', roomType = 'living room' } = req.body;
+      const result = await generateRoomRedesign(req.file.path, designStyle, roomType);
+      res.json(result);
+    } catch (error) {
+      console.error('AI redesign error:', error);
+      res.status(500).json({ error: 'Failed to generate redesign' });
+    }
+  });
+
+  // AI Inspiration endpoint - generate design inspiration
+  app.post('/api/ai/inspiration', async (req: Request, res: Response) => {
+    try {
+      const { style = 'modern', roomType = 'living room', colorPreferences } = req.body;
+      const result = await generateDesignInspiration(style, roomType, colorPreferences);
+      res.json(result);
+    } catch (error) {
+      console.error('AI inspiration error:', error);
+      res.status(500).json({ error: 'Failed to generate inspiration' });
+    }
+  });
+
+  // AI Recommendations endpoint - get personalized design recommendations
+  app.post('/api/ai/recommendations', upload.array('photos', 5), async (req: any, res: Response) => {
+    try {
+      const photoPaths = req.files?.map((file: any) => file.path) || [];
+      const { preferredStyles = ['modern'], budget } = req.body;
+      
+      if (photoPaths.length === 0) {
+        return res.status(400).json({ error: 'No photos provided' });
+      }
+
+      const recommendations = await getDesignRecommendations(photoPaths, preferredStyles, budget);
+      res.json(recommendations);
+    } catch (error) {
+      console.error('AI recommendations error:', error);
+      res.status(500).json({ error: 'Failed to get recommendations' });
+    }
+  });
+
+  // AI Products endpoint - get product recommendations
+  app.post('/api/ai/products', upload.single('photo'), async (req: any, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No photo provided' });
+      }
+
+      const { budget } = req.body;
+      const products = await generateProductRecommendations(req.file.path, budget);
+      res.json(products);
+    } catch (error) {
+      console.error('AI products error:', error);
+      res.status(500).json({ error: 'Failed to get product recommendations' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
