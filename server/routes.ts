@@ -11,6 +11,13 @@ import {
   insertBoardPhotoSchema,
   insertComparisonSchema 
 } from "@shared/schema";
+import { 
+  analyzeRoomPhoto, 
+  generateRoomRedesign, 
+  generateDesignInspiration,
+  getDesignRecommendations,
+  generateProductRecommendations 
+} from "./ai-service";
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(process.cwd(), "uploads");
