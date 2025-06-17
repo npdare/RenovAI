@@ -1,4 +1,4 @@
-import { Sparkles, User, Menu } from "lucide-react";
+import { User, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Header() {
@@ -11,10 +11,13 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <div className="w-6 h-6 bg-black flex items-center justify-center mr-3">
-              <Sparkles className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 flex items-center justify-center mr-3">
+              <svg className="w-6 h-6 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                <polyline points="9,22 9,12 15,12 15,22"/>
+              </svg>
             </div>
-            <h1 className="text-xl font-semibold text-black luxury-title">
+            <h1 className="text-xl font-light text-black luxury-title tracking-wide">
               RenovAI
             </h1>
           </div>

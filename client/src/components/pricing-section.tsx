@@ -113,13 +113,16 @@ export default function PricingSection() {
                 </ul>
                 
                 <Button 
-                  className={`w-full mt-8 luxury-text text-sm tracking-wide ${
+                  className={`w-full mt-8 luxury-text text-xs tracking-widest font-medium py-4 transition-all duration-300 hover:scale-105 ${
                     plan.popular 
-                      ? 'bg-black text-white hover:bg-gray-800' 
-                      : 'bg-white text-black border border-gray-300 hover:bg-gray-50'
+                      ? 'bg-black text-white hover:bg-gray-800 border-2 border-black' 
+                      : 'bg-white text-black border-2 border-gray-300 hover:bg-gray-50'
                   }`}
                 >
                   {plan.cta.toUpperCase()}
+                  <svg className="w-4 h-4 ml-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
                 </Button>
               </CardContent>
             </Card>

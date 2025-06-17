@@ -10,12 +10,28 @@ export default function HeroSection() {
     <section className="relative min-h-screen overflow-hidden flex items-center justify-center">
       {/* Architectural Video Background */}
       <div className="absolute inset-0 z-0">
-        <div 
-          className="w-full h-full bg-cover bg-center bg-no-repeat"
-          style={{ 
-            backgroundImage: 'url(https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&h=1200)'
-          }}
-        ></div>
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-full object-cover"
+        >
+          <source 
+            src="https://videos.pexels.com/video-files/3129671/3129671-uhd_2560_1440_30fps.mp4"
+            type="video/mp4"
+          />
+          <source 
+            src="https://videos.pexels.com/video-files/6010/6010-hd_1920_1080_30fps.mp4"
+            type="video/mp4"
+          />
+          <div 
+            className="w-full h-full bg-cover bg-center bg-no-repeat"
+            style={{ 
+              backgroundImage: 'url(https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&h=1200)'
+            }}
+          ></div>
+        </video>
         
         {/* Sophisticated overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60"></div>
@@ -46,43 +62,68 @@ export default function HeroSection() {
             <Button 
               onClick={() => scrollToSection('studio')}
               size="lg" 
-              className="bg-white hover:bg-gray-100 text-black px-12 py-4 text-sm tracking-wide luxury-text border border-white/20"
+              className="bg-white/95 hover:bg-white text-black px-16 py-6 text-xs tracking-widest luxury-text font-medium border-2 border-white/30 backdrop-blur-sm transition-all duration-300 hover:scale-105"
             >
               ENTER STUDIO
-              <ArrowRight className="w-4 h-4 ml-3" />
+              <svg className="w-5 h-5 ml-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
             </Button>
             <Button 
               variant="outline" 
               size="lg" 
-              className="border-white/40 text-white hover:bg-white/10 px-12 py-4 text-sm tracking-wide luxury-text backdrop-blur-sm"
+              className="border-2 border-white/60 text-white hover:bg-white/15 px-16 py-6 text-xs tracking-widest luxury-text font-medium backdrop-blur-sm transition-all duration-300 hover:scale-105"
             >
               VIEW GALLERY
+              <svg className="w-5 h-5 ml-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <circle cx="9" cy="9" r="2"/>
+                <path d="M21 15l-3.086-3.086a2 2 0 00-2.828 0L6 21"/>
+              </svg>
             </Button>
           </div>
         </div>
 
-        {/* Feature Grid with Color Examples */}
+        {/* Feature Grid with Clean Icons */}
         <div className="mt-32 grid grid-cols-1 md:grid-cols-3 gap-16">
           <div className="text-center">
-            <div className="w-1 h-16 bg-gradient-to-b from-blue-500 to-blue-600 mx-auto mb-6"></div>
-            <h3 className="text-sm tracking-wide text-black mb-4 luxury-title">IMAGINE</h3>
-            <p className="text-gray-600 luxury-text leading-relaxed">
+            <div className="w-16 h-16 mx-auto mb-8 flex items-center justify-center">
+              <svg className="w-12 h-12 text-white/90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                <path d="M9 12l2 2 4-4"/>
+                <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9"/>
+                <path d="M16 8l-8 8"/>
+                <path d="M8 8l8 8"/>
+              </svg>
+            </div>
+            <h3 className="text-sm tracking-widest text-white/95 mb-4 luxury-title font-medium">IMAGINE</h3>
+            <p className="text-white/80 luxury-text leading-relaxed text-sm">
               Envision your dream space. Our AI analyzes your current room and understands your architectural vision.
             </p>
           </div>
           
           <div className="text-center">
-            <div className="w-1 h-16 bg-gradient-to-b from-emerald-500 to-emerald-600 mx-auto mb-6"></div>
-            <h3 className="text-sm tracking-wide text-black mb-4 luxury-title">CREATE</h3>
-            <p className="text-gray-600 luxury-text leading-relaxed">
+            <div className="w-16 h-16 mx-auto mb-8 flex items-center justify-center">
+              <svg className="w-12 h-12 text-white/90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+            </div>
+            <h3 className="text-sm tracking-widest text-white/95 mb-4 luxury-title font-medium">CREATE</h3>
+            <p className="text-white/80 luxury-text leading-relaxed text-sm">
               Transform imagination into architectural reality with photorealistic AI-generated design concepts.
             </p>
           </div>
           
           <div className="text-center">
-            <div className="w-1 h-16 bg-gradient-to-b from-amber-500 to-amber-600 mx-auto mb-6"></div>
-            <h3 className="text-sm tracking-wide text-black mb-4 luxury-title">REALIZE</h3>
-            <p className="text-gray-600 luxury-text leading-relaxed">
+            <div className="w-16 h-16 mx-auto mb-8 flex items-center justify-center">
+              <svg className="w-12 h-12 text-white/90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                <polyline points="9,22 9,12 15,12 15,22"/>
+              </svg>
+            </div>
+            <h3 className="text-sm tracking-widest text-white/95 mb-4 luxury-title font-medium">REALIZE</h3>
+            <p className="text-white/80 luxury-text leading-relaxed text-sm">
               Bring your vision to life with curated product recommendations and professional architectural guidance.
             </p>
           </div>
