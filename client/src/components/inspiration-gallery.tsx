@@ -57,21 +57,14 @@ export default function InspirationGallery() {
 
   return (
     <section id="inspiration" className="relative overflow-hidden">
-      {/* Architectural Video Background for Inspiration Section */}
+      {/* Architectural Background */}
       <div className="absolute inset-0 z-0">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="w-full h-full object-cover"
-        >
-          <source 
-            src="https://player.vimeo.com/external/434045526.hd.mp4?s=c27edd39c0fd62c0138129d93db85c8b1a20c398&profile_id=175"
-            type="video/mp4"
-          />
-          {/* Fallback architectural image */}
-        </video>
+        <div 
+          className="w-full h-full bg-cover bg-center bg-no-repeat"
+          style={{ 
+            backgroundImage: 'url(https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&h=1200)'
+          }}
+        ></div>
         
         {/* Subtle overlay to maintain readability */}
         <div className="absolute inset-0 bg-white/85 backdrop-blur-sm"></div>
