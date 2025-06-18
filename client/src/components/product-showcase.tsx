@@ -5,56 +5,56 @@ import { Badge } from "@/components/ui/badge";
 const FEATURED_PRODUCTS = [
   {
     id: 1,
-    name: "Mid-Century Modern Sofa",
+    name: "Modern Sofa",
     brand: "West Elm",
     price: 1299,
     originalPrice: 1599,
     rating: 4.8,
     reviews: 324,
-    image: "https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Premium velvet upholstery with solid wood legs",
+    image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
+    description: "Premium velvet upholstery",
     affiliateLink: "https://www.westelm.com/products/mid-century-sofa",
     inStock: true,
     featured: true
   },
   {
     id: 2,
-    name: "Marble Coffee Table",
+    name: "Coffee Table",
     brand: "CB2",
     price: 899,
     originalPrice: null,
     rating: 4.6,
     reviews: 187,
-    image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Carrara marble top with brass accents",
+    image: "https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
+    description: "Marble top with brass accents",
     affiliateLink: "https://www.cb2.com/marble-coffee-table",
     inStock: true,
     featured: false
   },
   {
     id: 3,
-    name: "Scandinavian Floor Lamp",
+    name: "Floor Lamp",
     brand: "Design Within Reach",
     price: 549,
     originalPrice: 649,
     rating: 4.9,
     reviews: 156,
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Minimalist oak base with linen shade",
+    description: "Oak base with linen shade",
     affiliateLink: "https://www.dwr.com/lighting-floor-lamps",
     inStock: false,
     featured: false
   },
   {
     id: 4,
-    name: "Luxury Throw Pillows Set",
+    name: "Throw Pillows",
     brand: "Restoration Hardware",
     price: 189,
     originalPrice: 249,
     rating: 4.7,
     reviews: 412,
-    image: "https://images.unsplash.com/photo-1498300439093-c8a43e9e8e26?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Hand-woven cashmere blend, set of 3",
+    image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
+    description: "Cashmere blend, set of 3",
     affiliateLink: "https://rh.com/catalog/category/products.jsp",
     inStock: true,
     featured: true
@@ -135,11 +135,11 @@ export default function ProductShowcase() {
 
               <div className="p-6">
                 <div className="mb-3">
-                  <p className="text-sm text-neutral-500 font-medium">{product.brand}</p>
-                  <h3 className="text-lg font-semibold text-neutral-900 group-hover:text-amber-600 transition-colors">
+                  <p className="text-xs text-neutral-500 font-medium uppercase tracking-wide">{product.brand}</p>
+                  <h3 className="text-base font-semibold text-neutral-900 group-hover:text-amber-600 transition-colors leading-tight">
                     {product.name}
                   </h3>
-                  <p className="text-sm text-neutral-600 mt-1">{product.description}</p>
+                  <p className="text-xs text-neutral-600 mt-1 leading-relaxed">{product.description}</p>
                 </div>
 
                 <div className="flex items-center mb-3">
