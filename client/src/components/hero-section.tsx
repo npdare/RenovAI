@@ -113,56 +113,115 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Colorful Design Examples */}
+        {/* Architectural Styles Slider */}
         <div className="mt-32">
           <div className="text-center mb-16">
             <span className="text-xs tracking-widest text-white/80 uppercase luxury-text">
-              Transform Your Vision
+              Explore Architectural Styles
             </span>
             <h3 className="text-2xl font-light text-white mt-4 luxury-title">
               From Imagination to Architecture
             </h3>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="aspect-square relative overflow-hidden rounded-sm group cursor-pointer">
-              <img 
-                src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400"
-                alt="Modern minimalist interior"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <span className="text-white text-xs tracking-wide luxury-text">MODERN</span>
+          <div className="relative overflow-hidden">
+            <div className="flex gap-6 animate-scroll-infinite">
+              {/* Modern */}
+              <div className="flex-shrink-0 w-80 h-48 relative overflow-hidden rounded-sm group cursor-pointer">
+                <img 
+                  src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                  alt="Modern minimalist interior"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                <div className="absolute bottom-6 left-6">
+                  <span className="text-white text-lg tracking-wide luxury-title font-light">MODERN</span>
+                  <p className="text-white/80 text-xs mt-1 luxury-text">Clean lines, minimal aesthetic</p>
+                </div>
               </div>
-            </div>
-            <div className="aspect-square relative overflow-hidden rounded-sm group cursor-pointer">
-              <img 
-                src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400"
-                alt="Natural Scandinavian interior"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <span className="text-white text-xs tracking-wide luxury-text">NATURAL</span>
+
+              {/* Scandinavian */}
+              <div className="flex-shrink-0 w-80 h-48 relative overflow-hidden rounded-sm group cursor-pointer">
+                <img 
+                  src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                  alt="Scandinavian interior"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                <div className="absolute bottom-6 left-6">
+                  <span className="text-white text-lg tracking-wide luxury-title font-light">SCANDINAVIAN</span>
+                  <p className="text-white/80 text-xs mt-1 luxury-text">Light woods, cozy textures</p>
+                </div>
               </div>
-            </div>
-            <div className="aspect-square relative overflow-hidden rounded-sm group cursor-pointer">
-              <img 
-                src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400"
-                alt="Warm traditional interior"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <span className="text-white text-xs tracking-wide luxury-text">WARM</span>
+
+              {/* Industrial */}
+              <div className="flex-shrink-0 w-80 h-48 relative overflow-hidden rounded-sm group cursor-pointer">
+                <img 
+                  src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                  alt="Industrial interior"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                <div className="absolute bottom-6 left-6">
+                  <span className="text-white text-lg tracking-wide luxury-title font-light">INDUSTRIAL</span>
+                  <p className="text-white/80 text-xs mt-1 luxury-text">Raw materials, urban edge</p>
+                </div>
               </div>
-            </div>
-            <div className="aspect-square relative overflow-hidden rounded-sm group cursor-pointer">
-              <img 
-                src="https://images.unsplash.com/photo-1631889993959-41b4e9c6e3c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400"
-                alt="Luxury contemporary interior"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                <span className="text-white text-xs tracking-wide luxury-text">LUXURY</span>
+
+              {/* Luxury */}
+              <div className="flex-shrink-0 w-80 h-48 relative overflow-hidden rounded-sm group cursor-pointer">
+                <img 
+                  src="https://images.unsplash.com/photo-1631889993959-41b4e9c6e3c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                  alt="Luxury contemporary interior"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                <div className="absolute bottom-6 left-6">
+                  <span className="text-white text-lg tracking-wide luxury-title font-light">LUXURY</span>
+                  <p className="text-white/80 text-xs mt-1 luxury-text">Premium finishes, sophistication</p>
+                </div>
+              </div>
+
+              {/* Mediterranean */}
+              <div className="flex-shrink-0 w-80 h-48 relative overflow-hidden rounded-sm group cursor-pointer">
+                <img 
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                  alt="Mediterranean interior"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                <div className="absolute bottom-6 left-6">
+                  <span className="text-white text-lg tracking-wide luxury-title font-light">MEDITERRANEAN</span>
+                  <p className="text-white/80 text-xs mt-1 luxury-text">Warm tones, natural elements</p>
+                </div>
+              </div>
+
+              {/* Mid-Century */}
+              <div className="flex-shrink-0 w-80 h-48 relative overflow-hidden rounded-sm group cursor-pointer">
+                <img 
+                  src="https://images.unsplash.com/photo-1498300439093-c8a43e9e8e26?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                  alt="Mid-century modern interior"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                <div className="absolute bottom-6 left-6">
+                  <span className="text-white text-lg tracking-wide luxury-title font-light">MID-CENTURY</span>
+                  <p className="text-white/80 text-xs mt-1 luxury-text">Retro charm, bold geometry</p>
+                </div>
+              </div>
+
+              {/* Repeat for seamless loop */}
+              <div className="flex-shrink-0 w-80 h-48 relative overflow-hidden rounded-sm group cursor-pointer">
+                <img 
+                  src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                  alt="Modern minimalist interior"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                <div className="absolute bottom-6 left-6">
+                  <span className="text-white text-lg tracking-wide luxury-title font-light">MODERN</span>
+                  <p className="text-white/80 text-xs mt-1 luxury-text">Clean lines, minimal aesthetic</p>
+                </div>
               </div>
             </div>
           </div>

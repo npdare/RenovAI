@@ -97,6 +97,24 @@
   .minimal-card:hover {
     @apply border-gray-200 shadow-sm;
   }
+
+  /* Infinite horizontal scroll animation */
+  @keyframes scroll-infinite {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-scroll-infinite {
+    animation: scroll-infinite 30s linear infinite;
+  }
+
+  .animate-scroll-infinite:hover {
+    animation-play-state: paused;
+  }
   
   .luxury-text {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
