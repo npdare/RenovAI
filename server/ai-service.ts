@@ -1,8 +1,12 @@
 import OpenAI from "openai";
+import Replicate from "replicate";
 import fs from "fs";
 import path from "path";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const replicate = new Replicate({
+  auth: process.env.REPLICATE_API_TOKEN,
+});
 
 export interface DesignAnalysis {
   roomType: string;
@@ -337,22 +341,72 @@ OUTPUT SPECIFICATIONS:
 - High-resolution clarity, magazine quality
 - NO cartoon, illustration, or artistic interpretation`;
 
-    const response = await openai.images.generate({
-      model: "dall-e-3",
-      prompt: prompt,
-      n: 1,
-      size: "1024x1024",
-      quality: "hd",
-    });
+    // Step 1: Generate ControlNet edge detection for structure preservation
+    console.log('Generating ControlNet edge detection...');
+    const base64ImageData = `data:image/jpeg;base64,${base64Image}`;
+    
+    const edgeDetection = await replicate.run(
+      "jagilley/controlnet-canny:aff48af9c68d162388d230a2ab003f68d2638d88307bdaf1c2f1ac95079c9613",
+      {
+        input: {
+          image: base64ImageData,
+          low_threshold: 100,
+          high_threshold: 200
+        }
+      }
+    );
 
-    const transformedImageUrl = response.data?.[0]?.url;
-    if (!transformedImageUrl) {
-      throw new Error('No transformed image URL returned from DALL-E');
-    }
+    // Step 2: Apply ControlNet transformation with low denoising strength
+    console.log('Applying ControlNet transformation...');
+    const denoisingStrength = Math.max(0.3, (100 - transformationStrength) / 100);
+    
+    const architecturalPrompt = `Professional architectural interior photography, ${parameters.style} design style, featuring ${parameters.wallCladding?.join(' and ') || 'modern walls'} wall treatments, ${parameters.flooringMaterial?.join(' and ') || 'premium flooring'} flooring, ${parameters.colorPalette?.join(' and ') || 'neutral colors'} color scheme, photorealistic, 8K resolution, professional lighting, architectural magazine quality, sharp focus, natural shadows`;
+
+    const transformation = await replicate.run(
+      "rossjillian/controlnet:795433b19458d0f4fa172a7ccf93178d2adb1cb8ab2ad6c8faeee8dd8bfa2907",
+      {
+        input: {
+          image: base64ImageData,
+          control_image: edgeDetection,
+          prompt: architecturalPrompt,
+          negative_prompt: "cartoon, illustration, painting, drawing, art, sketch, anime, low quality, blurry, distorted, unrealistic, fake, artificial, stylized",
+          num_inference_steps: 50,
+          guidance_scale: 7.5,
+          controlnet_conditioning_scale: 0.8,
+          strength: denoisingStrength,
+          seed: Math.floor(Math.random() * 1000000)
+        }
+      }
+    );
+
+    // Step 3: Post-process for enhanced realism
+    console.log('Enhancing realism...');
+    const enhancedImage = await replicate.run(
+      "tencentarc/gfpgan:9283608cc6b7be6b65a8e44983db012355fde4132009bf99d976b2f0896856a3",
+      {
+        input: {
+          img: transformation,
+          version: "v1.4",
+          scale: 2
+        }
+      }
+    );
+
+    // Download and save the final enhanced image
+    const finalImageUrl = Array.isArray(enhancedImage) ? enhancedImage[0] : enhancedImage;
+    const imageResponse = await fetch(finalImageUrl);
+    const imageArrayBuffer = await imageResponse.arrayBuffer();
+    const imageBufferNew = Buffer.from(imageArrayBuffer);
+    
+    const timestamp = Date.now();
+    const transformedFileName = `controlnet_transformed_${timestamp}.png`;
+    const transformedPath = path.join('uploads', transformedFileName);
+    
+    fs.writeFileSync(transformedPath, imageBufferNew);
 
     return {
       originalImage: `/uploads/${path.basename(imagePath)}`,
-      transformedImage: transformedImageUrl,
+      transformedImage: `/uploads/${transformedFileName}`,
       transformationStrength,
       appliedParameters: parameters
     };
