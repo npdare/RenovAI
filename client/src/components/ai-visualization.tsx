@@ -167,8 +167,8 @@ export default function AIVisualization() {
       setCurrentStep('parameters');
       setProgress(50);
       toast({
-        title: "Parameters Extracted",
-        description: "AI has analyzed your design preferences"
+        title: "Analysis Complete",
+        description: "Design parameters extracted using natural AI categorization"
       });
     },
     onError: () => {
@@ -220,6 +220,7 @@ export default function AIVisualization() {
   });
 
   const handleExtractParameters = () => {
+    setProgress(25);
     extractParametersMutation.mutate();
   };
 
@@ -457,12 +458,22 @@ export default function AIVisualization() {
           <Button 
             onClick={handleExtractParameters}
             disabled={
+              extractParametersMutation.isPending ||
               (inspiration.type === 'text' && !inspiration.textPrompt) ||
               (inspiration.type === 'images' && referenceImages.length === 0) ||
               (inspiration.type === 'pinterest' && !inspiration.pinterestUrl)
             }
           >
-            Extract Parameters <ArrowRight className="w-4 h-4 ml-2" />
+            {extractParametersMutation.isPending ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                Analyzing...
+              </>
+            ) : (
+              <>
+                Extract Parameters <ArrowRight className="w-4 h-4 ml-2" />
+              </>
+            )}
           </Button>
         </div>
       </CardContent>
@@ -505,12 +516,13 @@ export default function AIVisualization() {
     examples: string[] 
   }) => {
     const [newItem, setNewItem] = useState('');
+    const safeItems = items || []; // Fix undefined array error
 
     return (
       <div className="space-y-3">
         <Label className="text-base font-medium">{title}</Label>
         <div className="flex flex-wrap gap-2">
-          {items.map((item, index) => (
+          {safeItems.map((item, index) => (
             <div key={index} className="flex items-center">
               {isEditingParameters ? (
                 <div className="flex items-center space-x-1">
@@ -633,35 +645,35 @@ export default function AIVisualization() {
             <EditableParameterSection
               title="Wall Cladding"
               paramKey="wallCladding"
-              items={editableParameters.wallCladding}
+              items={editableParameters?.wallCladding || []}
               examples={designExamples.wallCladding}
             />
             
             <EditableParameterSection
               title="Flooring Material"
               paramKey="flooringMaterial"
-              items={editableParameters.flooringMaterial}
+              items={editableParameters?.flooringMaterial || []}
               examples={designExamples.flooringMaterial}
             />
             
             <EditableParameterSection
               title="Materials"
               paramKey="materials"
-              items={editableParameters.materials}
+              items={editableParameters?.materials || []}
               examples={designExamples.materials}
             />
             
             <EditableParameterSection
               title="Color Palette"
               paramKey="colorPalette"
-              items={editableParameters.colorPalette}
+              items={editableParameters?.colorPalette || []}
               examples={designExamples.colorPalette}
             />
             
             <EditableParameterSection
               title="Furniture Types"
               paramKey="furnitureTypes"
-              items={editableParameters.furnitureTypes}
+              items={editableParameters?.furnitureTypes || []}
               examples={designExamples.furnitureTypes}
             />
             
