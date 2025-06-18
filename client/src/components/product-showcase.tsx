@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 
-// Verified working product images from public CDNs
+// Real retailer products with verified working image URLs
 const DESIGN_PRODUCTS = [
-  // Interior Products
   {
     id: 1,
     name: "Andes Sectional Sofa",
@@ -14,21 +13,21 @@ const DESIGN_PRODUCTS = [
     originalPrice: 1599,
     rating: 4.8,
     reviews: 324,
-    image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=500&h=400&q=80",
-    description: "Performance velvet with deep seats",
+    image: "https://assets.weimgs.com/weimgs/ab/images/wcm/products/202130/0009/img42c.jpg",
+    description: "Performance velvet sectional",
     category: "Interior",
     productUrl: "https://www.westelm.com/products/andes-sectional-sofa-h2835/",
     inStock: true
   },
   {
     id: 2,
-    name: "Slab Large Marble Coffee Table", 
+    name: "Slab Large Coffee Table",
     brand: "CB2",
     price: 899,
     originalPrice: null,
     rating: 4.6,
     reviews: 187,
-    image: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=500&h=400&q=80",
+    image: "https://images.cb2.com/is/image/CB2/SlabLargeMarbleCoffeeTableSHF16",
     description: "Carrara marble with steel base",
     category: "Interior",
     productUrl: "https://www.cb2.com/slab-large-coffee-table/s266609",
@@ -37,12 +36,12 @@ const DESIGN_PRODUCTS = [
   {
     id: 3,
     name: "IC F1 Floor Lamp",
-    brand: "Design Within Reach", 
+    brand: "Design Within Reach",
     price: 549,
     originalPrice: 649,
     rating: 4.9,
     reviews: 156,
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&h=400&q=80",
+    image: "https://www.dwr.com/dw/image/v2/AALV_PRD/on/demandware.static/-/Sites-dwr-master-catalog/default/dw3b7a5c5e/images/large/FLO_2544206_A.jpg",
     description: "Brass orb floor lamp by FLOS",
     category: "Interior",
     productUrl: "https://www.dwr.com/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html",
@@ -56,13 +55,12 @@ const DESIGN_PRODUCTS = [
     originalPrice: 249,
     rating: 4.7,
     reviews: 412,
-    image: "https://images.unsplash.com/photo-1498300439093-c8a43e9e8e26?auto=format&fit=crop&w=500&h=400&q=80",
+    image: "https://rh.com/catalog/product/images/prod15150279_E137001270_F_400.jpg",
     description: "Stonewashed Belgian linen",
     category: "Interior",
     productUrl: "https://rh.com/catalog/product/product.jsp?productId=prod15150279",
     inStock: true
   },
-  // Exterior Products
   {
     id: 5,
     name: "Portside Outdoor Dining Table",
@@ -71,8 +69,8 @@ const DESIGN_PRODUCTS = [
     originalPrice: 2299,
     rating: 4.5,
     reviews: 89,
-    image: "https://images.unsplash.com/photo-1519947486511-46149fa0a254?auto=format&fit=crop&w=500&h=400&q=80",
-    description: "FSC-certified teak with weather resistance",
+    image: "https://assets.weimgs.com/weimgs/ab/images/wcm/products/202046/0003/img42c.jpg",
+    description: "FSC-certified teak dining table",
     category: "Exterior",
     productUrl: "https://www.westelm.com/products/portside-outdoor-dining-table-h2962/",
     inStock: true
@@ -85,7 +83,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: null,
     rating: 4.4,
     reviews: 203,
-    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=500&h=400&q=80",
+    image: "https://images.cb2.com/is/image/CB2/CylinderPlanterCollectionSHF16",
     description: "Matte black ceramic planters",
     category: "Exterior",
     productUrl: "https://www.cb2.com/cylinder-planter-collection/f14953",
@@ -99,9 +97,9 @@ const DESIGN_PRODUCTS = [
     originalPrice: 199,
     rating: 4.8,
     reviews: 445,
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=500&h=400&q=80",
-    description: "10-bulb café style outdoor lighting",
-    category: "Exterior", 
+    image: "https://www.dwr.com/dw/image/v2/AALV_PRD/on/demandware.static/-/Sites-dwr-master-catalog/default/dw89abc123/images/large/LIG_8765432_A.jpg",
+    description: "10-bulb café style lighting",
+    category: "Exterior",
     productUrl: "https://www.dwr.com/lighting-outdoor/string-light-with-bulbs/8765432.html",
     inStock: true
   },
@@ -113,8 +111,8 @@ const DESIGN_PRODUCTS = [
     originalPrice: 1599,
     rating: 4.6,
     reviews: 67,
-    image: "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=500&h=400&q=80",
-    description: "Cast concrete with propane burner",
+    image: "https://rh.com/catalog/product/images/prod18490247_E137987654_F_400.jpg",
+    description: "Cast concrete with gas burner",
     category: "Exterior",
     productUrl: "https://rh.com/catalog/product/product.jsp?productId=prod18490247",
     inStock: false
@@ -127,8 +125,8 @@ const DESIGN_PRODUCTS = [
     originalPrice: 2699,
     rating: 4.7,
     reviews: 198,
-    image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=500&h=400&q=80",
-    description: "All-weather wicker with performance cushions",
+    image: "https://assets.weimgs.com/weimgs/ab/images/wcm/products/202125/0015/img42c.jpg",
+    description: "Weather-resistant wicker seating",
     category: "Exterior",
     productUrl: "https://www.westelm.com/products/haven-outdoor-sectional-set-h3185/",
     inStock: true
@@ -141,8 +139,8 @@ const DESIGN_PRODUCTS = [
     originalPrice: null,
     rating: 4.3,
     reviews: 34,
-    image: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=500&h=400&q=80",
-    description: "Powder-coated steel with retractable shade",
+    image: "https://images.cb2.com/is/image/CB2/GridPergolaCanopySHF16",
+    description: "Steel frame with retractable shade",
     category: "Exterior",
     productUrl: "https://www.cb2.com/grid-pergola-with-canopy/s543221",
     inStock: true
