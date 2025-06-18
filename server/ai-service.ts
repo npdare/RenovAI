@@ -416,87 +416,110 @@ OUTPUT SPECIFICATIONS:
   }
 }
 
-// Advanced reference image analysis using GPT-4 Vision
+// Content-aware categorization for inspiration images
 export async function analyzeReferenceImages(images: any[]): Promise<{
+  detectedCategories: { name: string; items: string[]; confidence: number }[];
   style: string;
-  materials: string[];
-  colors: string[];
-  wallCladding: string[];
-  flooringMaterial: string[];
-  architecturalFeatures: string[];
+  spaceType: 'interior' | 'exterior';
 }> {
   try {
     const analysisResults = [];
     
-    // Analyze each reference image with comprehensive architectural extraction
-    for (const image of images.slice(0, 3)) { // Limit to 3 images for efficiency
+    for (const image of images.slice(0, 3)) {
       const imageBuffer = fs.readFileSync(image.path);
       const base64Image = imageBuffer.toString('base64');
       
       const analysis = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: "You are an expert architectural design analyst. Extract detailed design elements from architectural and interior images with precision and specificity."
+            content: "You are an expert at identifying design elements in images. Analyze what is prominently featured and return the appropriate category name with specific items you observe."
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: `Analyze this architectural/interior image and identify all visible elements naturally. Let the image guide what you observe. Return JSON format:
-                {
-                  "overallStyle": "architectural style you observe",
-                  "surfaceElements": {
-                    "category1": ["detailed material descriptions"],
-                    "category2": ["detailed material descriptions"]
-                  },
-                  "colorObservations": ["specific color and tone descriptions"],
-                  "designFeatures": ["notable architectural or design elements"]
-                }
-                
-                Create categories based on what you actually see - don't force predefined categories. Describe materials with specific texture, color, and finish details.`
+                text: `Look at this image and identify what design element is prominently featured. Based on what you see, determine the most appropriate category and extract specific items.
+
+CONTENT DETECTION RULES:
+- If you see walls/wall treatments → return category "wall cladding"
+- If you see floors/flooring → return category "flooring"  
+- If you see furniture pieces → return category "furniture" (or "exterior furniture" if outdoor)
+- If you see materials/textures → return category "materials"
+- If you see color schemes → return category "color palette"
+- If you see architectural features → return category "architectural features"
+- If you see lighting → return category "lighting fixtures"
+- If you see ceiling treatments → return category "ceiling details"
+
+Return JSON format:
+{
+  "primaryCategory": "the most appropriate category name based on what's prominently shown",
+  "items": ["specific items you observe in this category"],
+  "confidence": 0.8,
+  "overallStyle": "design style you observe",
+  "spaceType": "interior or exterior"
+}`
               },
               {
                 type: "image_url",
                 image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`,
-                  detail: "high"
+                  url: `data:image/jpeg;base64,${base64Image}`
                 }
               }
             ]
           }
         ],
         response_format: { type: "json_object" },
-        max_tokens: 500
+        max_tokens: 400
       });
 
       const result = JSON.parse(analysis.choices[0].message.content || '{}');
-      analysisResults.push(result);
+      analysisResults.push({
+        category: result.primaryCategory || 'materials',
+        items: result.items || [],
+        confidence: result.confidence || 0.8,
+        style: result.overallStyle || '',
+        spaceType: result.spaceType || 'interior'
+      });
     }
 
-    // Consolidate analysis results from multiple images
-    const consolidated = {
-      style: analysisResults.find(r => r.style)?.style || '',
-      materials: analysisResults.flatMap(r => r.materials || []),
-      colors: analysisResults.flatMap(r => r.colors || []),
-      wallCladding: analysisResults.flatMap(r => r.wallCladding || []),
-      flooringMaterial: analysisResults.flatMap(r => r.flooringMaterial || []),
-      architecturalFeatures: analysisResults.flatMap(r => r.architecturalFeatures || [])
-    };
+    const categoryMap = new Map();
+    let dominantStyle = '';
+    let dominantSpaceType = 'interior';
 
-    return consolidated;
+    analysisResults.forEach(result => {
+      if (result.style) dominantStyle = result.style;
+      if (result.spaceType) dominantSpaceType = result.spaceType;
+      
+      const category = result.category;
+      if (categoryMap.has(category)) {
+        const existing = categoryMap.get(category);
+        const uniqueItems = [...existing.items, ...result.items];
+        existing.items = uniqueItems.filter((item, index) => uniqueItems.indexOf(item) === index);
+        existing.confidence = Math.max(existing.confidence, result.confidence);
+      } else {
+        categoryMap.set(category, {
+          name: category,
+          items: result.items,
+          confidence: result.confidence
+        });
+      }
+    });
+
+    return {
+      detectedCategories: Array.from(categoryMap.values()),
+      style: dominantStyle,
+      spaceType: dominantSpaceType
+    };
 
   } catch (error) {
     console.error('Reference image analysis error:', error);
     return {
+      detectedCategories: [],
       style: '',
-      materials: [],
-      colors: [],
-      wallCladding: [],
-      flooringMaterial: [],
-      architecturalFeatures: []
+      spaceType: 'interior'
     };
   }
 }
