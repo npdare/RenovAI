@@ -405,47 +405,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const imageBuffer = fs.readFileSync(photoPath);
       const base64Image = imageBuffer.toString('base64');
 
+      // Efficient parameter extraction with reduced token usage
       const analysisResponse = await new OpenAI({ apiKey: process.env.OPENAI_API_KEY }).chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: "You are an expert architect analyzing interior spaces. Extract precise material and structural parameters that can be modified while preserving room layout."
+            content: "Extract key design elements in minimal JSON format. Focus only on changeable materials."
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: `Analyze this room and extract design parameters in JSON format:
-                
-                {
-                  "roomType": "specific room type",
-                  "style": "current architectural style",
-                  "spaceType": "interior" or "exterior",
-                  "wallCladding": ["current wall materials/finishes"],
-                  "flooringMaterial": ["current flooring type"],
-                  "ceilingDetails": ["ceiling material/features"],
-                  "materials": ["all visible materials that could be changed"],
-                  "colorPalette": ["dominant colors in the space"],
-                  "furnitureTypes": ["existing furniture pieces"],
-                  "lightingFixtures": ["current lighting types"],
-                  "architecturalFeatures": ["built-ins, moldings, etc."]
-                }
-                
-                Focus on materials that can be updated while keeping structural elements intact.`
+                text: `Extract: {"roomType":"","style":"","wallCladding":[""],"flooringMaterial":[""],"materials":[""],"colorPalette":[""],"furnitureTypes":[""]}`
               },
               {
                 type: "image_url",
                 image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`
+                  url: `data:image/jpeg;base64,${base64Image}`,
+                  detail: "low" // Use low detail to reduce token usage
                 }
               }
             ],
           },
         ],
         response_format: { type: "json_object" },
-        max_tokens: 800,
+        max_tokens: 300, // Reduced token limit
       });
 
       const analysisResult = JSON.parse(analysisResponse.choices[0].message.content || '{}');
@@ -456,20 +442,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const lowerText = text.toLowerCase();
         return styles.find(style => lowerText.includes(style)) || 'Modern';
       };
+
+      // Enhanced parameter processing with text prompt integration
+      let enhancedParameters = { ...analysisResult };
+
+      // If text prompt is provided, enhance parameters without additional API calls
+      if (textPrompt) {
+        const extractedStyle = extractStyleFromText(textPrompt);
+        enhancedParameters.style = extractedStyle;
+        
+        // Extract materials from text prompt using pattern matching
+        const materialKeywords = {
+          'stone': 'Natural Stone',
+          'wood': 'Wood Paneling', 
+          'marble': 'Marble',
+          'concrete': 'Concrete',
+          'brick': 'Brick',
+          'metal': 'Metal',
+          'glass': 'Glass'
+        };
+        
+        const colorKeywords = {
+          'white': 'White',
+          'black': 'Black',
+          'gray': 'Gray',
+          'blue': 'Blue',
+          'green': 'Green',
+          'neutral': 'Neutral',
+          'warm': 'Warm Tones',
+          'cool': 'Cool Tones'
+        };
+
+        const lowerPrompt = textPrompt.toLowerCase();
+        
+        // Extract materials from text
+        const extractedMaterials = Object.entries(materialKeywords)
+          .filter(([keyword]) => lowerPrompt.includes(keyword))
+          .map(([, material]) => material);
+        
+        if (extractedMaterials.length > 0) {
+          enhancedParameters.materials = [...(enhancedParameters.materials || []), ...extractedMaterials];
+        }
+
+        // Extract colors from text
+        const extractedColors = Object.entries(colorKeywords)
+          .filter(([keyword]) => lowerPrompt.includes(keyword))
+          .map(([, color]) => color);
+        
+        if (extractedColors.length > 0) {
+          enhancedParameters.colorPalette = [...(enhancedParameters.colorPalette || []), ...extractedColors];
+        }
+      }
       
-      // Merge with inspiration input if provided
+      // Process reference images efficiently (analyze only the first one to save tokens)
+      if (files.referenceImage0) {
+        const refImageBuffer = fs.readFileSync(files.referenceImage0[0].path);
+        const refBase64 = refImageBuffer.toString('base64');
+        
+        // Quick style detection from reference image
+        const refAnalysis = await new OpenAI({ apiKey: process.env.OPENAI_API_KEY }).chat.completions.create({
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "text",
+                  text: "Style and 3 materials only: {\"style\":\"\",\"materials\":[\"\",\"\",\"\"]}"
+                },
+                {
+                  type: "image_url",
+                  image_url: {
+                    url: `data:image/jpeg;base64,${refBase64}`,
+                    detail: "low"
+                  }
+                }
+              ],
+            },
+          ],
+          response_format: { type: "json_object" },
+          max_tokens: 100,
+        });
+
+        const refResult = JSON.parse(refAnalysis.choices[0].message.content || '{}');
+        if (refResult.style) enhancedParameters.style = refResult.style;
+        if (refResult.materials) {
+          enhancedParameters.materials = [...(enhancedParameters.materials || []), ...refResult.materials];
+        }
+      }
+      
+      // Final parameter structure with defaults
       const parameters = {
-        roomType: analysisResult.roomType || 'Living Room',
-        style: textPrompt ? extractStyleFromText(textPrompt) : analysisResult.style || 'Modern',
-        spaceType: analysisResult.spaceType || 'interior',
-        wallCladding: analysisResult.wallCladding || ['Painted Walls'],
-        flooringMaterial: analysisResult.flooringMaterial || ['Hardwood'],
-        ceilingDetails: analysisResult.ceilingDetails || ['Standard Ceiling'],
-        materials: analysisResult.materials || ['Wood', 'Glass', 'Metal'],
-        colorPalette: analysisResult.colorPalette || ['Neutral', 'White', 'Gray'],
-        furnitureTypes: analysisResult.furnitureTypes || ['Seating', 'Tables'],
-        lightingFixtures: analysisResult.lightingFixtures || ['Ambient Lighting'],
-        architecturalFeatures: analysisResult.architecturalFeatures || []
+        roomType: enhancedParameters.roomType || 'Living Room',
+        style: enhancedParameters.style || 'Modern',
+        spaceType: 'interior' as const,
+        wallCladding: enhancedParameters.wallCladding || ['Painted Walls'],
+        flooringMaterial: enhancedParameters.flooringMaterial || ['Hardwood'],
+        ceilingDetails: enhancedParameters.ceilingDetails || ['Standard Ceiling'],
+        materials: [...new Set(enhancedParameters.materials || ['Wood', 'Glass', 'Metal'])], // Remove duplicates
+        colorPalette: [...new Set(enhancedParameters.colorPalette || ['Neutral', 'White', 'Gray'])],
+        furnitureTypes: enhancedParameters.furnitureTypes || ['Seating', 'Tables'],
+        lightingFixtures: enhancedParameters.lightingFixtures || ['Ambient Lighting'],
+        architecturalFeatures: enhancedParameters.architecturalFeatures || []
       };
 
       res.json(parameters);
