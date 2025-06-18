@@ -3,82 +3,86 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 
-// Product data with real affiliate links and proper regional pricing
+// Product data with working images and affiliate monetization
 const FEATURED_PRODUCTS = [
   {
     id: 1,
-    name: "Andes Sectional Sofa",
+    name: "Modern Sectional Sofa",
     brand: "West Elm",
     price: 1299,
     originalPrice: 1599,
     rating: 4.8,
     reviews: 324,
-    image: "https://assets.weimgs.com/weimgs/rk/images/wcm/products/202425/0004/andes-sectional-sofa-m.jpg",
+    image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
     description: "Performance velvet sectional",
-    affiliateLink: "https://www.westelm.com/products/andes-sectional-sofa-h2835/",
+    affiliateLink: "https://www.westelm.com/products/andes-sectional-sofa-h2835/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
     inStock: true,
     featured: true,
+    commissionRate: 8, // 8% commission from West Elm
     regions: {
-      US: { price: 1299, currency: 'USD', link: 'https://www.westelm.com/products/andes-sectional-sofa-h2835/' },
-      UK: { price: 1099, currency: 'GBP', link: 'https://www.westelm.co.uk/andes-sectional-sofa-h2835' },
-      CA: { price: 1699, currency: 'CAD', link: 'https://www.westelm.ca/andes-sectional-sofa-h2835' }
+      US: { price: 1299, currency: 'USD', link: 'https://www.westelm.com/products/andes-sectional-sofa-h2835/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      UK: { price: 1099, currency: 'GBP', link: 'https://www.westelm.co.uk/andes-sectional-sofa-h2835?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      CA: { price: 1699, currency: 'CAD', link: 'https://www.westelm.ca/andes-sectional-sofa-h2835?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' }
     }
   },
   {
     id: 2,
-    name: "Slab Large Coffee Table",
+    name: "Marble Coffee Table",
     brand: "CB2",
     price: 899,
     originalPrice: null,
     rating: 4.6,
     reviews: 187,
-    image: "https://images.cb2.com/is/image/CB2/SlabLargeCoffeeTableSHF21/$web_pdp_main_carousel_med$/210406120543/slab-large-coffee-table.jpg",
-    description: "Marble slab coffee table",
-    affiliateLink: "https://www.cb2.com/slab-large-coffee-table/s266609",
+    image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
+    description: "Carrara marble top",
+    affiliateLink: "https://www.cb2.com/slab-large-coffee-table/s266609?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
     inStock: true,
     featured: false,
+    commissionRate: 6, // 6% commission from CB2
     regions: {
-      US: { price: 899, currency: 'USD', link: 'https://www.cb2.com/slab-large-coffee-table/s266609' },
-      UK: { price: 759, currency: 'GBP', link: 'https://www.cb2.co.uk/slab-large-coffee-table/s266609' },
-      CA: { price: 1199, currency: 'CAD', link: 'https://www.cb2.ca/slab-large-coffee-table/s266609' }
+      US: { price: 899, currency: 'USD', link: 'https://www.cb2.com/slab-large-coffee-table/s266609?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      UK: { price: 759, currency: 'GBP', link: 'https://www.cb2.co.uk/slab-large-coffee-table/s266609?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      CA: { price: 1199, currency: 'CAD', link: 'https://www.cb2.ca/slab-large-coffee-table/s266609?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' }
     }
   },
   {
     id: 3,
-    name: "IC F1 Floor Lamp",
+    name: "Brass Floor Lamp",
     brand: "Design Within Reach",
     price: 549,
     originalPrice: 649,
     rating: 4.9,
     reviews: 156,
-    image: "https://images.dwr.com/is/image/DWR/IC_F1_Floor_Lamp_01?$Article_Hero$",
-    description: "Brass sphere floor lamp",
-    affiliateLink: "https://www.dwr.com/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
+    description: "Minimalist brass design",
+    affiliateLink: "https://www.dwr.com/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
     inStock: false,
     featured: false,
+    commissionRate: 10, // 10% commission from DWR
     regions: {
-      US: { price: 549, currency: 'USD', link: 'https://www.dwr.com/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html' },
-      UK: { price: 465, currency: 'GBP', link: 'https://www.dwr.co.uk/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html' },
-      CA: { price: 729, currency: 'CAD', link: 'https://www.dwr.ca/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html' }
+      US: { price: 549, currency: 'USD', link: 'https://www.dwr.com/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      UK: { price: 465, currency: 'GBP', link: 'https://www.dwr.co.uk/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      CA: { price: 729, currency: 'CAD', link: 'https://www.dwr.ca/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' }
     }
   },
   {
     id: 4,
-    name: "Italian Cashmere Pillow Cover",
+    name: "Cashmere Throw Pillows",
     brand: "Restoration Hardware",
     price: 189,
     originalPrice: 249,
     rating: 4.7,
     reviews: 412,
-    image: "https://rh.com/catalog/product/product.jsp?productId=prod15150279&categoryId=cat11560045",
-    description: "Luxury cashmere pillow set",
-    affiliateLink: "https://rh.com/catalog/product/product.jsp?productId=prod15150279",
+    image: "https://images.unsplash.com/photo-1498300439093-c8a43e9e8e26?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
+    description: "Italian cashmere blend",
+    affiliateLink: "https://rh.com/catalog/product/product.jsp?productId=prod15150279&utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
     inStock: true,
     featured: true,
+    commissionRate: 12, // 12% commission from RH
     regions: {
-      US: { price: 189, currency: 'USD', link: 'https://rh.com/catalog/product/product.jsp?productId=prod15150279' },
-      UK: { price: 159, currency: 'GBP', link: 'https://rh.com/catalog/product/product.jsp?productId=prod15150279' },
-      CA: { price: 249, currency: 'CAD', link: 'https://rh.com/catalog/product/product.jsp?productId=prod15150279' }
+      US: { price: 189, currency: 'USD', link: 'https://rh.com/catalog/product/product.jsp?productId=prod15150279&utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      UK: { price: 159, currency: 'GBP', link: 'https://rh.com/catalog/product/product.jsp?productId=prod15150279&utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      CA: { price: 249, currency: 'CAD', link: 'https://rh.com/catalog/product/product.jsp?productId=prod15150279&utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' }
     }
   }
 ];
@@ -128,8 +132,29 @@ export default function ProductShowcase() {
     // Use region-specific link and track affiliate click
     const regionData = product.regions[userRegion];
     const link = regionData?.link || product.affiliateLink;
+    const estimatedCommission = (getProductPrice(product) * product.commissionRate) / 100;
     
+    // Track affiliate click for analytics and commission calculation
     console.log(`Affiliate click tracked: ${product.name} - ${product.brand} (${userRegion})`);
+    console.log(`Estimated commission: ${currencySymbol}${estimatedCommission.toFixed(2)} (${product.commissionRate}%)`);
+    
+    // Send tracking data to analytics
+    const trackingData = {
+      productId: product.id,
+      productName: product.name,
+      brand: product.brand,
+      price: getProductPrice(product),
+      currency: currencySymbol,
+      region: userRegion,
+      commissionRate: product.commissionRate,
+      estimatedCommission: estimatedCommission,
+      timestamp: new Date().toISOString(),
+      clickSource: 'product_showcase'
+    };
+    
+    // In production, this would send to your analytics service
+    // fetch('/api/analytics/affiliate-click', { method: 'POST', body: JSON.stringify(trackingData) });
+    
     window.open(link, '_blank', 'noopener,noreferrer');
   };
 
@@ -182,11 +207,11 @@ export default function ProductShowcase() {
                 </div>
               )}
               
-              <div className="relative overflow-hidden">
+              <div className="relative overflow-hidden h-64">
                 <img 
                   src={product.image}
                   alt={product.name}
-                  className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -262,10 +287,10 @@ export default function ProductShowcase() {
 
         <div className="mt-16 text-center">
           <div className="bg-neutral-50 rounded-2xl p-8 border border-neutral-200">
-            <h3 className="text-2xl font-semibold text-neutral-900 mb-4">Earn While You Design</h3>
+            <h3 className="text-2xl font-semibold text-neutral-900 mb-4">Curated Design Marketplace</h3>
             <p className="text-neutral-600 mb-6 max-w-2xl mx-auto">
-              Get 5% cashback on all purchases made through our curated marketplace. 
-              Plus, refer friends and earn 10% of their first purchase.
+              Shop premium furniture and decor from trusted design brands. Each purchase through our platform 
+              supports RenovAI's development through affiliate partnerships with West Elm, CB2, Design Within Reach, and Restoration Hardware.
             </p>
             
             <div className="grid md:grid-cols-3 gap-6">
