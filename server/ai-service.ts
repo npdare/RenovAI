@@ -269,20 +269,20 @@ export async function transformImageWithParameters(
     const imageBuffer = fs.readFileSync(imagePath);
     const base64Image = imageBuffer.toString('base64');
 
-    // Analyze the original image structure and layout
+    // Analyze the original image structure and layout with precise architectural details
     const analysisResponse = await openai.chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
         {
           role: "system",
-          content: "You are a professional interior designer analyzing room layouts. Describe the room's structural elements, layout, dimensions, and architectural features that should be preserved during transformation."
+          content: "You are a professional architect analyzing structural elements. Focus on exact spatial relationships, architectural features, and material definitions that must be preserved during design transformation."
         },
         {
           role: "user",
           content: [
             {
               type: "text",
-              text: "Analyze this room's layout, structural elements, window placement, room dimensions, and architectural features. Describe what should be preserved during a design transformation in detail."
+              text: "Analyze this room with extreme precision: 1) Wall configurations and angles, 2) Window sizes, positions and frames, 3) Door locations and sizes, 4) Ceiling height and features, 5) Floor layout and transitions, 6) Built-in elements, 7) Lighting fixture positions, 8) Exact furniture placement and scale. Describe the structural skeleton that must remain identical."
             },
             {
               type: "image_url",
@@ -293,22 +293,36 @@ export async function transformImageWithParameters(
           ],
         },
       ],
-      max_tokens: 500,
+      max_tokens: 700,
     });
 
     const roomLayout = analysisResponse.choices[0].message.content;
 
-    // Create transformation prompt that preserves room structure
-    const intensityText = transformationStrength > 80 ? "completely transform" : 
-                         transformationStrength > 50 ? "significantly redesign" : "subtly enhance";
+    // Create precise transformation prompt that maintains structural integrity
+    const intensityText = transformationStrength > 80 ? "replace materials and finishes while keeping" : 
+                         transformationStrength > 50 ? "update finishes and textures while preserving" : "subtly refresh materials while maintaining";
 
-    const prompt = `${intensityText} this ${parameters.roomType} to ${parameters.style} style while preserving the exact room layout and architectural features: ${roomLayout}. 
-    Apply these materials: ${parameters.materials.join(', ')}. 
-    Use this color palette: ${parameters.colorPalette.join(', ')}. 
-    Include furniture types: ${parameters.furnitureTypes.join(', ')}. 
-    Maintain the same room dimensions, window placement, door locations, and structural elements. 
-    Keep the same camera angle and perspective. 
-    Professional interior design photography, realistic lighting, high quality, 8K resolution.`;
+    const prompt = `Transform ONLY the surface materials and finishes in this ${parameters.roomType} while ${intensityText} the exact structural layout: ${roomLayout}. 
+
+PRESERVE EXACTLY:
+- All wall angles, corners, and configurations
+- Window sizes, positions, frames, and mullions  
+- Door locations, sizes, and openings
+- Ceiling height, beams, and architectural details
+- Floor plan and room proportions
+- Built-in elements and fixtures
+- Camera angle and perspective
+- Lighting fixture positions
+- Furniture scale and placement
+
+CHANGE ONLY:
+- Wall cladding: ${parameters.materials.includes('Natural Stone') ? 'natural stone wall cladding' : parameters.materials.includes('Wood') ? 'wood wall paneling' : 'painted walls'}
+- Flooring material: ${parameters.materials.includes('Hardwood') ? 'hardwood flooring' : parameters.materials.includes('Marble') ? 'marble flooring' : 'appropriate flooring for ' + parameters.style}
+- Color scheme: ${parameters.colorPalette.join(', ')}
+- Furniture style: ${parameters.style} style ${parameters.furnitureTypes.join(', ')}
+- Fabric and textile patterns matching ${parameters.style}
+
+Keep identical room dimensions, spatial relationships, and architectural framework. Professional interior photography, same lighting conditions.`;
 
     const response = await openai.images.generate({
       model: "dall-e-3",

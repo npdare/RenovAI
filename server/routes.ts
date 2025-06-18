@@ -19,6 +19,9 @@ import {
   generateProductRecommendations,
   transformImageWithParameters
 } from "./ai-service";
+import OpenAI from "openai";
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(process.cwd(), "uploads");
@@ -398,14 +401,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const photoPath = files.photo[0].path;
       
-      // Extract design parameters using OpenAI Vision
+      // Extract precise architectural parameters using OpenAI Vision
+      const imageBuffer = require('fs').readFileSync(photoPath);
+      const base64Image = imageBuffer.toString('base64');
+
+      const analysisResponse = await new OpenAI({ apiKey: process.env.OPENAI_API_KEY }).chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert architect analyzing interior spaces. Extract precise material and structural parameters that can be modified while preserving room layout."
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `Analyze this room and extract design parameters in JSON format:
+                
+                {
+                  "roomType": "specific room type",
+                  "style": "current architectural style",
+                  "spaceType": "interior" or "exterior",
+                  "wallCladding": ["current wall materials/finishes"],
+                  "flooringMaterial": ["current flooring type"],
+                  "ceilingDetails": ["ceiling material/features"],
+                  "materials": ["all visible materials that could be changed"],
+                  "colorPalette": ["dominant colors in the space"],
+                  "furnitureTypes": ["existing furniture pieces"],
+                  "lightingFixtures": ["current lighting types"],
+                  "architecturalFeatures": ["built-ins, moldings, etc."]
+                }
+                
+                Focus on materials that can be updated while keeping structural elements intact.`
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${base64Image}`
+                }
+              }
+            ],
+          },
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 800,
+      });
+
+      const analysisResult = JSON.parse(analysisResponse.choices[0].message.content || '{}');
+      
+      // Helper function to extract style from text prompt
+      const extractStyleFromText = (text: string): string => {
+        const styles = ['modern', 'contemporary', 'traditional', 'minimalist', 'industrial', 'scandinavian', 'bohemian', 'farmhouse'];
+        const lowerText = text.toLowerCase();
+        return styles.find(style => lowerText.includes(style)) || 'Modern';
+      };
+      
+      // Merge with inspiration input if provided
       const parameters = {
-        style: 'Modern Minimalist',
-        materials: ['Natural Wood', 'White Marble', 'Brushed Steel'],
-        colorPalette: ['Warm White', 'Natural Wood Tones', 'Soft Grays'],
-        furnitureTypes: ['Sectional Sofa', 'Coffee Table', 'Floor Lamp'],
-        roomType: 'Living Room',
-        spaceType: 'interior' as const
+        roomType: analysisResult.roomType || 'Living Room',
+        style: textPrompt ? extractStyleFromText(textPrompt) : analysisResult.style || 'Modern',
+        spaceType: analysisResult.spaceType || 'interior',
+        wallCladding: analysisResult.wallCladding || ['Painted Walls'],
+        flooringMaterial: analysisResult.flooringMaterial || ['Hardwood'],
+        ceilingDetails: analysisResult.ceilingDetails || ['Standard Ceiling'],
+        materials: analysisResult.materials || ['Wood', 'Glass', 'Metal'],
+        colorPalette: analysisResult.colorPalette || ['Neutral', 'White', 'Gray'],
+        furnitureTypes: analysisResult.furnitureTypes || ['Seating', 'Tables'],
+        lightingFixtures: analysisResult.lightingFixtures || ['Ambient Lighting'],
+        architecturalFeatures: analysisResult.architecturalFeatures || []
       };
 
       res.json(parameters);

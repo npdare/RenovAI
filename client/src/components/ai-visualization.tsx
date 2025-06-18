@@ -35,7 +35,7 @@ interface DesignInspiration {
   pinterestUrl?: string;
 }
 
-// Step 3: Extracted Parameters
+// Step 3: Extracted Parameters with Architectural Details
 interface DesignParameters {
   style: string;
   materials: string[];
@@ -43,6 +43,11 @@ interface DesignParameters {
   furnitureTypes: string[];
   roomType: string;
   spaceType: 'interior' | 'exterior';
+  wallCladding: string[];
+  flooringMaterial: string[];
+  ceilingDetails: string[];
+  lightingFixtures: string[];
+  architecturalFeatures: string[];
 }
 
 // Step 4: Transformation Result
@@ -447,10 +452,28 @@ export default function AIVisualization() {
             </div>
             
             <div>
+              <Label className="text-base font-medium">Wall Cladding</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {extractedParameters.wallCladding.map((material, index) => (
+                  <Badge key={index} variant="secondary">{material}</Badge>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <Label className="text-base font-medium">Flooring Material</Label>
+              <div className="flex flex-wrap gap-2 mt-2">
+                {extractedParameters.flooringMaterial.map((material, index) => (
+                  <Badge key={index} variant="secondary">{material}</Badge>
+                ))}
+              </div>
+            </div>
+            
+            <div>
               <Label className="text-base font-medium">Materials</Label>
               <div className="flex flex-wrap gap-2 mt-2">
                 {extractedParameters.materials.map((material, index) => (
-                  <Badge key={index} variant="secondary">{material}</Badge>
+                  <Badge key={index} variant="outline">{material}</Badge>
                 ))}
               </div>
             </div>
@@ -472,6 +495,17 @@ export default function AIVisualization() {
                 ))}
               </div>
             </div>
+            
+            {extractedParameters.architecturalFeatures && extractedParameters.architecturalFeatures.length > 0 && (
+              <div>
+                <Label className="text-base font-medium">Architectural Features</Label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {extractedParameters.architecturalFeatures.map((feature, index) => (
+                    <Badge key={index} variant="outline">{feature}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
             
             <Separator />
             
