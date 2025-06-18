@@ -10,32 +10,12 @@ export default function HeroSection() {
     <section className="relative min-h-screen overflow-hidden flex items-center justify-center">
       {/* Architectural Video Background */}
       <div className="absolute inset-0 z-0">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="w-full h-full object-cover"
-        >
-          <source 
-            src="https://videos.pexels.com/video-files/6764056/6764056-hd_1920_1080_25fps.mp4"
-            type="video/mp4"
-          />
-          <source 
-            src="https://videos.pexels.com/video-files/6077310/6077310-hd_1920_1080_25fps.mp4"
-            type="video/mp4"
-          />
-          <source 
-            src="https://videos.pexels.com/video-files/4567726/4567726-hd_1920_1080_25fps.mp4"
-            type="video/mp4"
-          />
-          <div 
-            className="w-full h-full bg-cover bg-center bg-no-repeat"
-            style={{ 
-              backgroundImage: 'url(https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&h=1200)'
-            }}
-          ></div>
-        </video>
+        <div 
+          className="w-full h-full bg-cover bg-center bg-no-repeat"
+          style={{ 
+            backgroundImage: 'url(https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&h=1200)'
+          }}
+        ></div>
         
         {/* Sophisticated overlay for text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/60"></div>
