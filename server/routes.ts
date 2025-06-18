@@ -405,33 +405,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const imageBuffer = fs.readFileSync(photoPath);
       const base64Image = imageBuffer.toString('base64');
 
-      // Efficient parameter extraction with reduced token usage
+      // Detailed parameter extraction with specific material descriptions
       const analysisResponse = await new OpenAI({ apiKey: process.env.OPENAI_API_KEY }).chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: "Extract key design elements in minimal JSON format. Focus only on changeable materials."
+            content: "Extract detailed material descriptions with colors, textures, and finishes. Be specific about tones, patterns, and material characteristics."
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: `Extract: {"roomType":"","style":"","wallCladding":[""],"flooringMaterial":[""],"materials":[""],"colorPalette":[""],"furnitureTypes":[""]}`
+                text: `Analyze materials with detailed descriptions. Use format:
+                {
+                  "roomType": "specific room name",
+                  "style": "architectural style",
+                  "wallCladding": ["detailed wall material descriptions with color/texture"],
+                  "flooringMaterial": ["specific flooring with finish/pattern"],
+                  "materials": ["detailed material descriptions"],
+                  "colorPalette": ["specific color names with tones"],
+                  "furnitureTypes": ["furniture with style/material details"]
+                }
+                
+                Examples: "weathered gray brick", "light oak hardwood flooring", "polished white marble", "warm beige limestone"`
               },
               {
                 type: "image_url",
                 image_url: {
                   url: `data:image/jpeg;base64,${base64Image}`,
-                  detail: "low" // Use low detail to reduce token usage
+                  detail: "high" // Use high detail for better material analysis
                 }
               }
             ],
           },
         ],
         response_format: { type: "json_object" },
-        max_tokens: 300, // Reduced token limit
+        max_tokens: 500, // Increased for detailed descriptions
       });
 
       const analysisResult = JSON.parse(analysisResponse.choices[0].message.content || '{}');
@@ -451,26 +462,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const extractedStyle = extractStyleFromText(textPrompt);
         enhancedParameters.style = extractedStyle;
         
-        // Extract materials from text prompt using pattern matching
+        // Extract detailed materials from text prompt using pattern matching
         const materialKeywords = {
-          'stone': 'Natural Stone',
-          'wood': 'Wood Paneling', 
-          'marble': 'Marble',
-          'concrete': 'Concrete',
-          'brick': 'Brick',
-          'metal': 'Metal',
-          'glass': 'Glass'
+          'stone': 'Natural stone with textured finish',
+          'limestone': 'Light-toned limestone cladding',
+          'sandstone': 'Warm sandstone with natural grain',
+          'granite': 'Polished granite with mineral patterns',
+          'wood': 'Natural wood paneling with visible grain', 
+          'oak': 'Rich oak wood with warm undertones',
+          'walnut': 'Dark walnut wood with fine grain',
+          'cedar': 'Weathered cedar with natural patina',
+          'marble': 'Polished marble with veining',
+          'concrete': 'Smooth concrete with subtle texture',
+          'brick': 'Traditional brick with mortar joints',
+          'metal': 'Brushed metal with matte finish',
+          'steel': 'Industrial steel with raw finish',
+          'glass': 'Clear glass with minimal framing',
+          'tile': 'Ceramic tile with consistent pattern'
         };
         
         const colorKeywords = {
-          'white': 'White',
-          'black': 'Black',
-          'gray': 'Gray',
-          'blue': 'Blue',
-          'green': 'Green',
-          'neutral': 'Neutral',
-          'warm': 'Warm Tones',
-          'cool': 'Cool Tones'
+          'white': 'Crisp white with clean finish',
+          'black': 'Deep black with matte texture',
+          'gray': 'Neutral gray with subtle variations',
+          'grey': 'Soft grey with warm undertones',
+          'blue': 'Calming blue with depth',
+          'navy': 'Deep navy with rich saturation',
+          'green': 'Natural green with earthy tones',
+          'beige': 'Warm beige with creamy texture',
+          'brown': 'Rich brown with natural depth',
+          'neutral': 'Balanced neutral palette',
+          'warm': 'Warm-toned color scheme',
+          'cool': 'Cool-toned color palette'
         };
 
         const lowerPrompt = textPrompt.toLowerCase();
@@ -499,7 +522,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const refImageBuffer = fs.readFileSync(files.referenceImage0[0].path);
         const refBase64 = refImageBuffer.toString('base64');
         
-        // Quick style detection from reference image
+        // Detailed style and material detection from reference image
         const refAnalysis = await new OpenAI({ apiKey: process.env.OPENAI_API_KEY }).chat.completions.create({
           model: "gpt-4o",
           messages: [
@@ -508,41 +531,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
               content: [
                 {
                   type: "text",
-                  text: "Style and 3 materials only: {\"style\":\"\",\"materials\":[\"\",\"\",\"\"]}"
+                  text: "Extract detailed style and 3 specific materials with descriptions: {\"style\":\"detailed style name\",\"materials\":[\"material with color/texture detail\",\"second material with finish\",\"third material with characteristics\"]}"
                 },
                 {
                   type: "image_url",
                   image_url: {
                     url: `data:image/jpeg;base64,${refBase64}`,
-                    detail: "low"
+                    detail: "high"
                   }
                 }
               ],
             },
           ],
           response_format: { type: "json_object" },
-          max_tokens: 100,
+          max_tokens: 200,
         });
 
         const refResult = JSON.parse(refAnalysis.choices[0].message.content || '{}');
         if (refResult.style) enhancedParameters.style = refResult.style;
-        if (refResult.materials) {
+        if (refResult.materials && Array.isArray(refResult.materials)) {
           enhancedParameters.materials = [...(enhancedParameters.materials || []), ...refResult.materials];
         }
       }
       
-      // Final parameter structure with defaults
+      // Remove duplicates from arrays
+      const removeDuplicates = (arr: any[]) => {
+        if (!Array.isArray(arr)) return [];
+        return arr.filter((item, index, self) => self.indexOf(item) === index);
+      };
+
+      // Final parameter structure with detailed defaults
       const parameters = {
         roomType: enhancedParameters.roomType || 'Living Room',
-        style: enhancedParameters.style || 'Modern',
+        style: enhancedParameters.style || 'Contemporary Modern',
         spaceType: 'interior' as const,
-        wallCladding: enhancedParameters.wallCladding || ['Painted Walls'],
-        flooringMaterial: enhancedParameters.flooringMaterial || ['Hardwood'],
-        ceilingDetails: enhancedParameters.ceilingDetails || ['Standard Ceiling'],
-        materials: [...new Set(enhancedParameters.materials || ['Wood', 'Glass', 'Metal'])], // Remove duplicates
-        colorPalette: [...new Set(enhancedParameters.colorPalette || ['Neutral', 'White', 'Gray'])],
-        furnitureTypes: enhancedParameters.furnitureTypes || ['Seating', 'Tables'],
-        lightingFixtures: enhancedParameters.lightingFixtures || ['Ambient Lighting'],
+        wallCladding: enhancedParameters.wallCladding || ['Smooth painted drywall with eggshell finish'],
+        flooringMaterial: enhancedParameters.flooringMaterial || ['Light oak hardwood with natural grain'],
+        ceilingDetails: enhancedParameters.ceilingDetails || ['Standard white painted ceiling with recessed lighting'],
+        materials: removeDuplicates(enhancedParameters.materials || ['Natural wood with warm undertones', 'Clear glass with minimal framing', 'Brushed stainless steel']),
+        colorPalette: removeDuplicates(enhancedParameters.colorPalette || ['Warm neutral beige', 'Crisp white trim', 'Soft charcoal accents']),
+        furnitureTypes: enhancedParameters.furnitureTypes || ['Contemporary sectional seating', 'Modern coffee table with clean lines'],
+        lightingFixtures: enhancedParameters.lightingFixtures || ['Recessed LED ambient lighting', 'Pendant task lighting'],
         architecturalFeatures: enhancedParameters.architecturalFeatures || []
       };
 
