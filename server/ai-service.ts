@@ -253,3 +253,84 @@ export async function generateProductRecommendations(
     throw new Error('Failed to generate product recommendations');
   }
 }
+
+// Transform image based on extracted design parameters while preserving room structure
+export async function transformImageWithParameters(
+  imagePath: string,
+  parameters: any,
+  transformationStrength: number
+): Promise<{
+  originalImage: string;
+  transformedImage: string;
+  transformationStrength: number;
+  appliedParameters: any;
+}> {
+  try {
+    const imageBuffer = fs.readFileSync(imagePath);
+    const base64Image = imageBuffer.toString('base64');
+
+    // Analyze the original image structure and layout
+    const analysisResponse = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content: "You are a professional interior designer analyzing room layouts. Describe the room's structural elements, layout, dimensions, and architectural features that should be preserved during transformation."
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: "Analyze this room's layout, structural elements, window placement, room dimensions, and architectural features. Describe what should be preserved during a design transformation in detail."
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:image/jpeg;base64,${base64Image}`
+              }
+            }
+          ],
+        },
+      ],
+      max_tokens: 500,
+    });
+
+    const roomLayout = analysisResponse.choices[0].message.content;
+
+    // Create transformation prompt that preserves room structure
+    const intensityText = transformationStrength > 80 ? "completely transform" : 
+                         transformationStrength > 50 ? "significantly redesign" : "subtly enhance";
+
+    const prompt = `${intensityText} this ${parameters.roomType} to ${parameters.style} style while preserving the exact room layout and architectural features: ${roomLayout}. 
+    Apply these materials: ${parameters.materials.join(', ')}. 
+    Use this color palette: ${parameters.colorPalette.join(', ')}. 
+    Include furniture types: ${parameters.furnitureTypes.join(', ')}. 
+    Maintain the same room dimensions, window placement, door locations, and structural elements. 
+    Keep the same camera angle and perspective. 
+    Professional interior design photography, realistic lighting, high quality, 8K resolution.`;
+
+    const response = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: prompt,
+      n: 1,
+      size: "1024x1024",
+      quality: "hd",
+    });
+
+    const transformedImageUrl = response.data?.[0]?.url;
+    if (!transformedImageUrl) {
+      throw new Error('No transformed image URL returned from DALL-E');
+    }
+
+    return {
+      originalImage: `/uploads/${path.basename(imagePath)}`,
+      transformedImage: transformedImageUrl,
+      transformationStrength,
+      appliedParameters: parameters
+    };
+  } catch (error) {
+    console.error('Error transforming image:', error);
+    throw new Error('Failed to transform image');
+  }
+}

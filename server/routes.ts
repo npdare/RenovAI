@@ -16,7 +16,8 @@ import {
   generateRoomRedesign, 
   generateDesignInspiration,
   getDesignRecommendations,
-  generateProductRecommendations 
+  generateProductRecommendations,
+  transformImageWithParameters
 } from "./ai-service";
 
 // Create uploads directory if it doesn't exist
@@ -423,14 +424,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { parameters, strength } = req.body;
       const parsedParameters = JSON.parse(parameters);
+      const transformationStrength = parseInt(strength);
 
-      // Generate transformation using DALL-E
-      const result = {
-        originalImage: `/uploads/${req.file.filename}`,
-        transformedImage: `https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&h=600&q=80`,
-        transformationStrength: parseInt(strength),
-        appliedParameters: parsedParameters
-      };
+      // Use the proper AI transformation function
+      const result = await transformImageWithParameters(
+        req.file.path,
+        parsedParameters,
+        transformationStrength
+      );
 
       res.json(result);
     } catch (error) {
