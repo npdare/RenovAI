@@ -445,15 +445,18 @@ export async function analyzeReferenceImages(images: any[]): Promise<{
             content: [
               {
                 type: "text",
-                text: `Analyze this architectural image and extract specific design elements. Return JSON format with detailed descriptions:
+                text: `Analyze this architectural/interior image and identify all visible elements naturally. Let the image guide what you observe. Return JSON format:
                 {
-                  "style": "specific architectural style name (e.g., 'Hamptons Colonial', 'Mid-Century Modern', 'Contemporary Queenslander')",
-                  "materials": ["specific material with color/texture (e.g., 'weathered timber battens', 'limestone cladding')"],
-                  "colors": ["specific color descriptions (e.g., 'warm white', 'charcoal black trim', 'natural timber tones')"],
-                  "wallCladding": ["wall material descriptions (e.g., 'horizontal weatherboard', 'steel panel cladding')"],
-                  "flooringMaterial": ["flooring descriptions (e.g., 'wide plank oak', 'polished concrete')"],
-                  "architecturalFeatures": ["notable features (e.g., 'gabled roof', 'floor-to-ceiling windows', 'covered veranda')"]
-                }`
+                  "overallStyle": "architectural style you observe",
+                  "surfaceElements": {
+                    "category1": ["detailed material descriptions"],
+                    "category2": ["detailed material descriptions"]
+                  },
+                  "colorObservations": ["specific color and tone descriptions"],
+                  "designFeatures": ["notable architectural or design elements"]
+                }
+                
+                Create categories based on what you actually see - don't force predefined categories. Describe materials with specific texture, color, and finish details.`
               },
               {
                 type: "image_url",

@@ -421,18 +421,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
             content: [
               {
                 type: "text",
-                text: `Analyze materials with detailed descriptions. Return response in JSON format with these fields:
+                text: `Analyze this architectural image and identify all visible elements. Organize your findings by the natural categories you observe. Return JSON format:
                 {
-                  "roomType": "specific room name",
-                  "style": "architectural style",
-                  "wallCladding": ["detailed wall material descriptions with color/texture"],
-                  "flooringMaterial": ["specific flooring with finish/pattern"],
-                  "materials": ["detailed material descriptions"],
-                  "colorPalette": ["specific color names with tones"],
-                  "furnitureTypes": ["furniture with style/material details"]
+                  "spaceType": "what type of space this is",
+                  "architecturalStyle": "design style observed",
+                  "surfaceMaterials": {
+                    "category1": ["detailed descriptions"],
+                    "category2": ["detailed descriptions"]
+                  },
+                  "colorScheme": ["color observations"],
+                  "notableFeatures": ["architectural elements you identify"]
                 }
                 
-                Examples: "weathered gray brick", "light oak hardwood flooring", "polished white marble", "warm beige limestone"`
+                Let the image guide what categories you create - don't force predefined categories. Describe materials with specific details like texture, color, and finish.`
               },
               {
                 type: "image_url",
@@ -450,20 +451,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const analysisResult = JSON.parse(analysisResponse.choices[0].message.content || '{}');
       
-      // Helper function to extract style from text prompt
-      const extractStyleFromText = (text: string): string => {
-        const styles = ['modern', 'contemporary', 'traditional', 'minimalist', 'industrial', 'scandinavian', 'bohemian', 'farmhouse'];
-        const lowerText = text.toLowerCase();
-        return styles.find(style => lowerText.includes(style)) || 'Modern';
+      // Transform AI's natural categorization into our parameter structure
+      const transformNaturalAnalysis = (aiResult: any) => {
+        const surfaceMaterials = aiResult.surfaceMaterials || {};
+        
+        // Extract materials from AI's natural categories
+        const allMaterials = [];
+        const wallMaterials = [];
+        const floorMaterials = [];
+        
+        // Intelligently map AI's natural categories
+        for (const [category, materials] of Object.entries(surfaceMaterials)) {
+          const categoryLower = category.toLowerCase();
+          const materialList = materials as string[];
+          
+          allMaterials.push(...materialList);
+          
+          if (categoryLower.includes('wall') || categoryLower.includes('cladding') || categoryLower.includes('siding') || categoryLower.includes('facade')) {
+            wallMaterials.push(...materialList);
+          } else if (categoryLower.includes('floor') || categoryLower.includes('ground') || categoryLower.includes('deck') || categoryLower.includes('surface')) {
+            floorMaterials.push(...materialList);
+          }
+        }
+        
+        return {
+          roomType: aiResult.spaceType || 'Living Space',
+          style: aiResult.architecturalStyle || 'Contemporary',
+          wallCladding: wallMaterials.length > 0 ? wallMaterials : ['Natural wall finish'],
+          flooringMaterial: floorMaterials.length > 0 ? floorMaterials : ['Natural flooring'],
+          materials: allMaterials.length > 0 ? allMaterials : ['Natural materials'],
+          colorPalette: aiResult.colorScheme || ['Neutral tones'],
+          architecturalFeatures: aiResult.notableFeatures || [],
+          naturalCategories: surfaceMaterials // Preserve AI's original categorization
+        };
       };
 
-      // Enhanced parameter processing with text prompt integration
-      let enhancedParameters = { ...analysisResult };
-
-      // If text prompt is provided, enhance parameters without additional API calls
-      if (textPrompt) {
-        const extractedStyle = extractStyleFromText(textPrompt);
-        enhancedParameters.style = extractedStyle;
+      // Process AI's natural analysis
+      let enhancedParameters = transformNaturalAnalysis(analysisResult);
         
         // Extract detailed materials from text prompt using pattern matching
         const materialKeywords = {
@@ -587,19 +611,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return arr.filter((item, index, self) => self.indexOf(item) === index);
       };
 
-      // Final parameter structure with detailed defaults
+      // Final parameter structure using AI's natural categorization
       const parameters = {
-        roomType: enhancedParameters.roomType || 'Living Room',
-        style: enhancedParameters.style || 'Contemporary Modern',
+        roomType: enhancedParameters.roomType || 'Living Space',
+        style: enhancedParameters.style || 'Contemporary',
         spaceType: 'interior' as const,
-        wallCladding: enhancedParameters.wallCladding || ['Smooth painted drywall with eggshell finish'],
-        flooringMaterial: enhancedParameters.flooringMaterial || ['Light oak hardwood with natural grain'],
-        ceilingDetails: enhancedParameters.ceilingDetails || ['Standard white painted ceiling with recessed lighting'],
-        materials: removeDuplicates(enhancedParameters.materials || ['Natural wood with warm undertones', 'Clear glass with minimal framing', 'Brushed stainless steel']),
-        colorPalette: removeDuplicates(enhancedParameters.colorPalette || ['Warm neutral beige', 'Crisp white trim', 'Soft charcoal accents']),
-        furnitureTypes: enhancedParameters.furnitureTypes || ['Contemporary sectional seating', 'Modern coffee table with clean lines'],
-        lightingFixtures: enhancedParameters.lightingFixtures || ['Recessed LED ambient lighting', 'Pendant task lighting'],
-        architecturalFeatures: enhancedParameters.architecturalFeatures || []
+        wallCladding: removeDuplicates(enhancedParameters.wallCladding || ['Natural wall finish']),
+        flooringMaterial: removeDuplicates(enhancedParameters.flooringMaterial || ['Natural flooring']),
+        materials: removeDuplicates(enhancedParameters.materials || ['Natural materials']),
+        colorPalette: removeDuplicates(enhancedParameters.colorPalette || ['Neutral tones']),
+        architecturalFeatures: enhancedParameters.architecturalFeatures || [],
+        naturalCategories: enhancedParameters.naturalCategories || {} // Preserve AI's original categorization
       };
 
       res.json(parameters);
