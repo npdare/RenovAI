@@ -3,86 +3,86 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 
-// Product data with working images and affiliate monetization
+// Curated furniture collection with matching images and descriptions
 const FEATURED_PRODUCTS = [
   {
     id: 1,
-    name: "Modern Sectional Sofa",
+    name: "Mid-Century Velvet Sofa",
     brand: "West Elm",
     price: 1299,
     originalPrice: 1599,
     rating: 4.8,
     reviews: 324,
     image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Performance velvet sectional",
-    affiliateLink: "https://www.westelm.com/products/andes-sectional-sofa-h2835/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
+    description: "Mustard velvet with walnut legs",
+    affiliateLink: "https://www.westelm.com/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
     inStock: true,
     featured: true,
-    commissionRate: 8, // 8% commission from West Elm
+    commissionRate: 8,
     regions: {
-      US: { price: 1299, currency: 'USD', link: 'https://www.westelm.com/products/andes-sectional-sofa-h2835/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
-      UK: { price: 1099, currency: 'GBP', link: 'https://www.westelm.co.uk/andes-sectional-sofa-h2835?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
-      CA: { price: 1699, currency: 'CAD', link: 'https://www.westelm.ca/andes-sectional-sofa-h2835?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' }
+      US: { price: 1299, currency: 'USD', link: 'https://www.westelm.com/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      UK: { price: 1099, currency: 'GBP', link: 'https://www.westelm.co.uk/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      CA: { price: 1699, currency: 'CAD', link: 'https://www.westelm.ca/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' }
     }
   },
   {
     id: 2,
-    name: "Marble Coffee Table",
+    name: "Concrete Coffee Table",
     brand: "CB2",
     price: 899,
     originalPrice: null,
     rating: 4.6,
     reviews: 187,
     image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Carrara marble top",
-    affiliateLink: "https://www.cb2.com/slab-large-coffee-table/s266609?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
+    description: "Industrial concrete design",
+    affiliateLink: "https://www.cb2.com/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
     inStock: true,
     featured: false,
-    commissionRate: 6, // 6% commission from CB2
+    commissionRate: 6,
     regions: {
-      US: { price: 899, currency: 'USD', link: 'https://www.cb2.com/slab-large-coffee-table/s266609?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
-      UK: { price: 759, currency: 'GBP', link: 'https://www.cb2.co.uk/slab-large-coffee-table/s266609?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
-      CA: { price: 1199, currency: 'CAD', link: 'https://www.cb2.ca/slab-large-coffee-table/s266609?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' }
+      US: { price: 899, currency: 'USD', link: 'https://www.cb2.com/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      UK: { price: 759, currency: 'GBP', link: 'https://www.cb2.co.uk/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      CA: { price: 1199, currency: 'CAD', link: 'https://www.cb2.ca/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' }
     }
   },
   {
     id: 3,
-    name: "Brass Floor Lamp",
+    name: "Minimalist Floor Lamp",
     brand: "Design Within Reach",
     price: 549,
     originalPrice: 649,
     rating: 4.9,
     reviews: 156,
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Minimalist brass design",
-    affiliateLink: "https://www.dwr.com/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
+    description: "Oak base with linen shade",
+    affiliateLink: "https://www.dwr.com/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
     inStock: false,
     featured: false,
-    commissionRate: 10, // 10% commission from DWR
+    commissionRate: 10,
     regions: {
-      US: { price: 549, currency: 'USD', link: 'https://www.dwr.com/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
-      UK: { price: 465, currency: 'GBP', link: 'https://www.dwr.co.uk/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
-      CA: { price: 729, currency: 'CAD', link: 'https://www.dwr.ca/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' }
+      US: { price: 549, currency: 'USD', link: 'https://www.dwr.com/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      UK: { price: 465, currency: 'GBP', link: 'https://www.dwr.co.uk/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      CA: { price: 729, currency: 'CAD', link: 'https://www.dwr.ca/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' }
     }
   },
   {
     id: 4,
-    name: "Cashmere Throw Pillows",
+    name: "Textured Throw Pillows",
     brand: "Restoration Hardware",
     price: 189,
     originalPrice: 249,
     rating: 4.7,
     reviews: 412,
     image: "https://images.unsplash.com/photo-1498300439093-c8a43e9e8e26?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Italian cashmere blend",
-    affiliateLink: "https://rh.com/catalog/product/product.jsp?productId=prod15150279&utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
+    description: "Neutral linen texture set",
+    affiliateLink: "https://rh.com/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
     inStock: true,
     featured: true,
-    commissionRate: 12, // 12% commission from RH
+    commissionRate: 12,
     regions: {
-      US: { price: 189, currency: 'USD', link: 'https://rh.com/catalog/product/product.jsp?productId=prod15150279&utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
-      UK: { price: 159, currency: 'GBP', link: 'https://rh.com/catalog/product/product.jsp?productId=prod15150279&utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
-      CA: { price: 249, currency: 'CAD', link: 'https://rh.com/catalog/product/product.jsp?productId=prod15150279&utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' }
+      US: { price: 189, currency: 'USD', link: 'https://rh.com/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      UK: { price: 159, currency: 'GBP', link: 'https://rh.com/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' },
+      CA: { price: 249, currency: 'CAD', link: 'https://rh.com/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design' }
     }
   }
 ];
