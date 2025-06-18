@@ -123,7 +123,7 @@ export default function AIVisualization() {
 
   // Extract Design Parameters Mutation
   const extractParametersMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (): Promise<DesignParameters> => {
       const formData = new FormData();
       if (uploadedPhoto) {
         formData.append('photo', uploadedPhoto.file);
@@ -143,10 +143,16 @@ export default function AIVisualization() {
         formData.append('pinterestUrl', inspiration.pinterestUrl);
       }
 
-      return apiRequest('/api/ai/extract-parameters', {
+      const response = await fetch('/api/ai/extract-parameters', {
         method: 'POST',
         body: formData
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to extract parameters');
+      }
+      
+      return response.json();
     },
     onSuccess: (data: DesignParameters) => {
       setExtractedParameters(data);
@@ -168,7 +174,7 @@ export default function AIVisualization() {
 
   // Transform Image Mutation
   const transformImageMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (): Promise<TransformationResult> => {
       const formData = new FormData();
       if (uploadedPhoto && extractedParameters) {
         formData.append('photo', uploadedPhoto.file);
@@ -176,10 +182,16 @@ export default function AIVisualization() {
         formData.append('strength', transformationStrength[0].toString());
       }
 
-      return apiRequest('/api/ai/transform-image', {
+      const response = await fetch('/api/ai/transform-image', {
         method: 'POST',
         body: formData
       });
+      
+      if (!response.ok) {
+        throw new Error('Failed to transform image');
+      }
+      
+      return response.json();
     },
     onSuccess: (data: TransformationResult) => {
       setTransformationResult(data);
