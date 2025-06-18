@@ -20,7 +20,8 @@ import {
   transformImageWithParameters,
   analyzeReferenceImages,
   analyzePinterestBoard,
-  analyzeTextPrompt
+  analyzeTextPrompt,
+  analyzeArchitecturalElements
 } from "./ai-service";
 import OpenAI from "openai";
 
@@ -117,6 +118,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('AI analysis error:', error);
       res.status(500).json({ error: 'Failed to analyze photo' });
+    }
+  });
+
+  // Architectural Elements Analysis - Separate from design inspiration
+  app.post('/api/ai/analyze-architecture', upload.single('photo'), async (req: any, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'Photo file is required for architectural analysis' });
+      }
+
+      const analysis = await analyzeArchitecturalElements(req.file.path);
+      res.json(analysis);
+    } catch (error) {
+      console.error('Architectural analysis error:', error);
+      res.status(500).json({ error: 'Failed to analyze architectural elements' });
     }
   });
 
