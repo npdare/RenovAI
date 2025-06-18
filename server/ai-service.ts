@@ -415,3 +415,192 @@ OUTPUT SPECIFICATIONS:
     throw new Error('Failed to transform image');
   }
 }
+
+// Advanced reference image analysis using GPT-4 Vision
+export async function analyzeReferenceImages(images: any[]): Promise<{
+  style: string;
+  materials: string[];
+  colors: string[];
+  wallCladding: string[];
+  flooringMaterial: string[];
+  architecturalFeatures: string[];
+}> {
+  try {
+    const analysisResults = [];
+    
+    // Analyze each reference image with comprehensive architectural extraction
+    for (const image of images.slice(0, 3)) { // Limit to 3 images for efficiency
+      const imageBuffer = fs.readFileSync(image.path);
+      const base64Image = imageBuffer.toString('base64');
+      
+      const analysis = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert architectural design analyst. Extract detailed design elements from architectural and interior images with precision and specificity."
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `Analyze this architectural image and extract specific design elements. Return JSON format with detailed descriptions:
+                {
+                  "style": "specific architectural style name (e.g., 'Hamptons Colonial', 'Mid-Century Modern', 'Contemporary Queenslander')",
+                  "materials": ["specific material with color/texture (e.g., 'weathered timber battens', 'limestone cladding')"],
+                  "colors": ["specific color descriptions (e.g., 'warm white', 'charcoal black trim', 'natural timber tones')"],
+                  "wallCladding": ["wall material descriptions (e.g., 'horizontal weatherboard', 'steel panel cladding')"],
+                  "flooringMaterial": ["flooring descriptions (e.g., 'wide plank oak', 'polished concrete')"],
+                  "architecturalFeatures": ["notable features (e.g., 'gabled roof', 'floor-to-ceiling windows', 'covered veranda')"]
+                }`
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${base64Image}`,
+                  detail: "high"
+                }
+              }
+            ]
+          }
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 500
+      });
+
+      const result = JSON.parse(analysis.choices[0].message.content || '{}');
+      analysisResults.push(result);
+    }
+
+    // Consolidate analysis results from multiple images
+    const consolidated = {
+      style: analysisResults.find(r => r.style)?.style || '',
+      materials: analysisResults.flatMap(r => r.materials || []),
+      colors: analysisResults.flatMap(r => r.colors || []),
+      wallCladding: analysisResults.flatMap(r => r.wallCladding || []),
+      flooringMaterial: analysisResults.flatMap(r => r.flooringMaterial || []),
+      architecturalFeatures: analysisResults.flatMap(r => r.architecturalFeatures || [])
+    };
+
+    return consolidated;
+
+  } catch (error) {
+    console.error('Reference image analysis error:', error);
+    return {
+      style: '',
+      materials: [],
+      colors: [],
+      wallCladding: [],
+      flooringMaterial: [],
+      architecturalFeatures: []
+    };
+  }
+}
+
+// Pinterest board analysis with web scraping and image analysis
+export async function analyzePinterestBoard(pinterestUrl: string): Promise<{
+  style: string;
+  materials: string[];
+  colors: string[];
+}> {
+  try {
+    // Extract Pinterest board ID from URL
+    const boardMatch = pinterestUrl.match(/pinterest\.com\/[\w-]+\/([\w-]+)/);
+    if (!boardMatch) {
+      throw new Error('Invalid Pinterest URL format');
+    }
+
+    // Use text analysis for Pinterest descriptions and titles
+    const textAnalysis = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content: "You are an architectural design assistant. Extract design intent from Pinterest board URLs and descriptions."
+        },
+        {
+          role: "user",
+          content: `Analyze this Pinterest board URL for architectural design elements. Extract the intended style, materials, and color palette from the board name and context. Return JSON format:
+          {
+            "style": "architectural style interpretation",
+            "materials": ["inferred materials from board context"],
+            "colors": ["color palette suggestions based on board theme"]
+          }
+          
+          Pinterest URL: ${pinterestUrl}`
+        }
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 300
+    });
+
+    const result = JSON.parse(textAnalysis.choices[0].message.content || '{}');
+    
+    return {
+      style: result.style || '',
+      materials: result.materials || [],
+      colors: result.colors || []
+    };
+
+  } catch (error) {
+    console.error('Pinterest analysis error:', error);
+    return {
+      style: '',
+      materials: [],
+      colors: []
+    };
+  }
+}
+
+// Enhanced text prompt analysis for architectural features
+export async function analyzeTextPrompt(textPrompt: string): Promise<{
+  style: string;
+  materials: string[];
+  colors: string[];
+  architecturalFeatures: string[];
+}> {
+  try {
+    const analysis = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content: "You are an architectural design assistant. Given user text prompts, extract the intended style, materials, color palette, and notable architectural features with high precision."
+        },
+        {
+          role: "user",
+          content: `Analyze this architectural design prompt and extract specific elements. Return JSON format:
+          {
+            "style": "specific architectural style name",
+            "materials": ["specific materials mentioned or implied"],
+            "colors": ["color descriptions and palette"],
+            "architecturalFeatures": ["architectural elements and features"]
+          }
+          
+          User prompt: "${textPrompt}"`
+        }
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 400
+    });
+
+    const result = JSON.parse(analysis.choices[0].message.content || '{}');
+    
+    return {
+      style: result.style || '',
+      materials: result.materials || [],
+      colors: result.colors || [],
+      architecturalFeatures: result.architecturalFeatures || []
+    };
+
+  } catch (error) {
+    console.error('Text prompt analysis error:', error);
+    return {
+      style: '',
+      materials: [],
+      colors: [],
+      architecturalFeatures: []
+    };
+  }
+}

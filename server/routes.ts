@@ -17,7 +17,10 @@ import {
   generateDesignInspiration,
   getDesignRecommendations,
   generateProductRecommendations,
-  transformImageWithParameters
+  transformImageWithParameters,
+  analyzeReferenceImages,
+  analyzePinterestBoard,
+  analyzeTextPrompt
 } from "./ai-service";
 import OpenAI from "openai";
 
@@ -517,40 +520,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Process reference images efficiently (analyze only the first one to save tokens)
-      if (files.referenceImage0) {
-        const refImageBuffer = fs.readFileSync(files.referenceImage0[0].path);
-        const refBase64 = refImageBuffer.toString('base64');
-        
-        // Detailed style and material detection from reference image
-        const refAnalysis = await new OpenAI({ apiKey: process.env.OPENAI_API_KEY }).chat.completions.create({
-          model: "gpt-4o",
-          messages: [
-            {
-              role: "user",
-              content: [
-                {
-                  type: "text",
-                  text: "Extract detailed style and 3 specific materials with descriptions. Return JSON format: {\"style\":\"detailed style name\",\"materials\":[\"material with color/texture detail\",\"second material with finish\",\"third material with characteristics\"]}"
-                },
-                {
-                  type: "image_url",
-                  image_url: {
-                    url: `data:image/jpeg;base64,${refBase64}`,
-                    detail: "high"
-                  }
-                }
-              ],
-            },
-          ],
-          response_format: { type: "json_object" },
-          max_tokens: 200,
-        });
+      // Process reference images with comprehensive architectural analysis
+      const referenceImages = [];
+      for (let i = 0; i < 5; i++) {
+        if (files[`referenceImage${i}`]) {
+          referenceImages.push(files[`referenceImage${i}`][0]);
+        }
+      }
 
-        const refResult = JSON.parse(refAnalysis.choices[0].message.content || '{}');
-        if (refResult.style) enhancedParameters.style = refResult.style;
-        if (refResult.materials && Array.isArray(refResult.materials)) {
-          enhancedParameters.materials = [...(enhancedParameters.materials || []), ...refResult.materials];
+      if (referenceImages.length > 0) {
+        const refAnalysis = await analyzeReferenceImages(referenceImages);
+        
+        // Merge extracted data with enhanced parameters
+        if (refAnalysis.style) enhancedParameters.style = refAnalysis.style;
+        if (refAnalysis.materials?.length) {
+          enhancedParameters.materials = [...(enhancedParameters.materials || []), ...refAnalysis.materials];
+        }
+        if (refAnalysis.colors?.length) {
+          enhancedParameters.colorPalette = [...(enhancedParameters.colorPalette || []), ...refAnalysis.colors];
+        }
+        if (refAnalysis.wallCladding?.length) {
+          enhancedParameters.wallCladding = [...(enhancedParameters.wallCladding || []), ...refAnalysis.wallCladding];
+        }
+        if (refAnalysis.flooringMaterial?.length) {
+          enhancedParameters.flooringMaterial = [...(enhancedParameters.flooringMaterial || []), ...refAnalysis.flooringMaterial];
+        }
+        if (refAnalysis.architecturalFeatures?.length) {
+          enhancedParameters.architecturalFeatures = [...(enhancedParameters.architecturalFeatures || []), ...refAnalysis.architecturalFeatures];
+        }
+      }
+
+      // Process Pinterest URL if provided
+      if (pinterestUrl) {
+        const pinterestAnalysis = await analyzePinterestBoard(pinterestUrl);
+        
+        // Merge Pinterest analysis with enhanced parameters
+        if (pinterestAnalysis.style) enhancedParameters.style = pinterestAnalysis.style;
+        if (pinterestAnalysis.materials?.length) {
+          enhancedParameters.materials = [...(enhancedParameters.materials || []), ...pinterestAnalysis.materials];
+        }
+        if (pinterestAnalysis.colors?.length) {
+          enhancedParameters.colorPalette = [...(enhancedParameters.colorPalette || []), ...pinterestAnalysis.colors];
+        }
+      }
+
+      // Enhanced text prompt analysis if provided
+      if (textPrompt) {
+        const textAnalysis = await analyzeTextPrompt(textPrompt);
+        
+        // Merge text analysis with enhanced parameters
+        if (textAnalysis.style) enhancedParameters.style = textAnalysis.style;
+        if (textAnalysis.materials?.length) {
+          enhancedParameters.materials = [...(enhancedParameters.materials || []), ...textAnalysis.materials];
+        }
+        if (textAnalysis.colors?.length) {
+          enhancedParameters.colorPalette = [...(enhancedParameters.colorPalette || []), ...textAnalysis.colors];
+        }
+        if (textAnalysis.architecturalFeatures?.length) {
+          enhancedParameters.architecturalFeatures = [...(enhancedParameters.architecturalFeatures || []), ...textAnalysis.architecturalFeatures];
         }
       }
       
