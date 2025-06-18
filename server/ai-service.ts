@@ -23,6 +23,20 @@ export interface AIVisualizationResult {
   designNotes: string[];
 }
 
+export interface ArchitecturalElement {
+  type: string;
+  current: string;
+  alternatives: string[];
+  selected: string;
+  keepOriginal: boolean;
+}
+
+export interface ArchitecturalAnalysis {
+  elements: ArchitecturalElement[];
+  roomStructure: string;
+  detectedFeatures: string[];
+}
+
 // Analyze uploaded room photo and provide design insights
 export async function analyzeRoomPhoto(imagePath: string): Promise<DesignAnalysis> {
   try {
@@ -413,6 +427,81 @@ OUTPUT SPECIFICATIONS:
   } catch (error) {
     console.error('Error transforming image:', error);
     throw new Error('Failed to transform image');
+  }
+}
+
+// Analyze architectural elements from original photo
+export async function analyzeArchitecturalElements(imagePath: string): Promise<ArchitecturalAnalysis> {
+  try {
+    const imageBuffer = fs.readFileSync(imagePath);
+    const base64Image = imageBuffer.toString('base64');
+
+    const analysis = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert architectural analyst. Analyze structural elements in photos and provide modification alternatives for each detected element."
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `Analyze this interior/exterior photo and identify structural elements that can be modified. For each element, provide the current type and suggest 3-4 alternative options.
+
+STRUCTURAL ELEMENTS TO DETECT:
+- Windows (types: casement, double-hung, sliding, bay, etc.)
+- Doors (types: panel, flush, French, sliding, etc.)
+- Flooring (types: hardwood, tile, carpet, laminate, etc.)
+- Ceilings (types: flat, coffered, vaulted, tray, etc.)
+- Wall treatments (types: paint, wallpaper, wood paneling, brick, etc.)
+- Lighting fixtures (types: pendant, chandelier, recessed, track, etc.)
+- Architectural features (columns, beams, moldings, etc.)
+
+Return JSON format:
+{
+  "roomStructure": "Brief description of the overall room layout and structure",
+  "detectedFeatures": ["list of notable architectural features"],
+  "elements": [
+    {
+      "type": "element category (e.g., 'windows', 'doors')",
+      "current": "current detected type",
+      "alternatives": ["alternative 1", "alternative 2", "alternative 3"],
+      "selected": "current detected type",
+      "keepOriginal": true
+    }
+  ]
+}`
+            },
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:image/jpeg;base64,${base64Image}`
+              }
+            }
+          ]
+        }
+      ],
+      response_format: { type: "json_object" },
+      max_tokens: 800
+    });
+
+    const result = JSON.parse(analysis.choices[0].message.content || '{}');
+    
+    return {
+      roomStructure: result.roomStructure || 'Room structure analysis not available',
+      detectedFeatures: result.detectedFeatures || [],
+      elements: result.elements || []
+    };
+
+  } catch (error) {
+    console.error('Architectural analysis error:', error);
+    return {
+      roomStructure: 'Unable to analyze room structure',
+      detectedFeatures: [],
+      elements: []
+    };
   }
 }
 

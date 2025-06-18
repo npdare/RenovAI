@@ -415,7 +415,7 @@ export default function AIVisualization() {
               <Icon className="w-5 h-5" />
             </div>
             <span className="ml-2 text-sm font-medium text-neutral-700">{label}</span>
-            {index < 5 && <ArrowRight className="w-4 h-4 mx-3 text-neutral-400" />}
+            {index < 6 && <ArrowRight className="w-4 h-4 mx-3 text-neutral-400" />}
           </div>
         ))}
       </div>
@@ -480,6 +480,108 @@ export default function AIVisualization() {
             </div>
           </div>
         )}
+      </CardContent>
+    </Card>
+  );
+
+  const renderArchitecturalStep = () => (
+    <Card className="max-w-4xl mx-auto">
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <Home className="w-6 h-6 mr-2" />
+          Architectural Elements
+        </CardTitle>
+        <p className="text-neutral-600">
+          Review detected structural elements from your original photo and choose whether to keep or modify them
+        </p>
+      </CardHeader>
+      <CardContent>
+        {editableArchitecture && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <img 
+                  src={uploadedPhoto?.preview} 
+                  alt="Original photo"
+                  className="w-full h-64 object-cover rounded-lg"
+                />
+                <p className="text-sm text-neutral-600 mt-2">Original Photo</p>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-base font-medium">Room Structure</Label>
+                  <p className="text-neutral-700 bg-neutral-50 p-3 rounded-lg mt-2">
+                    {editableArchitecture.roomStructure}
+                  </p>
+                </div>
+                
+                <div>
+                  <Label className="text-base font-medium">Detected Features</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {editableArchitecture.detectedFeatures.map((feature, index) => (
+                      <Badge key={index} variant="outline">{feature}</Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <Separator />
+            
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold">Structural Elements</h3>
+              
+              {editableArchitecture.elements.map((element, index) => (
+                <div key={index} className="border rounded-lg p-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium capitalize">{element.type}</h4>
+                      <p className="text-sm text-neutral-600">Current: {element.current}</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Label className="text-sm">Keep Original</Label>
+                      <input
+                        type="checkbox"
+                        checked={element.keepOriginal}
+                        onChange={(e) => handleArchitecturalElementChange(index, 'keepOriginal', e.target.checked)}
+                        className="rounded"
+                      />
+                    </div>
+                  </div>
+                  
+                  {!element.keepOriginal && (
+                    <div className="space-y-2">
+                      <Label className="text-sm">Select Alternative</Label>
+                      <Select 
+                        value={element.selected} 
+                        onValueChange={(value) => handleArchitecturalElementChange(index, 'selected', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choose alternative..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {element.alternatives.map((alt, altIndex) => (
+                            <SelectItem key={altIndex} value={alt}>{alt}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        <div className="flex justify-between mt-8">
+          <Button variant="outline" onClick={() => setCurrentStep('upload')}>
+            Back
+          </Button>
+          <Button onClick={handleConfirmArchitecture}>
+            Continue to Inspiration <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
@@ -1000,6 +1102,7 @@ export default function AIVisualization() {
       {renderStepIndicator()}
 
       {currentStep === 'upload' && renderUploadStep()}
+      {currentStep === 'architecture' && renderArchitecturalStep()}
       {currentStep === 'inspiration' && renderInspirationStep()}
       {currentStep === 'parameters' && renderParametersStep()}
       {currentStep === 'transform' && renderTransformStep()}
