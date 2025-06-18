@@ -302,27 +302,40 @@ export async function transformImageWithParameters(
     const intensityText = transformationStrength > 80 ? "replace materials and finishes while keeping" : 
                          transformationStrength > 50 ? "update finishes and textures while preserving" : "subtly refresh materials while maintaining";
 
-    const prompt = `Transform ONLY the surface materials and finishes in this ${parameters.roomType} while ${intensityText} the exact structural layout: ${roomLayout}. 
+    const prompt = `PHOTOREALISTIC ARCHITECTURAL TRANSFORMATION - Apply ${parameters.style} design to this ${parameters.roomType} while maintaining exact structural layout: ${roomLayout}
 
-PRESERVE EXACTLY:
-- All wall angles, corners, and configurations
-- Window sizes, positions, frames, and mullions  
-- Door locations, sizes, and openings
-- Ceiling height, beams, and architectural details
-- Floor plan and room proportions
-- Built-in elements and fixtures
-- Camera angle and perspective
-- Lighting fixture positions
-- Furniture scale and placement
+CRITICAL: Maintain photographic realism, no cartoon or illustration style. Professional architectural photography standards.
 
-CHANGE ONLY:
-- Wall cladding: ${parameters.materials.includes('Natural Stone') ? 'natural stone wall cladding' : parameters.materials.includes('Wood') ? 'wood wall paneling' : 'painted walls'}
-- Flooring material: ${parameters.materials.includes('Hardwood') ? 'hardwood flooring' : parameters.materials.includes('Marble') ? 'marble flooring' : 'appropriate flooring for ' + parameters.style}
-- Color scheme: ${parameters.colorPalette.join(', ')}
-- Furniture style: ${parameters.style} style ${parameters.furnitureTypes.join(', ')}
-- Fabric and textile patterns matching ${parameters.style}
+PRESERVE EXACTLY (NO CHANGES):
+- Identical room dimensions and proportions
+- Exact window positions, sizes, and mullion patterns
+- Door locations, openings, and hardware
+- Ceiling configuration and height
+- Wall angles, corners, and structural elements
+- Camera viewpoint and perspective
+- Natural lighting direction and shadows
+- Built-in fixtures and architectural features
 
-Keep identical room dimensions, spatial relationships, and architectural framework. Professional interior photography, same lighting conditions.`;
+MATERIALS TO APPLY:
+- Wall surfaces: ${parameters.wallCladding.join(', ')}
+- Floor covering: ${parameters.flooringMaterial.join(', ')}
+- Accent materials: ${parameters.materials.join(', ')}
+- Color palette: ${parameters.colorPalette.join(', ')}
+
+STYLE REQUIREMENTS:
+- ${parameters.style} architectural aesthetic
+- Furniture: ${parameters.furnitureTypes.join(', ')} in ${parameters.style} style
+- Realistic material textures and natural wear patterns
+- Authentic lighting reflections and shadows
+- Professional interior design photography quality
+
+OUTPUT SPECIFICATIONS:
+- Ultra-photorealistic, not stylized or artistic
+- Sharp architectural details and material textures
+- Natural lighting with realistic shadows
+- Professional interior photography composition
+- High-resolution clarity, magazine quality
+- NO cartoon, illustration, or artistic interpretation`;
 
     const response = await openai.images.generate({
       model: "dall-e-3",
