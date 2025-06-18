@@ -3,7 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 
-// Real retailer products with verified working image URLs
+// Function to proxy retailer images through our backend
+const getProxyImageUrl = (originalUrl: string) => {
+  return `/api/proxy-image?url=${encodeURIComponent(originalUrl)}`;
+};
+
+// Actual retailer products with real image URLs via proxy
 const DESIGN_PRODUCTS = [
   {
     id: 1,
@@ -13,7 +18,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: 1599,
     rating: 4.8,
     reviews: 324,
-    image: "https://assets.weimgs.com/weimgs/ab/images/wcm/products/202130/0009/img42c.jpg",
+    image: getProxyImageUrl("https://assets.weimgs.com/weimgs/rk/images/wcm/products/202130/0009/andes-3-piece-chaise-sectional-c.jpg"),
     description: "Performance velvet sectional",
     category: "Interior",
     productUrl: "https://www.westelm.com/products/andes-sectional-sofa-h2835/",
@@ -27,7 +32,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: null,
     rating: 4.6,
     reviews: 187,
-    image: "https://images.cb2.com/is/image/CB2/SlabLargeMarbleCoffeeTableSHF16",
+    image: getProxyImageUrl("https://images.cb2.com/is/image/CB2/SlabLargeMarbleCoffeeTableSHF16/$web_pdp_main_carousel_med$/191015131320/slab-large-marble-coffee-table.jpg"),
     description: "Carrara marble with steel base",
     category: "Interior",
     productUrl: "https://www.cb2.com/slab-large-coffee-table/s266609",
@@ -41,7 +46,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: 649,
     rating: 4.9,
     reviews: 156,
-    image: "https://www.dwr.com/dw/image/v2/AALV_PRD/on/demandware.static/-/Sites-dwr-master-catalog/default/dw3b7a5c5e/images/large/FLO_2544206_A.jpg",
+    image: getProxyImageUrl("https://www.dwr.com/dw/image/v2/AALV_PRD/on/demandware.static/-/Sites-dwr-master-catalog/default/dw3b7a5c5e/images/large/FLO_2544206_A.jpg?sw=510&sh=680&sm=fit"),
     description: "Brass orb floor lamp by FLOS",
     category: "Interior",
     productUrl: "https://www.dwr.com/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html",
@@ -55,7 +60,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: 249,
     rating: 4.7,
     reviews: 412,
-    image: "https://rh.com/catalog/product/images/prod15150279_E137001270_F_400.jpg",
+    image: getProxyImageUrl("https://rh.com/catalog/product/images/prod15150279_E137001270_F_400.jpg"),
     description: "Stonewashed Belgian linen",
     category: "Interior",
     productUrl: "https://rh.com/catalog/product/product.jsp?productId=prod15150279",
@@ -69,7 +74,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: 2299,
     rating: 4.5,
     reviews: 89,
-    image: "https://assets.weimgs.com/weimgs/ab/images/wcm/products/202046/0003/img42c.jpg",
+    image: getProxyImageUrl("https://assets.weimgs.com/weimgs/rk/images/wcm/products/202046/0003/portside-outdoor-dining-table-c.jpg"),
     description: "FSC-certified teak dining table",
     category: "Exterior",
     productUrl: "https://www.westelm.com/products/portside-outdoor-dining-table-h2962/",
@@ -83,7 +88,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: null,
     rating: 4.4,
     reviews: 203,
-    image: "https://images.cb2.com/is/image/CB2/CylinderPlanterCollectionSHF16",
+    image: getProxyImageUrl("https://images.cb2.com/is/image/CB2/CylinderPlanterCollectionSHF16/$web_pdp_main_carousel_med$/181015095320/cylinder-planter-collection.jpg"),
     description: "Matte black ceramic planters",
     category: "Exterior",
     productUrl: "https://www.cb2.com/cylinder-planter-collection/f14953",
@@ -97,7 +102,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: 199,
     rating: 4.8,
     reviews: 445,
-    image: "https://www.dwr.com/dw/image/v2/AALV_PRD/on/demandware.static/-/Sites-dwr-master-catalog/default/dw89abc123/images/large/LIG_8765432_A.jpg",
+    image: getProxyImageUrl("https://www.dwr.com/dw/image/v2/AALV_PRD/on/demandware.static/-/Sites-dwr-master-catalog/default/dw89abc123/images/large/LIG_8765432_A.jpg?sw=510&sh=680&sm=fit"),
     description: "10-bulb café style lighting",
     category: "Exterior",
     productUrl: "https://www.dwr.com/lighting-outdoor/string-light-with-bulbs/8765432.html",
@@ -111,7 +116,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: 1599,
     rating: 4.6,
     reviews: 67,
-    image: "https://rh.com/catalog/product/images/prod18490247_E137987654_F_400.jpg",
+    image: getProxyImageUrl("https://rh.com/catalog/product/images/prod18490247_E137987654_F_400.jpg"),
     description: "Cast concrete with gas burner",
     category: "Exterior",
     productUrl: "https://rh.com/catalog/product/product.jsp?productId=prod18490247",
@@ -125,7 +130,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: 2699,
     rating: 4.7,
     reviews: 198,
-    image: "https://assets.weimgs.com/weimgs/ab/images/wcm/products/202125/0015/img42c.jpg",
+    image: getProxyImageUrl("https://assets.weimgs.com/weimgs/rk/images/wcm/products/202125/0015/haven-outdoor-sectional-set-c.jpg"),
     description: "Weather-resistant wicker seating",
     category: "Exterior",
     productUrl: "https://www.westelm.com/products/haven-outdoor-sectional-set-h3185/",
@@ -139,7 +144,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: null,
     rating: 4.3,
     reviews: 34,
-    image: "https://images.cb2.com/is/image/CB2/GridPergolaCanopySHF16",
+    image: getProxyImageUrl("https://images.cb2.com/is/image/CB2/GridPergolaCanopySHF16/$web_pdp_main_carousel_med$/200515142850/grid-pergola-with-canopy.jpg"),
     description: "Steel frame with retractable shade",
     category: "Exterior",
     productUrl: "https://www.cb2.com/grid-pergola-with-canopy/s543221",
@@ -258,11 +263,16 @@ export default function ProductShowcase() {
                   className="group cursor-pointer bg-white rounded-2xl overflow-hidden border border-neutral-200 hover:shadow-xl hover:scale-105 transition-all duration-300"
                   onClick={() => handleProductClick(product)}
                 >
-                  <div className="relative overflow-hidden h-64">
+                  <div className="relative overflow-hidden h-64 bg-neutral-100">
                     <img 
                       src={product.image}
                       alt={product.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=500&h=400&q=80`;
+                      }}
+                      loading="lazy"
                     />
                     
                     {!product.inStock && (

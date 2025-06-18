@@ -259,6 +259,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Product image proxy endpoint
+  app.get('/api/proxy-image', async (req: Request, res: Response) => {
+    try {
+      const imageUrl = req.query.url as string;
+      if (!imageUrl) {
+        return res.status(400).json({ error: 'Image URL required' });
+      }
+
+      const response = await fetch(imageUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+          'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'DNT': '1',
+          'Connection': 'keep-alive',
+          'Upgrade-Insecure-Requests': '1',
+        }
+      });
+
+      if (!response.ok) {
+        console.error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+        return res.status(404).json({ error: 'Image not found' });
+      }
+
+      const contentType = response.headers.get('content-type') || 'image/jpeg';
+      const imageBuffer = await response.arrayBuffer();
+
+      res.set({
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=86400',
+        'Access-Control-Allow-Origin': '*',
+        'Cross-Origin-Resource-Policy': 'cross-origin'
+      });
+
+      res.send(Buffer.from(imageBuffer));
+    } catch (error) {
+      console.error('Image proxy error:', error);
+      res.status(500).json({ error: 'Failed to proxy image' });
+    }
+  });
+
   // AI Analysis endpoint - analyze uploaded room photo
   app.post('/api/ai/analyze', upload.single('photo'), async (req: any, res: Response) => {
     try {
