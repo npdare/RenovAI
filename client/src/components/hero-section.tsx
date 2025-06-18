@@ -129,7 +129,7 @@ export default function HeroSection() {
               {/* Modern */}
               <div className="flex-shrink-0 w-80 h-48 relative overflow-hidden rounded-sm group cursor-pointer">
                 <img 
-                  src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                  src="https://images.unsplash.com/photo-1631679706909-fae8b26e5638?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
                   alt="Modern minimalist interior"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
@@ -143,7 +143,7 @@ export default function HeroSection() {
               {/* Scandinavian */}
               <div className="flex-shrink-0 w-80 h-48 relative overflow-hidden rounded-sm group cursor-pointer">
                 <img 
-                  src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                  src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
                   alt="Scandinavian interior"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
@@ -157,7 +157,7 @@ export default function HeroSection() {
               {/* Industrial */}
               <div className="flex-shrink-0 w-80 h-48 relative overflow-hidden rounded-sm group cursor-pointer">
                 <img 
-                  src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                  src="https://images.unsplash.com/photo-1484154218962-a197022b5858?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
                   alt="Industrial interior"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
@@ -171,7 +171,7 @@ export default function HeroSection() {
               {/* Luxury */}
               <div className="flex-shrink-0 w-80 h-48 relative overflow-hidden rounded-sm group cursor-pointer">
                 <img 
-                  src="https://images.unsplash.com/photo-1631889993959-41b4e9c6e3c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                  src="https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
                   alt="Luxury contemporary interior"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
@@ -185,7 +185,7 @@ export default function HeroSection() {
               {/* Mediterranean */}
               <div className="flex-shrink-0 w-80 h-48 relative overflow-hidden rounded-sm group cursor-pointer">
                 <img 
-                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                  src="https://images.unsplash.com/photo-1416331108676-a22ccb276e35?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
                   alt="Mediterranean interior"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
@@ -199,7 +199,7 @@ export default function HeroSection() {
               {/* Mid-Century */}
               <div className="flex-shrink-0 w-80 h-48 relative overflow-hidden rounded-sm group cursor-pointer">
                 <img 
-                  src="https://images.unsplash.com/photo-1498300439093-c8a43e9e8e26?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                  src="https://images.unsplash.com/photo-1540932239986-30128078f3c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
                   alt="Mid-century modern interior"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
@@ -213,7 +213,7 @@ export default function HeroSection() {
               {/* Repeat for seamless loop */}
               <div className="flex-shrink-0 w-80 h-48 relative overflow-hidden rounded-sm group cursor-pointer">
                 <img 
-                  src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
+                  src="https://images.unsplash.com/photo-1631679706909-fae8b26e5638?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=600"
                   alt="Modern minimalist interior"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
