@@ -273,30 +273,36 @@ export default function AIVisualization() {
               <Button 
                 onClick={handleAnalyze}
                 disabled={!selectedFile || analyzeMutation.isPending}
-                className="w-full h-12"
+                className="w-full h-12 bg-black hover:bg-gray-800 text-white border-2 border-black luxury-text text-xs tracking-widest font-medium transition-all duration-300 hover:scale-105"
               >
-                {analyzeMutation.isPending ? 'Analyzing...' : 'Analyze Room'}
-                <ArrowRight className="w-4 h-4 ml-2" />
+                <span className="text-white">
+                  {analyzeMutation.isPending ? 'ANALYZING...' : 'ANALYZE ROOM'}
+                </span>
+                <ArrowRight className="w-4 h-4 ml-3 text-white" />
               </Button>
 
               <Button 
                 onClick={handleRedesign}
                 disabled={!selectedFile || redesignMutation.isPending}
                 variant="outline"
-                className="w-full h-12"
+                className="w-full h-12 border-2 border-gray-300 text-black hover:bg-gray-50 luxury-text text-xs tracking-widest font-medium transition-all duration-300 hover:scale-105"
               >
-                {redesignMutation.isPending ? 'Generating...' : 'Generate Redesign'}
-                <Wand2 className="w-4 h-4 ml-2" />
+                <span className="text-black">
+                  {redesignMutation.isPending ? 'GENERATING...' : 'GENERATE REDESIGN'}
+                </span>
+                <Wand2 className="w-4 h-4 ml-3 text-black" />
               </Button>
 
               <Button 
                 onClick={handleGenerateInspiration}
                 disabled={inspirationMutation.isPending}
                 variant="outline"
-                className="w-full h-12"
+                className="w-full h-12 border-2 border-gray-300 text-black hover:bg-gray-50 luxury-text text-xs tracking-widest font-medium transition-all duration-300 hover:scale-105"
               >
-                {inspirationMutation.isPending ? 'Creating...' : 'Generate Inspiration'}
-                <Sparkles className="w-4 h-4 ml-2" />
+                <span className="text-black">
+                  {inspirationMutation.isPending ? 'CREATING...' : 'GENERATE INSPIRATION'}
+                </span>
+                <Sparkles className="w-4 h-4 ml-3 text-black" />
               </Button>
             </div>
           </div>

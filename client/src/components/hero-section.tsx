@@ -46,20 +46,21 @@ export default function HeroSection() {
             <Button 
               onClick={() => scrollToSection('studio')}
               size="lg" 
-              className="bg-white/95 hover:bg-white text-black px-16 py-6 text-xs tracking-widest luxury-text font-medium border-2 border-white/30 backdrop-blur-sm transition-all duration-300 hover:scale-105"
+              className="bg-white hover:bg-gray-100 text-black hover:text-black px-16 py-6 text-xs tracking-widest luxury-text font-medium border-2 border-white transition-all duration-300 hover:scale-105"
             >
-              ENTER STUDIO
-              <svg className="w-5 h-5 ml-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <span className="text-black">ENTER STUDIO</span>
+              <svg className="w-5 h-5 ml-4 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
             </Button>
             <Button 
+              onClick={() => scrollToSection('inspiration')}
               variant="outline" 
               size="lg" 
-              className="border-2 border-white/60 text-white hover:bg-white/15 px-16 py-6 text-xs tracking-widest luxury-text font-medium backdrop-blur-sm transition-all duration-300 hover:scale-105"
+              className="border-2 border-white/80 text-white hover:bg-white/20 hover:text-white px-16 py-6 text-xs tracking-widest luxury-text font-medium backdrop-blur-sm transition-all duration-300 hover:scale-105 bg-transparent"
             >
-              VIEW GALLERY
-              <svg className="w-5 h-5 ml-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <span className="text-white">VIEW GALLERY</span>
+              <svg className="w-5 h-5 ml-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
                 <circle cx="9" cy="9" r="2"/>
                 <path d="M21 15l-3.086-3.086a2 2 0 00-2.828 0L6 21"/>
