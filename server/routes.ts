@@ -402,7 +402,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const photoPath = files.photo[0].path;
       
       // Extract precise architectural parameters using OpenAI Vision
-      const imageBuffer = require('fs').readFileSync(photoPath);
+      const imageBuffer = fs.readFileSync(photoPath);
       const base64Image = imageBuffer.toString('base64');
 
       const analysisResponse = await new OpenAI({ apiKey: process.env.OPENAI_API_KEY }).chat.completions.create({
