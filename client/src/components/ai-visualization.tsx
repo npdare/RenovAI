@@ -66,8 +66,23 @@ interface TransformationResult {
   appliedParameters: DesignParameters;
 }
 
+// Step 3a: Architectural Elements from Original Photo
+interface ArchitecturalElement {
+  type: string; // 'window', 'door', 'ceiling', 'flooring', etc.
+  current: string; // detected current feature
+  alternatives: string[]; // alternative options
+  selected: string; // user's choice
+  keepOriginal: boolean; // whether to preserve this element
+}
+
+interface ArchitecturalAnalysis {
+  elements: ArchitecturalElement[];
+  roomStructure: string;
+  detectedFeatures: string[];
+}
+
 // Workflow Steps
-type WorkflowStep = 'upload' | 'inspiration' | 'parameters' | 'transform' | 'review' | 'export';
+type WorkflowStep = 'upload' | 'architecture' | 'inspiration' | 'parameters' | 'transform' | 'review' | 'export';
 
 export default function AIVisualization() {
   // Workflow State
@@ -77,14 +92,18 @@ export default function AIVisualization() {
   // Step 1: Photo Upload
   const [uploadedPhoto, setUploadedPhoto] = useState<UploadedPhoto | null>(null);
   
-  // Step 2: Design Inspiration
+  // Step 2: Architectural Analysis
+  const [architecturalAnalysis, setArchitecturalAnalysis] = useState<ArchitecturalAnalysis | null>(null);
+  const [editableArchitecture, setEditableArchitecture] = useState<ArchitecturalAnalysis | null>(null);
+  
+  // Step 3: Design Inspiration
   const [inspiration, setInspiration] = useState<DesignInspiration>({
     type: 'text',
     textPrompt: ''
   });
   const [referenceImages, setReferenceImages] = useState<File[]>([]);
   
-  // Step 3: Design Parameters
+  // Step 4: Design Parameters
   const [extractedParameters, setExtractedParameters] = useState<DesignParameters | null>(null);
   const [editableParameters, setEditableParameters] = useState<DesignParameters | null>(null);
   const [parametersConfirmed, setParametersConfirmed] = useState(false);
@@ -133,6 +152,44 @@ export default function AIVisualization() {
     maxFiles: 5,
     onDrop: (acceptedFiles) => {
       setReferenceImages(prev => [...prev, ...acceptedFiles]);
+    }
+  });
+
+  // Architectural Analysis Mutation
+  const architecturalAnalysisMutation = useMutation({
+    mutationFn: async (): Promise<ArchitecturalAnalysis> => {
+      const formData = new FormData();
+      if (uploadedPhoto) {
+        formData.append('photo', uploadedPhoto.file);
+      }
+
+      const response = await fetch('/api/ai/analyze-architecture', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to analyze architecture');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data: ArchitecturalAnalysis) => {
+      setArchitecturalAnalysis(data);
+      setEditableArchitecture(data);
+      setCurrentStep('inspiration');
+      setProgress(25);
+      toast({
+        title: "Architecture Analyzed",
+        description: "Detected structural elements and features"
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Analysis Failed",
+        description: "Unable to analyze architectural elements",
+        variant: "destructive"
+      });
     }
   });
 
@@ -227,8 +284,34 @@ export default function AIVisualization() {
     }
   });
 
-  const handleExtractParameters = () => {
+  const handleAnalyzeArchitecture = () => {
+    setProgress(15);
+    architecturalAnalysisMutation.mutate();
+  };
+
+  const handleArchitecturalElementChange = (elementIndex: number, field: 'selected' | 'keepOriginal', value: string | boolean) => {
+    if (!editableArchitecture) return;
+    
+    const updatedElements = [...editableArchitecture.elements];
+    if (field === 'selected') {
+      updatedElements[elementIndex].selected = value as string;
+    } else if (field === 'keepOriginal') {
+      updatedElements[elementIndex].keepOriginal = value as boolean;
+    }
+    
+    setEditableArchitecture({
+      ...editableArchitecture,
+      elements: updatedElements
+    });
+  };
+
+  const handleConfirmArchitecture = () => {
+    setCurrentStep('inspiration');
     setProgress(25);
+  };
+
+  const handleExtractParameters = () => {
+    setProgress(50);
     extractParametersMutation.mutate();
   };
 
@@ -314,6 +397,7 @@ export default function AIVisualization() {
       <div className="flex items-center space-x-4">
         {[
           { step: 'upload', label: 'Upload', icon: Upload },
+          { step: 'architecture', label: 'Architecture', icon: Home },
           { step: 'inspiration', label: 'Inspiration', icon: Sparkles },
           { step: 'parameters', label: 'Parameters', icon: Settings },
           { step: 'transform', label: 'Transform', icon: Wand2 },
@@ -381,8 +465,17 @@ export default function AIVisualization() {
                 <CheckCircle className="w-4 h-4 mr-1" />
                 Photo uploaded successfully
               </Badge>
-              <Button onClick={() => setCurrentStep('inspiration')}>
-                Continue <ArrowRight className="w-4 h-4 ml-2" />
+              <Button onClick={handleAnalyzeArchitecture} disabled={architecturalAnalysisMutation.isPending}>
+                {architecturalAnalysisMutation.isPending ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Analyzing Architecture...
+                  </>
+                ) : (
+                  <>
+                    Analyze Architecture <ArrowRight className="w-4 h-4 ml-2" />
+                  </>
+                )}
               </Button>
             </div>
           </div>
