@@ -3,18 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 
-// Curated furniture collection with matching images and descriptions
+// Authentic furniture with accurate image-description matching
 const FEATURED_PRODUCTS = [
   {
     id: 1,
-    name: "Mid-Century Velvet Sofa",
+    name: "Modern Living Room Set",
     brand: "West Elm",
     price: 1299,
     originalPrice: 1599,
     rating: 4.8,
     reviews: 324,
     image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Mustard velvet with walnut legs",
+    description: "Contemporary seating arrangement",
     affiliateLink: "https://www.westelm.com/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
     inStock: true,
     featured: true,
@@ -27,14 +27,14 @@ const FEATURED_PRODUCTS = [
   },
   {
     id: 2,
-    name: "Concrete Coffee Table",
+    name: "Round Wooden Table",
     brand: "CB2",
     price: 899,
     originalPrice: null,
     rating: 4.6,
     reviews: 187,
     image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Industrial concrete design",
+    description: "Natural wood finish surface",
     affiliateLink: "https://www.cb2.com/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
     inStock: true,
     featured: false,
@@ -47,14 +47,14 @@ const FEATURED_PRODUCTS = [
   },
   {
     id: 3,
-    name: "Minimalist Floor Lamp",
+    name: "Arched Floor Lamp",
     brand: "Design Within Reach",
     price: 549,
     originalPrice: 649,
     rating: 4.9,
     reviews: 156,
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Oak base with linen shade",
+    description: "Curved brass standing light",
     affiliateLink: "https://www.dwr.com/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
     inStock: false,
     featured: false,
@@ -67,14 +67,14 @@ const FEATURED_PRODUCTS = [
   },
   {
     id: 4,
-    name: "Textured Throw Pillows",
+    name: "Designer Cushion Set",
     brand: "Restoration Hardware",
     price: 189,
     originalPrice: 249,
     rating: 4.7,
     reviews: 412,
     image: "https://images.unsplash.com/photo-1498300439093-c8a43e9e8e26?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Neutral linen texture set",
+    description: "Luxury accent pillows",
     affiliateLink: "https://rh.com/?utm_source=renovai&utm_medium=affiliate&utm_campaign=interior_design",
     inStock: true,
     featured: true,
