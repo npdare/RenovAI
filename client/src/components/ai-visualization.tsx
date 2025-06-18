@@ -488,42 +488,42 @@ export default function AIVisualization() {
   );
 
   const renderArchitecturalStep = () => (
-    <Card className="max-w-4xl mx-auto">
+    <Card className="max-w-4xl mx-auto mx-4">
       <CardHeader>
-        <CardTitle className="flex items-center">
-          <Home className="w-6 h-6 mr-2" />
+        <CardTitle className="flex items-center text-lg sm:text-xl">
+          <Home className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
           Existing Design Elements
         </CardTitle>
-        <p className="text-neutral-600">
+        <p className="text-neutral-600 text-sm sm:text-base">
           Review detected design elements from your space and choose whether to keep or modify them
         </p>
       </CardHeader>
       <CardContent>
         {editableArchitecture && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               <div>
                 <img 
                   src={uploadedPhoto?.preview} 
                   alt="Original photo"
-                  className="w-full h-64 object-cover rounded-lg"
+                  className="w-full h-48 sm:h-64 object-cover rounded-lg"
                 />
                 <p className="text-sm text-neutral-600 mt-2">Original Photo</p>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <Label className="text-base font-medium">Room Structure</Label>
-                  <p className="text-neutral-700 bg-neutral-50 p-3 rounded-lg mt-2">
+                  <Label className="text-sm sm:text-base font-medium">Room Structure</Label>
+                  <p className="text-sm sm:text-base text-neutral-700 bg-neutral-50 p-2 sm:p-3 rounded-lg mt-2">
                     {editableArchitecture.roomStructure}
                   </p>
                 </div>
                 
                 <div>
-                  <Label className="text-base font-medium">Detected Features</Label>
-                  <div className="flex flex-wrap gap-2 mt-2">
+                  <Label className="text-sm sm:text-base font-medium">Detected Features</Label>
+                  <div className="flex flex-wrap gap-1 sm:gap-2 mt-2">
                     {editableArchitecture.detectedFeatures.map((feature, index) => (
-                      <Badge key={index} variant="outline">{feature}</Badge>
+                      <Badge key={index} variant="outline" className="text-xs sm:text-sm">{feature}</Badge>
                     ))}
                   </div>
                 </div>

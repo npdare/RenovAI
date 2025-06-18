@@ -204,35 +204,35 @@ export default function ProductShowcase() {
   };
 
   return (
-    <section className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <Badge className="mb-6 bg-neutral-100 text-neutral-800 border-neutral-200 font-medium">
+    <section className="py-12 sm:py-16 md:py-24 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-8 sm:mb-12 md:mb-16">
+          <Badge className="mb-4 sm:mb-6 bg-neutral-100 text-neutral-800 border-neutral-200 font-medium text-xs sm:text-sm">
             <ShoppingCart className="w-3 h-3 mr-2" />
             CURATED DESIGN COLLECTION
           </Badge>
           
-          <h2 className="text-4xl lg:text-5xl font-bold text-neutral-900 mb-6" style={{ fontFamily: 'Inter' }}>
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-neutral-900 mb-4 sm:mb-6" style={{ fontFamily: 'Inter' }}>
             Shop Your AI Designs
           </h2>
           
-          <p className="text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed mb-8">
+          <p className="text-base sm:text-lg md:text-xl text-neutral-600 max-w-3xl mx-auto leading-relaxed mb-6 sm:mb-8 px-4">
             Bring your AI-generated room designs to life with carefully curated furniture and decor for interior and exterior spaces.
           </p>
 
           {/* Category Filter */}
-          <div className="flex justify-center space-x-4 mb-12">
+          <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mb-8 sm:mb-12 px-4">
             <Button
               variant={activeFilter === 'All' ? "default" : "outline"}
               onClick={() => setFilter('All')}
-              className="px-6 py-2"
+              className="px-4 sm:px-6 py-2 text-sm sm:text-base w-full sm:w-auto"
             >
               All Products
             </Button>
             <Button
               variant={activeFilter === 'Interior' ? "default" : "outline"}
               onClick={() => setFilter('Interior')}
-              className="px-6 py-2"
+              className="px-4 sm:px-6 py-2 text-sm sm:text-base w-full sm:w-auto"
             >
               <Home className="w-4 h-4 mr-2" />
               Interior
@@ -240,7 +240,7 @@ export default function ProductShowcase() {
             <Button
               variant={activeFilter === 'Exterior' ? "default" : "outline"}
               onClick={() => setFilter('Exterior')}
-              className="px-6 py-2"
+              className="px-4 sm:px-6 py-2 text-sm sm:text-base w-full sm:w-auto"
             >
               <TreePine className="w-4 h-4 mr-2" />
               Exterior
@@ -251,14 +251,14 @@ export default function ProductShowcase() {
         {/* Infinite Product Slider */}
         <div className="relative">
           <div className="overflow-hidden">
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
               {getVisibleProducts().map((product, index) => (
                 <div 
                   key={`${product.id}-${index}`}
-                  className="group cursor-pointer bg-white rounded-2xl overflow-hidden border border-neutral-200 hover:shadow-xl hover:scale-105 transition-all duration-300"
+                  className="group cursor-pointer bg-white rounded-xl sm:rounded-2xl overflow-hidden border border-neutral-200 hover:shadow-xl hover:scale-105 transition-all duration-300"
                   onClick={() => handleProductClick(product)}
                 >
-                  <div className="relative overflow-hidden h-64 bg-neutral-100">
+                  <div className="relative overflow-hidden h-48 sm:h-56 md:h-64 bg-neutral-100">
                     <img 
                       src={product.image}
                       alt={product.name}
@@ -272,20 +272,20 @@ export default function ProductShowcase() {
                     
                     {!product.inStock && (
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <Badge variant="secondary" className="bg-white text-neutral-900">
+                        <Badge variant="secondary" className="bg-white text-neutral-900 text-xs">
                           Out of Stock
                         </Badge>
                       </div>
                     )}
 
-                    <div className="absolute top-4 right-4">
+                    <div className="absolute top-3 sm:top-4 right-3 sm:right-4">
                       <Badge className="bg-neutral-900/80 text-white text-xs">
                         {product.category}
                       </Badge>
                     </div>
                   </div>
 
-                  <div className="p-6 flex flex-col h-48">
+                  <div className="p-4 sm:p-6 flex flex-col h-40 sm:h-48">
                     <div className="mb-3 flex-grow">
                       <p className="text-xs text-neutral-500 font-medium uppercase tracking-wide h-4">{product.brand}</p>
                       <h3 className="text-base font-semibold text-neutral-900 group-hover:text-neutral-700 transition-colors leading-tight h-12 overflow-hidden">

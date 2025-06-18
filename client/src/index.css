@@ -112,6 +112,56 @@
     animation: scroll-infinite 30s linear infinite;
   }
 
+  /* Mobile-optimized touch interactions */
+  @media (hover: none) and (pointer: coarse) {
+    .hover\:scale-105:hover {
+      transform: scale(1.02);
+    }
+    
+    .group:hover .group-hover\:scale-110 {
+      transform: scale(1.05);
+    }
+  }
+
+  /* Responsive text scaling */
+  .luxury-title {
+    font-weight: 300;
+    letter-spacing: 0.025em;
+  }
+
+  .luxury-text {
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  /* Mobile-first responsive containers */
+  .container-mobile {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-mobile {
+    @apply py-12 sm:py-16 md:py-20 lg:py-24;
+  }
+
+  /* Touch-friendly button sizing */
+  .btn-mobile {
+    @apply min-h-[44px] px-4 py-2 text-sm sm:text-base;
+  }
+
+  /* Responsive grid utilities */
+  .grid-mobile-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+  }
+
+  /* Mobile typography scale */
+  .text-mobile-xs { @apply text-xs sm:text-sm; }
+  .text-mobile-sm { @apply text-sm sm:text-base; }
+  .text-mobile-base { @apply text-base sm:text-lg; }
+  .text-mobile-lg { @apply text-lg sm:text-xl; }
+  .text-mobile-xl { @apply text-xl sm:text-2xl; }
+  .text-mobile-2xl { @apply text-2xl sm:text-3xl md:text-4xl; }
+  .text-mobile-3xl { @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl; }
+
   .animate-scroll-infinite:hover {
     animation-play-state: paused;
   }
