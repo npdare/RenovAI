@@ -131,8 +131,7 @@ export default function AIVisualization() {
           preview,
           type: 'auto-detected' // Will be detected by AI
         });
-        setCurrentStep('inspiration');
-        setProgress(20);
+        setProgress(10);
       }
     },
     onDropRejected: (fileRejections) => {
@@ -397,7 +396,7 @@ export default function AIVisualization() {
       <div className="flex items-center space-x-4">
         {[
           { step: 'upload', label: 'Upload', icon: Upload },
-          { step: 'architecture', label: 'Architecture', icon: Home },
+          { step: 'architecture', label: 'Existing Design', icon: Home },
           { step: 'inspiration', label: 'Inspiration', icon: Sparkles },
           { step: 'parameters', label: 'Parameters', icon: Settings },
           { step: 'transform', label: 'Transform', icon: Wand2 },
@@ -469,11 +468,11 @@ export default function AIVisualization() {
                 {architecturalAnalysisMutation.isPending ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Analyzing Architecture...
+                    Analyzing Existing Design...
                   </>
                 ) : (
                   <>
-                    Analyze Architecture <ArrowRight className="w-4 h-4 ml-2" />
+                    Analyze Existing Design <ArrowRight className="w-4 h-4 ml-2" />
                   </>
                 )}
               </Button>
@@ -489,10 +488,10 @@ export default function AIVisualization() {
       <CardHeader>
         <CardTitle className="flex items-center">
           <Home className="w-6 h-6 mr-2" />
-          Architectural Elements
+          Existing Design Elements
         </CardTitle>
         <p className="text-neutral-600">
-          Review detected structural elements from your original photo and choose whether to keep or modify them
+          Review detected design elements from your space and choose whether to keep or modify them
         </p>
       </CardHeader>
       <CardContent>
