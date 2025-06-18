@@ -239,16 +239,16 @@ export default function ProductShowcase() {
                 )}
               </div>
 
-              <div className="p-6">
-                <div className="mb-3">
-                  <p className="text-xs text-neutral-500 font-medium uppercase tracking-wide">{product.brand}</p>
-                  <h3 className="text-base font-semibold text-neutral-900 group-hover:text-amber-600 transition-colors leading-tight">
+              <div className="p-6 flex flex-col h-48">
+                <div className="mb-3 flex-grow">
+                  <p className="text-xs text-neutral-500 font-medium uppercase tracking-wide h-4">{product.brand}</p>
+                  <h3 className="text-base font-semibold text-neutral-900 group-hover:text-amber-600 transition-colors leading-tight h-12 overflow-hidden">
                     {product.name}
                   </h3>
-                  <p className="text-xs text-neutral-600 mt-1 leading-relaxed">{product.description}</p>
+                  <p className="text-xs text-neutral-600 mt-1 leading-relaxed h-8 overflow-hidden">{product.description}</p>
                 </div>
 
-                <div className="flex items-center mb-3">
+                <div className="flex items-center mb-3 h-5">
                   <div className="flex items-center">
                     <Star className="w-4 h-4 text-amber-400 fill-current" />
                     <span className="text-sm text-neutral-700 ml-1 font-medium">{product.rating}</span>
@@ -256,8 +256,8 @@ export default function ProductShowcase() {
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
+                <div className="space-y-3 mt-auto">
+                  <div className="flex items-center space-x-2 h-6">
                     <span className="text-xl font-bold text-neutral-900">
                       {currencySymbol}{getProductPrice(product)}
                     </span>
@@ -270,7 +270,7 @@ export default function ProductShowcase() {
                   
                   <Button 
                     size="sm" 
-                    className="w-full bg-neutral-900 text-white hover:bg-neutral-800 text-xs px-4 py-2"
+                    className="w-full bg-neutral-900 text-white hover:bg-neutral-800 text-xs px-4 py-2 h-8"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleProductClick(product);
@@ -287,11 +287,28 @@ export default function ProductShowcase() {
 
         <div className="mt-16 text-center">
           <div className="bg-neutral-50 rounded-2xl p-8 border border-neutral-200">
-            <h3 className="text-2xl font-semibold text-neutral-900 mb-4">Curated Design Marketplace</h3>
+            <h3 className="text-2xl font-semibold text-neutral-900 mb-4">Affiliate Revenue Model</h3>
             <p className="text-neutral-600 mb-6 max-w-2xl mx-auto">
-              Shop premium furniture and decor from trusted design brands. Each purchase through our platform 
-              supports RenovAI's development through affiliate partnerships with West Elm, CB2, Design Within Reach, and Restoration Hardware.
+              <strong>How we earn:</strong> When users purchase through our links, we receive commissions from retailers. 
+              To activate this, you must join each brand's affiliate program and replace demo links with your tracking codes.
             </p>
+            
+            <div className="bg-white rounded-xl p-6 mb-6 border border-neutral-200">
+              <h4 className="text-lg font-semibold text-neutral-900 mb-3">Required Affiliate Program Enrollments:</h4>
+              <div className="grid md:grid-cols-2 gap-4 text-sm">
+                <div className="text-left">
+                  <p><strong>West Elm:</strong> westelm.com/affiliate-program</p>
+                  <p><strong>CB2:</strong> cb2.com/customer-service/affiliate-program</p>
+                </div>
+                <div className="text-left">
+                  <p><strong>Design Within Reach:</strong> dwr.com/affiliate-program</p>
+                  <p><strong>Restoration Hardware:</strong> rh.com/affiliate</p>
+                </div>
+              </div>
+              <p className="text-xs text-neutral-500 mt-3">
+                Replace current demo links with your unique affiliate tracking codes from each program
+              </p>
+            </div>
             
             <div className="grid md:grid-cols-3 gap-6">
               <div className="text-center">
