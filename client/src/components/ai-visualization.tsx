@@ -35,14 +35,22 @@ interface DesignInspiration {
   pinterestUrl?: string;
 }
 
-// Step 3: Extracted Parameters with Architectural Details
+// Step 3: Content-Aware Dynamic Parameters
+interface DetectedCategory {
+  name: string;
+  items: string[];
+  confidence: number;
+}
+
 interface DesignParameters {
   style: string;
+  roomType: string;
+  spaceType: 'interior' | 'exterior';
+  detectedCategories: DetectedCategory[];
+  // Legacy arrays for compatibility
   materials: string[];
   colorPalette: string[];
   furnitureTypes: string[];
-  roomType: string;
-  spaceType: 'interior' | 'exterior';
   wallCladding: string[];
   flooringMaterial: string[];
   ceilingDetails: string[];
@@ -642,40 +650,66 @@ export default function AIVisualization() {
               )}
             </div>
             
-            <EditableParameterSection
-              title="Wall Cladding"
-              paramKey="wallCladding"
-              items={editableParameters?.wallCladding || []}
-              examples={designExamples.wallCladding}
-            />
+            {/* Dynamic Categories Based on AI Detection */}
+            {editableParameters?.detectedCategories?.map((category, index) => (
+              <div key={index} className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-medium capitalize">
+                    {category.name}
+                  </Label>
+                  <Badge variant="outline" className="text-xs">
+                    {Math.round(category.confidence * 100)}% confidence
+                  </Badge>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {category.items.map((item, itemIndex) => (
+                    <Badge key={itemIndex} variant="secondary" className="text-sm">
+                      {item}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            ))}
             
-            <EditableParameterSection
-              title="Flooring Material"
-              paramKey="flooringMaterial"
-              items={editableParameters?.flooringMaterial || []}
-              examples={designExamples.flooringMaterial}
-            />
-            
-            <EditableParameterSection
-              title="Materials"
-              paramKey="materials"
-              items={editableParameters?.materials || []}
-              examples={designExamples.materials}
-            />
-            
-            <EditableParameterSection
-              title="Color Palette"
-              paramKey="colorPalette"
-              items={editableParameters?.colorPalette || []}
-              examples={designExamples.colorPalette}
-            />
-            
-            <EditableParameterSection
-              title="Furniture Types"
-              paramKey="furnitureTypes"
-              items={editableParameters?.furnitureTypes || []}
-              examples={designExamples.furnitureTypes}
-            />
+            {/* Fallback to Legacy Categories if No Dynamic Detection */}
+            {(!editableParameters?.detectedCategories || editableParameters.detectedCategories.length === 0) && (
+              <>
+                <EditableParameterSection
+                  title="Wall Cladding"
+                  paramKey="wallCladding"
+                  items={editableParameters?.wallCladding || []}
+                  examples={designExamples.wallCladding}
+                />
+                
+                <EditableParameterSection
+                  title="Flooring Material"
+                  paramKey="flooringMaterial"
+                  items={editableParameters?.flooringMaterial || []}
+                  examples={designExamples.flooringMaterial}
+                />
+                
+                <EditableParameterSection
+                  title="Materials"
+                  paramKey="materials"
+                  items={editableParameters?.materials || []}
+                  examples={designExamples.materials}
+                />
+                
+                <EditableParameterSection
+                  title="Color Palette"
+                  paramKey="colorPalette"
+                  items={editableParameters?.colorPalette || []}
+                  examples={designExamples.colorPalette}
+                />
+                
+                <EditableParameterSection
+                  title="Furniture Types"
+                  paramKey="furnitureTypes"
+                  items={editableParameters?.furnitureTypes || []}
+                  examples={designExamples.furnitureTypes}
+                />
+              </>
+            )}
             
             {editableParameters.architecturalFeatures && editableParameters.architecturalFeatures.length > 0 && (
               <div>

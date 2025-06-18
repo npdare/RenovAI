@@ -511,7 +511,7 @@ Return JSON format:
     return {
       detectedCategories: Array.from(categoryMap.values()),
       style: dominantStyle,
-      spaceType: dominantSpaceType
+      spaceType: (dominantSpaceType === 'exterior' ? 'exterior' : 'interior') as 'interior' | 'exterior'
     };
 
   } catch (error) {

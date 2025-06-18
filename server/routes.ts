@@ -210,12 +210,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return {
           roomType: aiResult.spaceType || 'Living Space',
           style: aiResult.architecturalStyle || 'Contemporary',
+          spaceType: 'interior' as const,
+          detectedCategories: [],
           wallCladding: wallMaterials.length > 0 ? wallMaterials : ['Natural wall finish'],
           flooringMaterial: floorMaterials.length > 0 ? floorMaterials : ['Natural flooring'],
           materials: allMaterials.length > 0 ? allMaterials : ['Natural materials'],
           colorPalette: aiResult.colorScheme || ['Neutral tones'],
-          architecturalFeatures: aiResult.notableFeatures || [],
-          naturalCategories: surfaceMaterials
+          furnitureTypes: [],
+          ceilingDetails: [],
+          lightingFixtures: [],
+          architecturalFeatures: aiResult.notableFeatures || []
         };
       };
 
@@ -233,21 +237,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const refAnalysis = await analyzeReferenceImages(referenceImages);
         
         if (refAnalysis.style) enhancedParameters.style = refAnalysis.style;
-        if (refAnalysis.materials?.length) {
-          enhancedParameters.materials = [...enhancedParameters.materials, ...refAnalysis.materials];
-        }
-        if (refAnalysis.colors?.length) {
-          enhancedParameters.colorPalette = [...enhancedParameters.colorPalette, ...refAnalysis.colors];
-        }
-        if (refAnalysis.wallCladding?.length) {
-          enhancedParameters.wallCladding = [...enhancedParameters.wallCladding, ...refAnalysis.wallCladding];
-        }
-        if (refAnalysis.flooringMaterial?.length) {
-          enhancedParameters.flooringMaterial = [...enhancedParameters.flooringMaterial, ...refAnalysis.flooringMaterial];
-        }
-        if (refAnalysis.architecturalFeatures?.length) {
-          enhancedParameters.architecturalFeatures = [...enhancedParameters.architecturalFeatures, ...refAnalysis.architecturalFeatures];
-        }
+        enhancedParameters.spaceType = refAnalysis.spaceType || enhancedParameters.spaceType;
+        
+        // Store dynamic categories and map to legacy arrays for compatibility
+        enhancedParameters.detectedCategories = refAnalysis.detectedCategories;
+        
+        refAnalysis.detectedCategories.forEach(category => {
+          switch (category.name) {
+            case 'wall cladding':
+              enhancedParameters.wallCladding.push(...category.items);
+              break;
+            case 'flooring':
+              enhancedParameters.flooringMaterial.push(...category.items);
+              break;
+            case 'furniture':
+            case 'exterior furniture':
+              enhancedParameters.furnitureTypes.push(...category.items);
+              break;
+            case 'materials':
+              enhancedParameters.materials.push(...category.items);
+              break;
+            case 'color palette':
+              enhancedParameters.colorPalette.push(...category.items);
+              break;
+            case 'architectural features':
+              enhancedParameters.architecturalFeatures.push(...category.items);
+              break;
+            case 'lighting fixtures':
+              enhancedParameters.lightingFixtures.push(...category.items);
+              break;
+            case 'ceiling details':
+              enhancedParameters.ceilingDetails.push(...category.items);
+              break;
+          }
+        });
       }
 
       // Process Pinterest URL
