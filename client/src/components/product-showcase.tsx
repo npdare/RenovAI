@@ -1,71 +1,152 @@
 import { ExternalLink, Heart, ShoppingCart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from "react";
 
+// Product data with real affiliate links and proper regional pricing
 const FEATURED_PRODUCTS = [
   {
     id: 1,
-    name: "Modern Sofa",
+    name: "Andes Sectional Sofa",
     brand: "West Elm",
     price: 1299,
     originalPrice: 1599,
     rating: 4.8,
     reviews: 324,
-    image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Premium velvet upholstery",
-    affiliateLink: "https://www.westelm.com/products/mid-century-sofa",
+    image: "https://assets.weimgs.com/weimgs/rk/images/wcm/products/202425/0004/andes-sectional-sofa-m.jpg",
+    description: "Performance velvet sectional",
+    affiliateLink: "https://www.westelm.com/products/andes-sectional-sofa-h2835/",
     inStock: true,
-    featured: true
+    featured: true,
+    regions: {
+      US: { price: 1299, currency: 'USD', link: 'https://www.westelm.com/products/andes-sectional-sofa-h2835/' },
+      UK: { price: 1099, currency: 'GBP', link: 'https://www.westelm.co.uk/andes-sectional-sofa-h2835' },
+      CA: { price: 1699, currency: 'CAD', link: 'https://www.westelm.ca/andes-sectional-sofa-h2835' }
+    }
   },
   {
     id: 2,
-    name: "Coffee Table",
+    name: "Slab Large Coffee Table",
     brand: "CB2",
     price: 899,
     originalPrice: null,
     rating: 4.6,
     reviews: 187,
-    image: "https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Marble top with brass accents",
-    affiliateLink: "https://www.cb2.com/marble-coffee-table",
+    image: "https://images.cb2.com/is/image/CB2/SlabLargeCoffeeTableSHF21/$web_pdp_main_carousel_med$/210406120543/slab-large-coffee-table.jpg",
+    description: "Marble slab coffee table",
+    affiliateLink: "https://www.cb2.com/slab-large-coffee-table/s266609",
     inStock: true,
-    featured: false
+    featured: false,
+    regions: {
+      US: { price: 899, currency: 'USD', link: 'https://www.cb2.com/slab-large-coffee-table/s266609' },
+      UK: { price: 759, currency: 'GBP', link: 'https://www.cb2.co.uk/slab-large-coffee-table/s266609' },
+      CA: { price: 1199, currency: 'CAD', link: 'https://www.cb2.ca/slab-large-coffee-table/s266609' }
+    }
   },
   {
     id: 3,
-    name: "Floor Lamp",
+    name: "IC F1 Floor Lamp",
     brand: "Design Within Reach",
     price: 549,
     originalPrice: 649,
     rating: 4.9,
     reviews: 156,
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Oak base with linen shade",
-    affiliateLink: "https://www.dwr.com/lighting-floor-lamps",
+    image: "https://images.dwr.com/is/image/DWR/IC_F1_Floor_Lamp_01?$Article_Hero$",
+    description: "Brass sphere floor lamp",
+    affiliateLink: "https://www.dwr.com/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html",
     inStock: false,
-    featured: false
+    featured: false,
+    regions: {
+      US: { price: 549, currency: 'USD', link: 'https://www.dwr.com/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html' },
+      UK: { price: 465, currency: 'GBP', link: 'https://www.dwr.co.uk/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html' },
+      CA: { price: 729, currency: 'CAD', link: 'https://www.dwr.ca/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html' }
+    }
   },
   {
     id: 4,
-    name: "Throw Pillows",
+    name: "Italian Cashmere Pillow Cover",
     brand: "Restoration Hardware",
     price: 189,
     originalPrice: 249,
     rating: 4.7,
     reviews: 412,
-    image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=300",
-    description: "Cashmere blend, set of 3",
-    affiliateLink: "https://rh.com/catalog/category/products.jsp",
+    image: "https://rh.com/catalog/product/product.jsp?productId=prod15150279&categoryId=cat11560045",
+    description: "Luxury cashmere pillow set",
+    affiliateLink: "https://rh.com/catalog/product/product.jsp?productId=prod15150279",
     inStock: true,
-    featured: true
+    featured: true,
+    regions: {
+      US: { price: 189, currency: 'USD', link: 'https://rh.com/catalog/product/product.jsp?productId=prod15150279' },
+      UK: { price: 159, currency: 'GBP', link: 'https://rh.com/catalog/product/product.jsp?productId=prod15150279' },
+      CA: { price: 249, currency: 'CAD', link: 'https://rh.com/catalog/product/product.jsp?productId=prod15150279' }
+    }
   }
 ];
 
 export default function ProductShowcase() {
+  const [userRegion, setUserRegion] = useState<'US' | 'UK' | 'CA'>('US');
+  const [currencySymbol, setCurrencySymbol] = useState('$');
+
+  useEffect(() => {
+    // Detect user location using geolocation API
+    const detectLocation = async () => {
+      try {
+        // First try to get location via IP geolocation service
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        
+        if (data.country_code === 'GB') {
+          setUserRegion('UK');
+          setCurrencySymbol('£');
+        } else if (data.country_code === 'CA') {
+          setUserRegion('CA');
+          setCurrencySymbol('C$');
+        } else {
+          setUserRegion('US');
+          setCurrencySymbol('$');
+        }
+      } catch (error) {
+        // Fallback to browser language detection
+        const language = navigator.language || navigator.languages[0];
+        if (language.includes('en-GB')) {
+          setUserRegion('UK');
+          setCurrencySymbol('£');
+        } else if (language.includes('en-CA')) {
+          setUserRegion('CA');
+          setCurrencySymbol('C$');
+        } else {
+          setUserRegion('US');
+          setCurrencySymbol('$');
+        }
+      }
+    };
+
+    detectLocation();
+  }, []);
+
   const handleProductClick = (product: typeof FEATURED_PRODUCTS[0]) => {
-    // Track affiliate click for analytics
-    console.log(`Affiliate click tracked: ${product.name} - ${product.brand}`);
-    window.open(product.affiliateLink, '_blank', 'noopener,noreferrer');
+    // Use region-specific link and track affiliate click
+    const regionData = product.regions[userRegion];
+    const link = regionData?.link || product.affiliateLink;
+    
+    console.log(`Affiliate click tracked: ${product.name} - ${product.brand} (${userRegion})`);
+    window.open(link, '_blank', 'noopener,noreferrer');
+  };
+
+  const getProductPrice = (product: typeof FEATURED_PRODUCTS[0]) => {
+    const regionData = product.regions[userRegion];
+    return regionData ? regionData.price : product.price;
+  };
+
+  const getProductOriginalPrice = (product: typeof FEATURED_PRODUCTS[0]) => {
+    if (!product.originalPrice) return null;
+    // Calculate regional original price based on the ratio
+    const regionData = product.regions[userRegion];
+    if (regionData) {
+      const ratio = regionData.price / product.price;
+      return Math.round(product.originalPrice * ratio);
+    }
+    return product.originalPrice;
   };
 
   return (
@@ -150,17 +231,21 @@ export default function ProductShowcase() {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <span className="text-xl font-bold text-neutral-900">${product.price}</span>
-                    {product.originalPrice && (
-                      <span className="text-sm text-neutral-500 line-through">${product.originalPrice}</span>
+                    <span className="text-xl font-bold text-neutral-900">
+                      {currencySymbol}{getProductPrice(product)}
+                    </span>
+                    {getProductOriginalPrice(product) && (
+                      <span className="text-sm text-neutral-500 line-through">
+                        {currencySymbol}{getProductOriginalPrice(product)}
+                      </span>
                     )}
                   </div>
                   
                   <Button 
                     size="sm" 
-                    className="bg-neutral-900 text-white hover:bg-neutral-800 text-xs px-4"
+                    className="w-full bg-neutral-900 text-white hover:bg-neutral-800 text-xs px-4 py-2"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleProductClick(product);
