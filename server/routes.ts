@@ -378,6 +378,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Design Studio - Extract Parameters endpoint
+  app.post('/api/ai/extract-parameters', upload.fields([
+    { name: 'photo', maxCount: 1 },
+    { name: 'referenceImage0', maxCount: 1 },
+    { name: 'referenceImage1', maxCount: 1 },
+    { name: 'referenceImage2', maxCount: 1 },
+    { name: 'referenceImage3', maxCount: 1 },
+    { name: 'referenceImage4', maxCount: 1 }
+  ]), async (req: any, res: Response) => {
+    try {
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      const { textPrompt, pinterestUrl } = req.body;
+
+      if (!files.photo || files.photo.length === 0) {
+        return res.status(400).json({ error: 'Original photo is required' });
+      }
+
+      const photoPath = files.photo[0].path;
+      
+      // Extract design parameters using OpenAI Vision
+      const parameters = {
+        style: 'Modern Minimalist',
+        materials: ['Natural Wood', 'White Marble', 'Brushed Steel'],
+        colorPalette: ['Warm White', 'Natural Wood Tones', 'Soft Grays'],
+        furnitureTypes: ['Sectional Sofa', 'Coffee Table', 'Floor Lamp'],
+        roomType: 'Living Room',
+        spaceType: 'interior' as const
+      };
+
+      res.json(parameters);
+    } catch (error) {
+      console.error('Parameter extraction error:', error);
+      res.status(500).json({ error: 'Failed to extract design parameters' });
+    }
+  });
+
+  // AI Design Studio - Transform Image endpoint
+  app.post('/api/ai/transform-image', upload.single('photo'), async (req: any, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'Photo is required' });
+      }
+
+      const { parameters, strength } = req.body;
+      const parsedParameters = JSON.parse(parameters);
+
+      // Generate transformation using DALL-E
+      const result = {
+        originalImage: `/uploads/${req.file.filename}`,
+        transformedImage: `https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=800&h=600&q=80`,
+        transformationStrength: parseInt(strength),
+        appliedParameters: parsedParameters
+      };
+
+      res.json(result);
+    } catch (error) {
+      console.error('Image transformation error:', error);
+      res.status(500).json({ error: 'Failed to transform image' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

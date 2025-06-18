@@ -1,0 +1,89 @@
+Design Application: AI-Powered Home Design Visualiser
+
+1. Upload Original Photo
+
+Users can upload a photo of a space — either interior or exterior.
+
+Supported file types should include JPG, PNG, and HEIC.
+
+Ensure a minimum resolution (e.g., 1024x768) to maintain image quality.
+
+Optional feature: Use a machine learning model to automatically detect whether the photo is of an interior or exterior space.
+
+2. Provide Design Inspiration
+
+Users can provide inspiration in three ways:
+
+Text Prompt: Freeform text input describing the desired style (e.g., "modern boho with natural textures and pastel tones").
+
+Reference Images: Upload one or more images showing the look they want to achieve.
+
+Pinterest Board URL: Allow users to paste a Pinterest board link. Use scraping or the Pinterest API to extract style cues from the pinned images.
+
+3. Extract Design Parameters
+
+Use a combination of image recognition (e.g., OpenAI CLIP or a vision model) and language models (e.g., GPT) to extract structured design information.
+
+Extracted design parameters may include:
+
+Style (e.g., industrial, Scandinavian, coastal)
+
+Materials (e.g., wood, concrete, rattan)
+
+Colour palette (e.g., whites, pastels, dark tones)
+
+Furniture types and layouts
+
+Optionally show the extracted parameters to the user and allow them to confirm or edit the interpretation.
+
+4. Transform Original Photo
+
+Use an image-to-image AI model (such as Stable Diffusion with ControlNet or RunwayML) to apply the design parameters to the uploaded photo.
+
+The model should maintain the room's structure and layout while modifying surfaces, furniture, textures, and colours based on the design prompt.
+
+Output a high-quality image showing the same scene with the new design style applied.
+
+5. Review and Fine-Tune
+
+Users can adjust how strongly the design is applied using a slider (e.g., 0% to 100% transformation).
+
+Provide options to generate variations or request changes (e.g., “Try it with lighter floors”).
+
+Let users re-upload inspiration or modify prompts to regenerate results.
+
+6. Export and Share
+
+Allow users to download the final image, or a before/after comparison.
+
+Provide a shareable link for viewing or embedding.
+
+If the user has an account, let them save the session for later access or editing.
+
+Core Technologies (Suggested Stack)
+
+Frontend: React or Next.js for building a responsive UI
+
+Styling: Tailwind CSS for clean and modern design
+
+Backend: Node.js or Python with FastAPI for handling API calls
+
+Image Generation: Stable Diffusion with ControlNet to retain layout while changing design
+
+Design Parameter Extraction: Use GPT-4 Vision or CLIP + GPT to understand and summarise design inputs
+
+File Storage: AWS S3 or Firebase Storage for saving images
+
+User Auth (Optional): Firebase Auth or Auth0 for user accounts
+
+Pinterest Integration (Optional): Pinterest API or custom scraper to pull images and tags
+
+Optional Features to Add Later
+
+Allow users to highlight areas of the photo to change (e.g., walls only).
+
+Add augmented reality (AR) view to see the design in real space.
+
+Let users choose from preset design templates or AI-recommended looks.
+
+Offer a “Connect with Designer” option to get professional help

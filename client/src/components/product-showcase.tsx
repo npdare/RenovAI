@@ -3,12 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect } from "react";
 
-// Function to proxy retailer images through our backend
-const getProxyImageUrl = (originalUrl: string) => {
-  return `/api/proxy-image?url=${encodeURIComponent(originalUrl)}`;
-};
-
-// Actual retailer products with real image URLs via proxy
+// Premium furniture products with professional imagery
 const DESIGN_PRODUCTS = [
   {
     id: 1,
@@ -18,7 +13,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: 1599,
     rating: 4.8,
     reviews: 324,
-    image: getProxyImageUrl("https://assets.weimgs.com/weimgs/rk/images/wcm/products/202130/0009/andes-3-piece-chaise-sectional-c.jpg"),
+    image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=500&h=400&q=80",
     description: "Performance velvet sectional",
     category: "Interior",
     productUrl: "https://www.westelm.com/products/andes-sectional-sofa-h2835/",
@@ -32,7 +27,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: null,
     rating: 4.6,
     reviews: 187,
-    image: getProxyImageUrl("https://images.cb2.com/is/image/CB2/SlabLargeMarbleCoffeeTableSHF16/$web_pdp_main_carousel_med$/191015131320/slab-large-marble-coffee-table.jpg"),
+    image: "https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=500&h=400&q=80",
     description: "Carrara marble with steel base",
     category: "Interior",
     productUrl: "https://www.cb2.com/slab-large-coffee-table/s266609",
@@ -46,7 +41,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: 649,
     rating: 4.9,
     reviews: 156,
-    image: getProxyImageUrl("https://www.dwr.com/dw/image/v2/AALV_PRD/on/demandware.static/-/Sites-dwr-master-catalog/default/dw3b7a5c5e/images/large/FLO_2544206_A.jpg?sw=510&sh=680&sm=fit"),
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=500&h=400&q=80",
     description: "Brass orb floor lamp by FLOS",
     category: "Interior",
     productUrl: "https://www.dwr.com/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html",
@@ -60,7 +55,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: 249,
     rating: 4.7,
     reviews: 412,
-    image: getProxyImageUrl("https://rh.com/catalog/product/images/prod15150279_E137001270_F_400.jpg"),
+    image: "https://images.unsplash.com/photo-1498300439093-c8a43e9e8e26?auto=format&fit=crop&w=500&h=400&q=80",
     description: "Stonewashed Belgian linen",
     category: "Interior",
     productUrl: "https://rh.com/catalog/product/product.jsp?productId=prod15150279",
@@ -74,7 +69,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: 2299,
     rating: 4.5,
     reviews: 89,
-    image: getProxyImageUrl("https://assets.weimgs.com/weimgs/rk/images/wcm/products/202046/0003/portside-outdoor-dining-table-c.jpg"),
+    image: "https://images.unsplash.com/photo-1519947486511-46149fa0a254?auto=format&fit=crop&w=500&h=400&q=80",
     description: "FSC-certified teak dining table",
     category: "Exterior",
     productUrl: "https://www.westelm.com/products/portside-outdoor-dining-table-h2962/",
@@ -88,7 +83,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: null,
     rating: 4.4,
     reviews: 203,
-    image: getProxyImageUrl("https://images.cb2.com/is/image/CB2/CylinderPlanterCollectionSHF16/$web_pdp_main_carousel_med$/181015095320/cylinder-planter-collection.jpg"),
+    image: "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=500&h=400&q=80",
     description: "Matte black ceramic planters",
     category: "Exterior",
     productUrl: "https://www.cb2.com/cylinder-planter-collection/f14953",
@@ -102,7 +97,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: 199,
     rating: 4.8,
     reviews: 445,
-    image: getProxyImageUrl("https://www.dwr.com/dw/image/v2/AALV_PRD/on/demandware.static/-/Sites-dwr-master-catalog/default/dw89abc123/images/large/LIG_8765432_A.jpg?sw=510&sh=680&sm=fit"),
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=500&h=400&q=80",
     description: "10-bulb café style lighting",
     category: "Exterior",
     productUrl: "https://www.dwr.com/lighting-outdoor/string-light-with-bulbs/8765432.html",
@@ -116,7 +111,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: 1599,
     rating: 4.6,
     reviews: 67,
-    image: getProxyImageUrl("https://rh.com/catalog/product/images/prod18490247_E137987654_F_400.jpg"),
+    image: "https://images.unsplash.com/photo-1552346154-21d32810aba3?auto=format&fit=crop&w=500&h=400&q=80",
     description: "Cast concrete with gas burner",
     category: "Exterior",
     productUrl: "https://rh.com/catalog/product/product.jsp?productId=prod18490247",
@@ -130,7 +125,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: 2699,
     rating: 4.7,
     reviews: 198,
-    image: getProxyImageUrl("https://assets.weimgs.com/weimgs/rk/images/wcm/products/202125/0015/haven-outdoor-sectional-set-c.jpg"),
+    image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=500&h=400&q=80",
     description: "Weather-resistant wicker seating",
     category: "Exterior",
     productUrl: "https://www.westelm.com/products/haven-outdoor-sectional-set-h3185/",
@@ -144,7 +139,7 @@ const DESIGN_PRODUCTS = [
     originalPrice: null,
     rating: 4.3,
     reviews: 34,
-    image: getProxyImageUrl("https://images.cb2.com/is/image/CB2/GridPergolaCanopySHF16/$web_pdp_main_carousel_med$/200515142850/grid-pergola-with-canopy.jpg"),
+    image: "https://images.unsplash.com/photo-1600585154526-990dced4db0d?auto=format&fit=crop&w=500&h=400&q=80",
     description: "Steel frame with retractable shade",
     category: "Exterior",
     productUrl: "https://www.cb2.com/grid-pergola-with-canopy/s543221",
@@ -270,7 +265,7 @@ export default function ProductShowcase() {
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
-                        target.src = `https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=500&h=400&q=80`;
+                        target.style.display = 'none';
                       }}
                       loading="lazy"
                     />
