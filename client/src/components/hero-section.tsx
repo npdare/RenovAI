@@ -1,11 +1,8 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 
 export default function HeroSection() {
-  const scrollToSection = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   return (
     <section className="relative min-h-screen overflow-hidden flex items-center justify-center">
       {/* Architectural Video Background */}
@@ -43,29 +40,31 @@ export default function HeroSection() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Button 
-              onClick={() => scrollToSection('studio')}
-              size="lg" 
-              className="bg-white hover:bg-gray-100 text-black hover:text-black px-16 py-6 text-xs tracking-widest luxury-text font-medium border-2 border-white transition-all duration-300 hover:scale-105"
-            >
-              <span className="text-black">ENTER STUDIO</span>
-              <svg className="w-5 h-5 ml-4 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-              </svg>
-            </Button>
-            <Button 
-              onClick={() => scrollToSection('inspiration')}
-              variant="outline" 
-              size="lg" 
-              className="border-2 border-white/80 text-white hover:bg-white/20 hover:text-white px-16 py-6 text-xs tracking-widest luxury-text font-medium backdrop-blur-sm transition-all duration-300 hover:scale-105 bg-transparent"
-            >
-              <span className="text-white">VIEW GALLERY</span>
-              <svg className="w-5 h-5 ml-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                <circle cx="9" cy="9" r="2"/>
-                <path d="M21 15l-3.086-3.086a2 2 0 00-2.828 0L6 21"/>
-              </svg>
-            </Button>
+            <Link href="/studio">
+              <Button 
+                size="lg" 
+                className="bg-white hover:bg-gray-100 text-black hover:text-black px-16 py-6 text-xs tracking-widest luxury-text font-medium border-2 border-white transition-all duration-300 hover:scale-105"
+              >
+                <span className="text-black">ENTER STUDIO</span>
+                <svg className="w-5 h-5 ml-4 text-black" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+              </Button>
+            </Link>
+            <Link href="/gallery">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="border-2 border-white/80 text-white hover:bg-white/20 hover:text-white px-16 py-6 text-xs tracking-widest luxury-text font-medium backdrop-blur-sm transition-all duration-300 hover:scale-105 bg-transparent"
+              >
+                <span className="text-white">VIEW GALLERY</span>
+                <svg className="w-5 h-5 ml-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                  <circle cx="9" cy="9" r="2"/>
+                  <path d="M21 15l-3.086-3.086a2 2 0 00-2.828 0L6 21"/>
+                </svg>
+              </Button>
+            </Link>
           </div>
         </div>
 
@@ -117,26 +116,54 @@ export default function HeroSection() {
         {/* Colorful Design Examples */}
         <div className="mt-32">
           <div className="text-center mb-16">
-            <span className="text-xs tracking-widest text-gray-500 uppercase luxury-text">
+            <span className="text-xs tracking-widest text-white/80 uppercase luxury-text">
               Transform Your Vision
             </span>
-            <h3 className="text-2xl font-light text-black mt-4 luxury-title">
+            <h3 className="text-2xl font-light text-white mt-4 luxury-title">
               From Imagination to Architecture
             </h3>
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="aspect-square bg-gradient-to-br from-blue-400 to-blue-600 rounded-sm flex items-center justify-center">
-              <span className="text-white text-xs tracking-wide luxury-text">MODERN</span>
+            <div className="aspect-square relative overflow-hidden rounded-sm group cursor-pointer">
+              <img 
+                src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400"
+                alt="Modern minimalist interior"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <span className="text-white text-xs tracking-wide luxury-text">MODERN</span>
+              </div>
             </div>
-            <div className="aspect-square bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-sm flex items-center justify-center">
-              <span className="text-white text-xs tracking-wide luxury-text">NATURAL</span>
+            <div className="aspect-square relative overflow-hidden rounded-sm group cursor-pointer">
+              <img 
+                src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400"
+                alt="Natural Scandinavian interior"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <span className="text-white text-xs tracking-wide luxury-text">NATURAL</span>
+              </div>
             </div>
-            <div className="aspect-square bg-gradient-to-br from-amber-400 to-amber-600 rounded-sm flex items-center justify-center">
-              <span className="text-white text-xs tracking-wide luxury-text">WARM</span>
+            <div className="aspect-square relative overflow-hidden rounded-sm group cursor-pointer">
+              <img 
+                src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400"
+                alt="Warm traditional interior"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <span className="text-white text-xs tracking-wide luxury-text">WARM</span>
+              </div>
             </div>
-            <div className="aspect-square bg-gradient-to-br from-purple-400 to-purple-600 rounded-sm flex items-center justify-center">
-              <span className="text-white text-xs tracking-wide luxury-text">LUXURY</span>
+            <div className="aspect-square relative overflow-hidden rounded-sm group cursor-pointer">
+              <img 
+                src="https://images.unsplash.com/photo-1631889993959-41b4e9c6e3c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400"
+                alt="Luxury contemporary interior"
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <span className="text-white text-xs tracking-wide luxury-text">LUXURY</span>
+              </div>
             </div>
           </div>
         </div>
