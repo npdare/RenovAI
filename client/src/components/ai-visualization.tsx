@@ -392,29 +392,29 @@ export default function AIVisualization() {
 
   // Step Components
   const renderStepIndicator = () => (
-    <div className="flex items-center justify-center mb-8">
-      <div className="flex items-center space-x-4">
+    <div className="flex items-center justify-center mb-6 sm:mb-8 px-4">
+      <div className="flex items-center space-x-2 sm:space-x-4 overflow-x-auto pb-2">
         {[
           { step: 'upload', label: 'Upload', icon: Upload },
-          { step: 'architecture', label: 'Existing Design', icon: Home },
+          { step: 'architecture', label: 'Design', icon: Home },
           { step: 'inspiration', label: 'Inspiration', icon: Sparkles },
           { step: 'parameters', label: 'Parameters', icon: Settings },
           { step: 'transform', label: 'Transform', icon: Wand2 },
           { step: 'review', label: 'Review', icon: Eye },
           { step: 'export', label: 'Export', icon: Download }
         ].map(({ step, label, icon: Icon }, index) => (
-          <div key={step} className="flex items-center">
-            <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
+          <div key={step} className="flex items-center flex-shrink-0">
+            <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${
               currentStep === step 
                 ? 'bg-black text-white border-black' 
                 : progress >= (index + 1) * 16.67
                 ? 'bg-green-100 text-green-600 border-green-600'
                 : 'bg-neutral-100 text-neutral-400 border-neutral-300'
             }`}>
-              <Icon className="w-5 h-5" />
+              <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <span className="ml-2 text-sm font-medium text-neutral-700">{label}</span>
-            {index < 6 && <ArrowRight className="w-4 h-4 mx-3 text-neutral-400" />}
+            <span className="ml-1 sm:ml-2 text-xs sm:text-sm font-medium text-neutral-700 hidden sm:inline">{label}</span>
+            {index < 6 && <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 mx-1 sm:mx-3 text-neutral-400" />}
           </div>
         ))}
       </div>
@@ -422,57 +422,61 @@ export default function AIVisualization() {
   );
 
   const renderUploadStep = () => (
-    <Card className="max-w-2xl mx-auto">
+    <Card className="max-w-2xl mx-auto mx-4">
       <CardHeader>
-        <CardTitle className="flex items-center">
-          <Upload className="w-6 h-6 mr-2" />
+        <CardTitle className="flex items-center text-lg sm:text-xl">
+          <Upload className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
           Upload Original Photo
         </CardTitle>
-        <p className="text-neutral-600">
+        <p className="text-neutral-600 text-sm sm:text-base">
           Upload a photo of your interior or exterior space to get started
         </p>
       </CardHeader>
       <CardContent>
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+          className={`border-2 border-dashed rounded-lg p-4 sm:p-8 text-center cursor-pointer transition-colors ${
             isDragActive 
               ? 'border-black bg-neutral-50' 
               : 'border-neutral-300 hover:border-neutral-400'
           }`}
         >
           <input {...getInputProps()} />
-          <Camera className="w-12 h-12 mx-auto mb-4 text-neutral-400" />
-          <p className="text-lg font-medium text-neutral-900 mb-2">
+          <Camera className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-neutral-400" />
+          <p className="text-base sm:text-lg font-medium text-neutral-900 mb-2">
             {isDragActive ? 'Drop your photo here' : 'Drag & drop your photo'}
           </p>
-          <p className="text-neutral-600 mb-4">
-            or click to browse files
+          <p className="text-sm sm:text-base text-neutral-600 mb-3 sm:mb-4">
+            or tap to browse files
           </p>
-          <Badge variant="outline">JPG, PNG, HEIC up to 10MB</Badge>
+          <Badge variant="outline" className="text-xs sm:text-sm">JPG, PNG, HEIC up to 10MB</Badge>
         </div>
         
         {uploadedPhoto && (
-          <div className="mt-6">
+          <div className="mt-4 sm:mt-6">
             <img 
               src={uploadedPhoto.preview} 
               alt="Uploaded preview"
-              className="w-full h-64 object-cover rounded-lg"
+              className="w-full h-48 sm:h-64 object-cover rounded-lg"
             />
-            <div className="flex items-center justify-between mt-4">
-              <Badge className="bg-green-100 text-green-800">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3">
+              <Badge className="bg-green-100 text-green-800 w-fit">
                 <CheckCircle className="w-4 h-4 mr-1" />
                 Photo uploaded successfully
               </Badge>
-              <Button onClick={handleAnalyzeArchitecture} disabled={architecturalAnalysisMutation.isPending}>
+              <Button 
+                onClick={handleAnalyzeArchitecture} 
+                disabled={architecturalAnalysisMutation.isPending}
+                className="w-full sm:w-auto"
+              >
                 {architecturalAnalysisMutation.isPending ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Analyzing Existing Design...
+                    Analyzing Design...
                   </>
                 ) : (
                   <>
-                    Analyze Existing Design <ArrowRight className="w-4 h-4 ml-2" />
+                    Analyze Design <ArrowRight className="w-4 h-4 ml-2" />
                   </>
                 )}
               </Button>
