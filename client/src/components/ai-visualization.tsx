@@ -78,7 +78,9 @@ export default function AIVisualization() {
   
   // Step 3: Design Parameters
   const [extractedParameters, setExtractedParameters] = useState<DesignParameters | null>(null);
+  const [editableParameters, setEditableParameters] = useState<DesignParameters | null>(null);
   const [parametersConfirmed, setParametersConfirmed] = useState(false);
+  const [isEditingParameters, setIsEditingParameters] = useState(false);
   
   // Step 4: Transformation
   const [transformationResult, setTransformationResult] = useState<TransformationResult | null>(null);
@@ -161,6 +163,7 @@ export default function AIVisualization() {
     },
     onSuccess: (data: DesignParameters) => {
       setExtractedParameters(data);
+      setEditableParameters(data);
       setCurrentStep('parameters');
       setProgress(50);
       toast({
@@ -224,6 +227,45 @@ export default function AIVisualization() {
     setParametersConfirmed(true);
     setCurrentStep('transform');
     setProgress(60);
+  };
+
+  const handleEditParameters = () => {
+    setIsEditingParameters(true);
+  };
+
+  const handleSaveParameters = () => {
+    setExtractedParameters(editableParameters);
+    setIsEditingParameters(false);
+    toast({
+      title: "Parameters Updated",
+      description: "Design parameters have been saved"
+    });
+  };
+
+  const updateParameterArray = (key: keyof DesignParameters, index: number, value: string) => {
+    if (!editableParameters) return;
+    const updatedParams = { ...editableParameters };
+    const currentArray = updatedParams[key] as string[];
+    currentArray[index] = value;
+    setEditableParameters(updatedParams);
+  };
+
+  const addParameterItem = (key: keyof DesignParameters, value: string) => {
+    if (!editableParameters || !value.trim()) return;
+    const updatedParams = { ...editableParameters };
+    const currentArray = updatedParams[key] as string[];
+    if (!currentArray.includes(value.trim())) {
+      currentArray.push(value.trim());
+      setEditableParameters(updatedParams);
+    }
+  };
+
+  const removeParameterItem = (key: keyof DesignParameters, index: number) => {
+    if (!editableParameters) return;
+    const updatedParams = { ...editableParameters };
+    const currentArray = updatedParams[key] as string[];
+    currentArray.splice(index, 1);
+    setEditableParameters(updatedParams);
   };
 
   const handleTransformImage = () => {
@@ -427,15 +469,131 @@ export default function AIVisualization() {
     </Card>
   );
 
+  // Design examples and suggestions
+  const designExamples = {
+    wallCladding: [
+      'Natural Stone', 'Wood Paneling', 'Painted Drywall', 'Brick', 'Concrete', 
+      'Shiplap', 'Wainscoting', 'Tile', 'Wallpaper', 'Exposed Brick'
+    ],
+    flooringMaterial: [
+      'Hardwood', 'Marble', 'Tile', 'Concrete', 'Carpet', 
+      'Laminate', 'Vinyl', 'Bamboo', 'Cork', 'Stone'
+    ],
+    materials: [
+      'Wood', 'Metal', 'Glass', 'Stone', 'Fabric', 
+      'Leather', 'Ceramic', 'Concrete', 'Marble', 'Steel'
+    ],
+    colorPalette: [
+      'Warm White', 'Cool Gray', 'Natural Wood', 'Deep Blue', 'Sage Green',
+      'Terracotta', 'Charcoal', 'Cream', 'Navy', 'Beige'
+    ],
+    furnitureTypes: [
+      'Sectional Sofa', 'Accent Chair', 'Coffee Table', 'Dining Table', 'Floor Lamp',
+      'Ottoman', 'Bookshelf', 'Side Table', 'Pendant Light', 'Area Rug'
+    ]
+  };
+
+  const EditableParameterSection = ({ 
+    title, 
+    paramKey, 
+    items, 
+    examples 
+  }: { 
+    title: string; 
+    paramKey: keyof DesignParameters; 
+    items: string[]; 
+    examples: string[] 
+  }) => {
+    const [newItem, setNewItem] = useState('');
+
+    return (
+      <div className="space-y-3">
+        <Label className="text-base font-medium">{title}</Label>
+        <div className="flex flex-wrap gap-2">
+          {items.map((item, index) => (
+            <div key={index} className="flex items-center">
+              {isEditingParameters ? (
+                <div className="flex items-center space-x-1">
+                  <Input
+                    value={item}
+                    onChange={(e) => updateParameterArray(paramKey, index, e.target.value)}
+                    className="h-8 text-sm px-2 w-24"
+                  />
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeParameterItem(paramKey, index)}
+                    className="h-8 w-8 p-0 text-red-500"
+                  >
+                    ×
+                  </Button>
+                </div>
+              ) : (
+                <Badge variant="secondary">{item}</Badge>
+              )}
+            </div>
+          ))}
+        </div>
+        
+        {isEditingParameters && (
+          <div className="space-y-2">
+            <div className="flex space-x-2">
+              <Input
+                placeholder={`Add ${title.toLowerCase()}`}
+                value={newItem}
+                onChange={(e) => setNewItem(e.target.value)}
+                className="text-sm"
+              />
+              <Button
+                size="sm"
+                onClick={() => {
+                  addParameterItem(paramKey, newItem);
+                  setNewItem('');
+                }}
+                disabled={!newItem.trim()}
+              >
+                Add
+              </Button>
+            </div>
+            <div className="text-xs text-neutral-500">
+              <span className="font-medium">Examples: </span>
+              {examples.slice(0, 5).map((example, index) => (
+                <span key={index}>
+                  <button
+                    onClick={() => addParameterItem(paramKey, example)}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {example}
+                  </button>
+                  {index < 4 && ', '}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const renderParametersStep = () => (
-    <Card className="max-w-2xl mx-auto">
+    <Card className="max-w-3xl mx-auto">
       <CardHeader>
-        <CardTitle className="flex items-center">
-          <Settings className="w-6 h-6 mr-2" />
-          Design Parameters
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Settings className="w-6 h-6 mr-2" />
+            Design Parameters
+          </div>
+          {!isEditingParameters && extractedParameters && (
+            <Button variant="outline" size="sm" onClick={handleEditParameters}>
+              Edit Parameters
+            </Button>
+          )}
         </CardTitle>
         <p className="text-neutral-600">
-          Review and confirm the extracted design parameters
+          {isEditingParameters 
+            ? "Customize the design parameters to match your vision"
+            : "Review the extracted design parameters"
+          }
         </p>
       </CardHeader>
       <CardContent>
@@ -444,66 +602,78 @@ export default function AIVisualization() {
             <div className="animate-spin w-8 h-8 border-2 border-neutral-300 border-t-black rounded-full mx-auto mb-4"></div>
             <p className="text-neutral-600">Analyzing your design preferences...</p>
           </div>
-        ) : extractedParameters ? (
+        ) : editableParameters ? (
           <div className="space-y-6">
             <div>
               <Label className="text-base font-medium">Style</Label>
-              <Badge variant="outline" className="ml-2">{extractedParameters.style}</Badge>
+              {isEditingParameters ? (
+                <Select
+                  value={editableParameters.style}
+                  onValueChange={(value) => setEditableParameters(prev => prev ? {...prev, style: value} : null)}
+                >
+                  <SelectTrigger className="mt-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Modern">Modern</SelectItem>
+                    <SelectItem value="Contemporary">Contemporary</SelectItem>
+                    <SelectItem value="Traditional">Traditional</SelectItem>
+                    <SelectItem value="Minimalist">Minimalist</SelectItem>
+                    <SelectItem value="Industrial">Industrial</SelectItem>
+                    <SelectItem value="Scandinavian">Scandinavian</SelectItem>
+                    <SelectItem value="Bohemian">Bohemian</SelectItem>
+                    <SelectItem value="Farmhouse">Farmhouse</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Badge variant="outline" className="ml-2">{editableParameters.style}</Badge>
+              )}
             </div>
             
-            <div>
-              <Label className="text-base font-medium">Wall Cladding</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {extractedParameters.wallCladding.map((material, index) => (
-                  <Badge key={index} variant="secondary">{material}</Badge>
-                ))}
-              </div>
-            </div>
+            <EditableParameterSection
+              title="Wall Cladding"
+              paramKey="wallCladding"
+              items={editableParameters.wallCladding}
+              examples={designExamples.wallCladding}
+            />
             
-            <div>
-              <Label className="text-base font-medium">Flooring Material</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {extractedParameters.flooringMaterial.map((material, index) => (
-                  <Badge key={index} variant="secondary">{material}</Badge>
-                ))}
-              </div>
-            </div>
+            <EditableParameterSection
+              title="Flooring Material"
+              paramKey="flooringMaterial"
+              items={editableParameters.flooringMaterial}
+              examples={designExamples.flooringMaterial}
+            />
             
-            <div>
-              <Label className="text-base font-medium">Materials</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {extractedParameters.materials.map((material, index) => (
-                  <Badge key={index} variant="outline">{material}</Badge>
-                ))}
-              </div>
-            </div>
+            <EditableParameterSection
+              title="Materials"
+              paramKey="materials"
+              items={editableParameters.materials}
+              examples={designExamples.materials}
+            />
             
-            <div>
-              <Label className="text-base font-medium">Color Palette</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {extractedParameters.colorPalette.map((color, index) => (
-                  <Badge key={index} variant="outline">{color}</Badge>
-                ))}
-              </div>
-            </div>
+            <EditableParameterSection
+              title="Color Palette"
+              paramKey="colorPalette"
+              items={editableParameters.colorPalette}
+              examples={designExamples.colorPalette}
+            />
             
-            <div>
-              <Label className="text-base font-medium">Furniture Types</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {extractedParameters.furnitureTypes.map((type, index) => (
-                  <Badge key={index} variant="secondary">{type}</Badge>
-                ))}
-              </div>
-            </div>
+            <EditableParameterSection
+              title="Furniture Types"
+              paramKey="furnitureTypes"
+              items={editableParameters.furnitureTypes}
+              examples={designExamples.furnitureTypes}
+            />
             
-            {extractedParameters.architecturalFeatures && extractedParameters.architecturalFeatures.length > 0 && (
+            {editableParameters.architecturalFeatures && editableParameters.architecturalFeatures.length > 0 && (
               <div>
                 <Label className="text-base font-medium">Architectural Features</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {extractedParameters.architecturalFeatures.map((feature, index) => (
+                  {editableParameters.architecturalFeatures.map((feature, index) => (
                     <Badge key={index} variant="outline">{feature}</Badge>
                   ))}
                 </div>
+                <p className="text-xs text-neutral-500 mt-1">These features will be preserved during transformation</p>
               </div>
             )}
             
@@ -513,9 +683,22 @@ export default function AIVisualization() {
               <Button variant="outline" onClick={() => setCurrentStep('inspiration')}>
                 Back
               </Button>
-              <Button onClick={handleConfirmParameters}>
-                Confirm Parameters <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              <div className="flex space-x-2">
+                {isEditingParameters ? (
+                  <>
+                    <Button variant="outline" onClick={() => setIsEditingParameters(false)}>
+                      Cancel
+                    </Button>
+                    <Button onClick={handleSaveParameters}>
+                      Save Changes
+                    </Button>
+                  </>
+                ) : (
+                  <Button onClick={handleConfirmParameters}>
+                    Confirm Parameters <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         ) : (
