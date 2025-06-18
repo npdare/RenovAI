@@ -177,11 +177,11 @@ export default function AIVisualization() {
     onSuccess: (data: ArchitecturalAnalysis) => {
       setArchitecturalAnalysis(data);
       setEditableArchitecture(data);
-      setCurrentStep('inspiration');
-      setProgress(25);
+      setCurrentStep('architecture');
+      setProgress(20);
       toast({
         title: "Architecture Analyzed",
-        description: "Detected structural elements and features"
+        description: "Review detected structural elements and choose modifications"
       });
     },
     onError: () => {
