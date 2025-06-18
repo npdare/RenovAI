@@ -210,15 +210,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return {
           roomType: aiResult.spaceType || 'Living Space',
           style: aiResult.architecturalStyle || 'Contemporary',
-          spaceType: 'interior' as const,
-          detectedCategories: [],
+          spaceType: 'interior' as 'interior' | 'exterior',
+          detectedCategories: [] as { name: string; items: string[]; confidence: number }[],
           wallCladding: wallMaterials.length > 0 ? wallMaterials : ['Natural wall finish'],
           flooringMaterial: floorMaterials.length > 0 ? floorMaterials : ['Natural flooring'],
           materials: allMaterials.length > 0 ? allMaterials : ['Natural materials'],
           colorPalette: aiResult.colorScheme || ['Neutral tones'],
-          furnitureTypes: [],
-          ceilingDetails: [],
-          lightingFixtures: [],
+          furnitureTypes: [] as string[],
+          ceilingDetails: [] as string[],
+          lightingFixtures: [] as string[],
           architecturalFeatures: aiResult.notableFeatures || []
         };
       };
@@ -237,7 +237,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const refAnalysis = await analyzeReferenceImages(referenceImages);
         
         if (refAnalysis.style) enhancedParameters.style = refAnalysis.style;
-        enhancedParameters.spaceType = refAnalysis.spaceType || enhancedParameters.spaceType;
+        enhancedParameters.spaceType = refAnalysis.spaceType;
         
         // Store dynamic categories and map to legacy arrays for compatibility
         enhancedParameters.detectedCategories = refAnalysis.detectedCategories;
@@ -311,13 +311,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const parameters = {
         roomType: enhancedParameters.roomType || 'Living Space',
         style: enhancedParameters.style || 'Contemporary',
-        spaceType: 'interior' as const,
+        spaceType: enhancedParameters.spaceType || 'interior' as 'interior' | 'exterior',
+        detectedCategories: enhancedParameters.detectedCategories || [],
         wallCladding: removeDuplicates(enhancedParameters.wallCladding || ['Natural wall finish']),
         flooringMaterial: removeDuplicates(enhancedParameters.flooringMaterial || ['Natural flooring']),
         materials: removeDuplicates(enhancedParameters.materials || ['Natural materials']),
         colorPalette: removeDuplicates(enhancedParameters.colorPalette || ['Neutral tones']),
-        architecturalFeatures: enhancedParameters.architecturalFeatures || [],
-        naturalCategories: enhancedParameters.naturalCategories || {}
+        furnitureTypes: removeDuplicates(enhancedParameters.furnitureTypes || []),
+        ceilingDetails: removeDuplicates(enhancedParameters.ceilingDetails || []),
+        lightingFixtures: removeDuplicates(enhancedParameters.lightingFixtures || []),
+        architecturalFeatures: enhancedParameters.architecturalFeatures || []
       };
 
       res.json(parameters);
