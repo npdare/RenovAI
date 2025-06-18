@@ -26,293 +26,90 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
 // Configure multer for file uploads
 const upload = multer({
-  storage: multer.diskStorage({
-    destination: uploadsDir,
-    filename: (req: any, file: any, cb: any) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
-  }),
+  dest: 'uploads/',
   limits: {
-    fileSize: 15 * 1024 * 1024 // 15MB limit
+    fileSize: 10 * 1024 * 1024, // 10MB limit
   },
-  fileFilter: (req: any, file: any, cb: any) => {
-    const allowedTypes = /jpeg|jpg|png|webp|pdf/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = allowedTypes.test(file.mimetype);
-    
-    if (extname && mimetype) {
-      return cb(null, true);
+  fileFilter: (req, file, cb) => {
+    // Allow images
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
     } else {
-      cb(new Error('Only image files (JPEG, PNG, WebP) and PDF files are allowed'));
+      cb(new Error('Only image files are allowed'), false);
     }
   }
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Serve uploaded files
-  app.use('/uploads', express.static(uploadsDir));
+  // Serve uploaded files statically
+  app.use('/uploads', express.static('uploads'));
 
-  // Photo routes
+  // Photo management endpoints
+  app.get('/api/photos', async (req: Request, res: Response) => {
+    try {
+      const userId = 1; // Mock user for now
+      const photos = await storage.getPhotosByUser(userId);
+      res.json(photos);
+    } catch (error) {
+      console.error('Get photos error:', error);
+      res.status(500).json({ error: 'Failed to get photos' });
+    }
+  });
+
+  app.get('/api/photos/type/:type', async (req: Request, res: Response) => {
+    try {
+      const userId = 1; // Mock user for now
+      const type = req.params.type;
+      const photos = await storage.getPhotosByType(userId, type);
+      res.json(photos);
+    } catch (error) {
+      console.error('Get photos by type error:', error);
+      res.status(500).json({ error: 'Failed to get photos by type' });
+    }
+  });
+
   app.post('/api/photos/upload', upload.array('photos', 10), async (req: any, res: Response) => {
     try {
-      if (!req.files || !Array.isArray(req.files)) {
-        return res.status(400).json({ message: 'No files uploaded' });
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json({ error: 'No files uploaded' });
       }
 
-      const { type = 'home', category, userId = 1 } = req.body;
+      const userId = 1; // Mock user for now
+      const uploadedPhotos = [];
 
-      const photos = [];
-      for (const file of req.files) {
+      for (const file of files) {
         const photoData = {
-          userId: parseInt(userId),
+          userId,
           filename: file.filename,
           originalName: file.originalname,
-          type,
-          category: category || null,
-          url: `/uploads/${file.filename}`
+          url: `/uploads/${file.filename}`,
+          type: req.body.type || 'original',
+          category: req.body.category || 'uncategorized'
         };
 
-        const validatedData = insertPhotoSchema.parse(photoData);
-        const photo = await storage.createPhoto(validatedData);
-        photos.push(photo);
+        const photo = await storage.createPhoto(photoData);
+        uploadedPhotos.push(photo);
       }
 
-      res.json(photos);
+      res.json({ 
+        success: true, 
+        photos: uploadedPhotos,
+        message: `Successfully uploaded ${uploadedPhotos.length} photo(s)`
+      });
     } catch (error) {
       console.error('Upload error:', error);
-      res.status(400).json({ message: error instanceof Error ? error.message : 'Upload failed' });
+      res.status(500).json({ error: 'Failed to upload photos' });
     }
   });
 
-  app.get('/api/photos', async (req, res) => {
-    try {
-      const { userId = 1, type } = req.query;
-      
-      let photos;
-      if (type && typeof type === 'string') {
-        photos = await storage.getPhotosByType(parseInt(userId as string), type);
-      } else {
-        photos = await storage.getPhotosByUser(parseInt(userId as string));
-      }
-      
-      res.json(photos);
-    } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : 'Failed to fetch photos' });
-    }
-  });
-
-  app.delete('/api/photos/:id', async (req, res) => {
-    try {
-      const photoId = parseInt(req.params.id);
-      const photo = await storage.getPhoto(photoId);
-      
-      if (!photo) {
-        return res.status(404).json({ message: 'Photo not found' });
-      }
-
-      // Delete file from disk
-      const filePath = path.join(uploadsDir, photo.filename);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-
-      await storage.deletePhoto(photoId);
-      res.json({ message: 'Photo deleted successfully' });
-    } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : 'Failed to delete photo' });
-    }
-  });
-
-  // Design board routes
-  app.get('/api/boards', async (req, res) => {
-    try {
-      const { userId = 1 } = req.query;
-      const boards = await storage.getDesignBoardsByUser(parseInt(userId as string));
-      res.json(boards);
-    } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : 'Failed to fetch boards' });
-    }
-  });
-
-  app.post('/api/boards', async (req, res) => {
-    try {
-      const boardData = { ...req.body, userId: req.body.userId || 1 };
-      const validatedData = insertDesignBoardSchema.parse(boardData);
-      const board = await storage.createDesignBoard(validatedData);
-      res.json(board);
-    } catch (error) {
-      res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to create board' });
-    }
-  });
-
-  app.put('/api/boards/:id', async (req, res) => {
-    try {
-      const boardId = parseInt(req.params.id);
-      const updates = insertDesignBoardSchema.partial().parse(req.body);
-      const board = await storage.updateDesignBoard(boardId, updates);
-      
-      if (!board) {
-        return res.status(404).json({ message: 'Board not found' });
-      }
-      
-      res.json(board);
-    } catch (error) {
-      res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to update board' });
-    }
-  });
-
-  app.delete('/api/boards/:id', async (req, res) => {
-    try {
-      const boardId = parseInt(req.params.id);
-      await storage.deleteDesignBoard(boardId);
-      res.json({ message: 'Board deleted successfully' });
-    } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : 'Failed to delete board' });
-    }
-  });
-
-  // Board photo routes
-  app.get('/api/boards/:id/photos', async (req, res) => {
-    try {
-      const boardId = parseInt(req.params.id);
-      const photos = await storage.getBoardPhotos(boardId);
-      res.json(photos);
-    } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : 'Failed to fetch board photos' });
-    }
-  });
-
-  app.post('/api/boards/:id/photos', async (req, res) => {
-    try {
-      const boardId = parseInt(req.params.id);
-      const { photoId } = req.body;
-      
-      const boardPhotoData = { boardId, photoId };
-      const validatedData = insertBoardPhotoSchema.parse(boardPhotoData);
-      const boardPhoto = await storage.addPhotoToBoard(validatedData);
-      
-      res.json(boardPhoto);
-    } catch (error) {
-      res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to add photo to board' });
-    }
-  });
-
-  app.delete('/api/boards/:boardId/photos/:photoId', async (req, res) => {
-    try {
-      const boardId = parseInt(req.params.boardId);
-      const photoId = parseInt(req.params.photoId);
-      
-      await storage.removePhotoFromBoard(boardId, photoId);
-      res.json({ message: 'Photo removed from board successfully' });
-    } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : 'Failed to remove photo from board' });
-    }
-  });
-
-  // Comparison routes
-  app.get('/api/comparisons', async (req, res) => {
-    try {
-      const { userId = 1 } = req.query;
-      const comparisons = await storage.getComparisonsByUser(parseInt(userId as string));
-      res.json(comparisons);
-    } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : 'Failed to fetch comparisons' });
-    }
-  });
-
-  app.post('/api/comparisons', async (req, res) => {
-    try {
-      const comparisonData = { ...req.body, userId: req.body.userId || 1 };
-      const validatedData = insertComparisonSchema.parse(comparisonData);
-      const comparison = await storage.createComparison(validatedData);
-      res.json(comparison);
-    } catch (error) {
-      res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to create comparison' });
-    }
-  });
-
-  app.put('/api/comparisons/:id', async (req, res) => {
-    try {
-      const comparisonId = parseInt(req.params.id);
-      const updates = insertComparisonSchema.partial().parse(req.body);
-      const comparison = await storage.updateComparison(comparisonId, updates);
-      
-      if (!comparison) {
-        return res.status(404).json({ message: 'Comparison not found' });
-      }
-      
-      res.json(comparison);
-    } catch (error) {
-      res.status(400).json({ message: error instanceof Error ? error.message : 'Failed to update comparison' });
-    }
-  });
-
-  app.delete('/api/comparisons/:id', async (req, res) => {
-    try {
-      const comparisonId = parseInt(req.params.id);
-      await storage.deleteComparison(comparisonId);
-      res.json({ message: 'Comparison deleted successfully' });
-    } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : 'Failed to delete comparison' });
-    }
-  });
-
-  // Product image proxy endpoint
-  app.get('/api/proxy-image', async (req: Request, res: Response) => {
-    try {
-      const imageUrl = req.query.url as string;
-      if (!imageUrl) {
-        return res.status(400).json({ error: 'Image URL required' });
-      }
-
-      const response = await fetch(imageUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-          'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.9',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'DNT': '1',
-          'Connection': 'keep-alive',
-          'Upgrade-Insecure-Requests': '1',
-        }
-      });
-
-      if (!response.ok) {
-        console.error(`Failed to fetch image: ${response.status} ${response.statusText}`);
-        return res.status(404).json({ error: 'Image not found' });
-      }
-
-      const contentType = response.headers.get('content-type') || 'image/jpeg';
-      const imageBuffer = await response.arrayBuffer();
-
-      res.set({
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=86400',
-        'Access-Control-Allow-Origin': '*',
-        'Cross-Origin-Resource-Policy': 'cross-origin'
-      });
-
-      res.send(Buffer.from(imageBuffer));
-    } catch (error) {
-      console.error('Image proxy error:', error);
-      res.status(500).json({ error: 'Failed to proxy image' });
-    }
-  });
-
-  // AI Analysis endpoint - analyze uploaded room photo
+  // AI endpoints
   app.post('/api/ai/analyze', upload.single('photo'), async (req: any, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json({ error: 'No photo provided' });
+        return res.status(400).json({ error: 'Photo file is required' });
       }
 
       const analysis = await analyzeRoomPhoto(req.file.path);
@@ -320,68 +117,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('AI analysis error:', error);
       res.status(500).json({ error: 'Failed to analyze photo' });
-    }
-  });
-
-  // AI Redesign endpoint - generate room redesign using DALL-E
-  app.post('/api/ai/redesign', upload.single('photo'), async (req: any, res: Response) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: 'No photo provided' });
-      }
-
-      const { designStyle = 'modern', roomType = 'living room' } = req.body;
-      const result = await generateRoomRedesign(req.file.path, designStyle, roomType);
-      res.json(result);
-    } catch (error) {
-      console.error('AI redesign error:', error);
-      res.status(500).json({ error: 'Failed to generate redesign' });
-    }
-  });
-
-  // AI Inspiration endpoint - generate design inspiration
-  app.post('/api/ai/inspiration', async (req: Request, res: Response) => {
-    try {
-      const { style = 'modern', roomType = 'living room', colorPreferences } = req.body;
-      const result = await generateDesignInspiration(style, roomType, colorPreferences);
-      res.json(result);
-    } catch (error) {
-      console.error('AI inspiration error:', error);
-      res.status(500).json({ error: 'Failed to generate inspiration' });
-    }
-  });
-
-  // AI Recommendations endpoint - get personalized design recommendations
-  app.post('/api/ai/recommendations', upload.array('photos', 5), async (req: any, res: Response) => {
-    try {
-      const photoPaths = req.files?.map((file: any) => file.path) || [];
-      const { preferredStyles = ['modern'], budget } = req.body;
-      
-      if (photoPaths.length === 0) {
-        return res.status(400).json({ error: 'No photos provided' });
-      }
-
-      const recommendations = await getDesignRecommendations(photoPaths, preferredStyles, budget);
-      res.json(recommendations);
-    } catch (error) {
-      console.error('AI recommendations error:', error);
-      res.status(500).json({ error: 'Failed to get recommendations' });
-    }
-  });
-
-  // AI Products endpoint - get product recommendations
-  app.post('/api/ai/products', upload.single('photo'), async (req: any, res: Response) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: 'No photo provided' });
-      }
-
-      const { budget } = req.body;
-      const products = await generateProductRecommendations(req.file.path, budget);
-      res.json(products);
-    } catch (error) {
-      console.error('AI products error:', error);
-      res.status(500).json({ error: 'Failed to get product recommendations' });
     }
   });
 
@@ -404,17 +139,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const photoPath = files.photo[0].path;
       
-      // Extract precise architectural parameters using OpenAI Vision
+      // Extract precise architectural parameters using OpenAI Vision with natural categorization
       const imageBuffer = fs.readFileSync(photoPath);
       const base64Image = imageBuffer.toString('base64');
 
-      // Detailed parameter extraction with specific material descriptions
-      const analysisResponse = await new OpenAI({ apiKey: process.env.OPENAI_API_KEY }).chat.completions.create({
+      const analysisResponse = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: "Extract detailed material descriptions with colors, textures, and finishes. Be specific about tones, patterns, and material characteristics."
+            content: "You are an expert architectural analyst. Analyze images and identify all visible elements naturally, creating categories based on what you observe rather than predefined structures."
           },
           {
             role: "user",
@@ -439,14 +173,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 type: "image_url",
                 image_url: {
                   url: `data:image/jpeg;base64,${base64Image}`,
-                  detail: "high" // Use high detail for better material analysis
+                  detail: "high"
                 }
               }
             ],
           },
         ],
         response_format: { type: "json_object" },
-        max_tokens: 500, // Increased for detailed descriptions
+        max_tokens: 500,
       });
 
       const analysisResult = JSON.parse(analysisResponse.choices[0].message.content || '{}');
@@ -455,7 +189,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const transformNaturalAnalysis = (aiResult: any) => {
         const surfaceMaterials = aiResult.surfaceMaterials || {};
         
-        // Extract materials from AI's natural categories
         const allMaterials = [];
         const wallMaterials = [];
         const floorMaterials = [];
@@ -482,69 +215,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
           materials: allMaterials.length > 0 ? allMaterials : ['Natural materials'],
           colorPalette: aiResult.colorScheme || ['Neutral tones'],
           architecturalFeatures: aiResult.notableFeatures || [],
-          naturalCategories: surfaceMaterials // Preserve AI's original categorization
+          naturalCategories: surfaceMaterials
         };
       };
 
-      // Process AI's natural analysis
       let enhancedParameters = transformNaturalAnalysis(analysisResult);
-        
-        // Extract detailed materials from text prompt using pattern matching
-        const materialKeywords = {
-          'stone': 'Natural stone with textured finish',
-          'limestone': 'Light-toned limestone cladding',
-          'sandstone': 'Warm sandstone with natural grain',
-          'granite': 'Polished granite with mineral patterns',
-          'wood': 'Natural wood paneling with visible grain', 
-          'oak': 'Rich oak wood with warm undertones',
-          'walnut': 'Dark walnut wood with fine grain',
-          'cedar': 'Weathered cedar with natural patina',
-          'marble': 'Polished marble with veining',
-          'concrete': 'Smooth concrete with subtle texture',
-          'brick': 'Traditional brick with mortar joints',
-          'metal': 'Brushed metal with matte finish',
-          'steel': 'Industrial steel with raw finish',
-          'glass': 'Clear glass with minimal framing',
-          'tile': 'Ceramic tile with consistent pattern'
-        };
-        
-        const colorKeywords = {
-          'white': 'Crisp white with clean finish',
-          'black': 'Deep black with matte texture',
-          'gray': 'Neutral gray with subtle variations',
-          'grey': 'Soft grey with warm undertones',
-          'blue': 'Calming blue with depth',
-          'navy': 'Deep navy with rich saturation',
-          'green': 'Natural green with earthy tones',
-          'beige': 'Warm beige with creamy texture',
-          'brown': 'Rich brown with natural depth',
-          'neutral': 'Balanced neutral palette',
-          'warm': 'Warm-toned color scheme',
-          'cool': 'Cool-toned color palette'
-        };
 
-        const lowerPrompt = textPrompt.toLowerCase();
-        
-        // Extract materials from text
-        const extractedMaterials = Object.entries(materialKeywords)
-          .filter(([keyword]) => lowerPrompt.includes(keyword))
-          .map(([, material]) => material);
-        
-        if (extractedMaterials.length > 0) {
-          enhancedParameters.materials = [...(enhancedParameters.materials || []), ...extractedMaterials];
-        }
-
-        // Extract colors from text
-        const extractedColors = Object.entries(colorKeywords)
-          .filter(([keyword]) => lowerPrompt.includes(keyword))
-          .map(([, color]) => color);
-        
-        if (extractedColors.length > 0) {
-          enhancedParameters.colorPalette = [...(enhancedParameters.colorPalette || []), ...extractedColors];
-        }
-      }
-      
-      // Process reference images with comprehensive architectural analysis
+      // Process reference images
       const referenceImages = [];
       for (let i = 0; i < 5; i++) {
         if (files[`referenceImage${i}`]) {
@@ -555,63 +232,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (referenceImages.length > 0) {
         const refAnalysis = await analyzeReferenceImages(referenceImages);
         
-        // Merge extracted data with enhanced parameters
         if (refAnalysis.style) enhancedParameters.style = refAnalysis.style;
         if (refAnalysis.materials?.length) {
-          enhancedParameters.materials = [...(enhancedParameters.materials || []), ...refAnalysis.materials];
+          enhancedParameters.materials = [...enhancedParameters.materials, ...refAnalysis.materials];
         }
         if (refAnalysis.colors?.length) {
-          enhancedParameters.colorPalette = [...(enhancedParameters.colorPalette || []), ...refAnalysis.colors];
+          enhancedParameters.colorPalette = [...enhancedParameters.colorPalette, ...refAnalysis.colors];
         }
         if (refAnalysis.wallCladding?.length) {
-          enhancedParameters.wallCladding = [...(enhancedParameters.wallCladding || []), ...refAnalysis.wallCladding];
+          enhancedParameters.wallCladding = [...enhancedParameters.wallCladding, ...refAnalysis.wallCladding];
         }
         if (refAnalysis.flooringMaterial?.length) {
-          enhancedParameters.flooringMaterial = [...(enhancedParameters.flooringMaterial || []), ...refAnalysis.flooringMaterial];
+          enhancedParameters.flooringMaterial = [...enhancedParameters.flooringMaterial, ...refAnalysis.flooringMaterial];
         }
         if (refAnalysis.architecturalFeatures?.length) {
-          enhancedParameters.architecturalFeatures = [...(enhancedParameters.architecturalFeatures || []), ...refAnalysis.architecturalFeatures];
+          enhancedParameters.architecturalFeatures = [...enhancedParameters.architecturalFeatures, ...refAnalysis.architecturalFeatures];
         }
       }
 
-      // Process Pinterest URL if provided
+      // Process Pinterest URL
       if (pinterestUrl) {
         const pinterestAnalysis = await analyzePinterestBoard(pinterestUrl);
         
-        // Merge Pinterest analysis with enhanced parameters
         if (pinterestAnalysis.style) enhancedParameters.style = pinterestAnalysis.style;
         if (pinterestAnalysis.materials?.length) {
-          enhancedParameters.materials = [...(enhancedParameters.materials || []), ...pinterestAnalysis.materials];
+          enhancedParameters.materials = [...enhancedParameters.materials, ...pinterestAnalysis.materials];
         }
         if (pinterestAnalysis.colors?.length) {
-          enhancedParameters.colorPalette = [...(enhancedParameters.colorPalette || []), ...pinterestAnalysis.colors];
+          enhancedParameters.colorPalette = [...enhancedParameters.colorPalette, ...pinterestAnalysis.colors];
         }
       }
 
-      // Enhanced text prompt analysis if provided
+      // Process text prompt
       if (textPrompt) {
         const textAnalysis = await analyzeTextPrompt(textPrompt);
         
-        // Merge text analysis with enhanced parameters
         if (textAnalysis.style) enhancedParameters.style = textAnalysis.style;
         if (textAnalysis.materials?.length) {
-          enhancedParameters.materials = [...(enhancedParameters.materials || []), ...textAnalysis.materials];
+          enhancedParameters.materials = [...enhancedParameters.materials, ...textAnalysis.materials];
         }
         if (textAnalysis.colors?.length) {
-          enhancedParameters.colorPalette = [...(enhancedParameters.colorPalette || []), ...textAnalysis.colors];
+          enhancedParameters.colorPalette = [...enhancedParameters.colorPalette, ...textAnalysis.colors];
         }
         if (textAnalysis.architecturalFeatures?.length) {
-          enhancedParameters.architecturalFeatures = [...(enhancedParameters.architecturalFeatures || []), ...textAnalysis.architecturalFeatures];
+          enhancedParameters.architecturalFeatures = [...enhancedParameters.architecturalFeatures, ...textAnalysis.architecturalFeatures];
         }
       }
       
-      // Remove duplicates from arrays
+      // Remove duplicates
       const removeDuplicates = (arr: any[]) => {
         if (!Array.isArray(arr)) return [];
         return arr.filter((item, index, self) => self.indexOf(item) === index);
       };
 
-      // Final parameter structure using AI's natural categorization
       const parameters = {
         roomType: enhancedParameters.roomType || 'Living Space',
         style: enhancedParameters.style || 'Contemporary',
@@ -621,7 +294,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         materials: removeDuplicates(enhancedParameters.materials || ['Natural materials']),
         colorPalette: removeDuplicates(enhancedParameters.colorPalette || ['Neutral tones']),
         architecturalFeatures: enhancedParameters.architecturalFeatures || [],
-        naturalCategories: enhancedParameters.naturalCategories || {} // Preserve AI's original categorization
+        naturalCategories: enhancedParameters.naturalCategories || {}
       };
 
       res.json(parameters);
@@ -631,18 +304,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // AI Design Studio - Transform Image endpoint
+  // Transform image endpoint
   app.post('/api/ai/transform-image', upload.single('photo'), async (req: any, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json({ error: 'Photo is required' });
+        return res.status(400).json({ error: 'Photo file is required' });
       }
 
-      const { parameters, strength } = req.body;
-      const parsedParameters = JSON.parse(parameters);
-      const transformationStrength = parseInt(strength);
+      const { parameters: paramString, transformationStrength = 75 } = req.body;
+      
+      let parsedParameters;
+      try {
+        parsedParameters = JSON.parse(paramString);
+      } catch (parseError) {
+        return res.status(400).json({ error: 'Invalid parameters format' });
+      }
 
-      // Use the proper AI transformation function
       const result = await transformImageWithParameters(
         req.file.path,
         parsedParameters,
