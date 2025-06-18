@@ -418,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             content: [
               {
                 type: "text",
-                text: `Analyze materials with detailed descriptions. Use format:
+                text: `Analyze materials with detailed descriptions. Return response in JSON format with these fields:
                 {
                   "roomType": "specific room name",
                   "style": "architectural style",
@@ -531,7 +531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               content: [
                 {
                   type: "text",
-                  text: "Extract detailed style and 3 specific materials with descriptions: {\"style\":\"detailed style name\",\"materials\":[\"material with color/texture detail\",\"second material with finish\",\"third material with characteristics\"]}"
+                  text: "Extract detailed style and 3 specific materials with descriptions. Return JSON format: {\"style\":\"detailed style name\",\"materials\":[\"material with color/texture detail\",\"second material with finish\",\"third material with characteristics\"]}"
                 },
                 {
                   type: "image_url",
