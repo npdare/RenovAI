@@ -158,6 +158,14 @@ export default function AIVisualization() {
   const [selectedElement, setSelectedElement] = useState<InteractiveElement | null>(null);
   const [showProductPanel, setShowProductPanel] = useState(false);
   
+  // V2 Pipeline State
+  const [useV2Pipeline, setUseV2Pipeline] = useState(false);
+  const [v2JobId, setV2JobId] = useState<string | null>(null);
+  const [v2Masks, setV2Masks] = useState<string[]>([]);
+  const [selectedMasks, setSelectedMasks] = useState<number[]>([]);
+  const [v2PreprocessingResult, setV2PreprocessingResult] = useState<any>(null);
+  const [showMaskEditor, setShowMaskEditor] = useState(false);
+  
   const uploadedPhotoRef = useRef<HTMLDivElement>(null);
   const architecturalStepRef = useRef<HTMLDivElement>(null);
   const inspirationStepRef = useRef<HTMLDivElement>(null);
@@ -255,6 +263,140 @@ export default function AIVisualization() {
         title: "Analysis Failed",
         description: "Unable to analyze architectural elements",
         variant: "destructive"
+      });
+    }
+  });
+
+  // V2 Preprocessing Mutation
+  const v2PreprocessMutation = useMutation({
+    mutationFn: async (): Promise<any> => {
+      if (!uploadedPhoto) throw new Error('No photo uploaded');
+      
+      const formData = new FormData();
+      formData.append('photo', uploadedPhoto.file);
+      
+      const response = await fetch('/api/v2/preprocess', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to preprocess image');
+      }
+      
+      return await response.json();
+      
+      return response;
+    },
+    onSuccess: (data) => {
+      setV2PreprocessingResult(data);
+      setV2JobId(data.jobId);
+      setV2Masks(data.maskURIs);
+      toast({
+        title: "V2 Preprocessing Complete",
+        description: "Masks and control images generated successfully",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Preprocessing Failed", 
+        description: "Failed to generate masks and control images",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // V2 Architectural Analysis Mutation
+  const v2ArchitecturalAnalysisMutation = useMutation({
+    mutationFn: async (): Promise<any> => {
+      if (!v2JobId || !v2Masks.length) throw new Error('No preprocessing data available');
+      
+      const response = await fetch('/api/v2/architectural-analysis', {
+        method: 'POST',
+        body: JSON.stringify({
+          jobId: v2JobId,
+          maskURIs: v2Masks
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to analyze architectural elements');
+      }
+      
+      return await response.json();
+      
+      return response;
+    },
+    onSuccess: (data) => {
+      const transformedData = {
+        elements: data.elements || [],
+        roomStructure: data.roomStructure || '',
+        detectedFeatures: data.detectedFeatures || []
+      };
+      setArchitecturalAnalysis(transformedData);
+      setEditableArchitecture(transformedData);
+      setCurrentStep('architecture');
+      
+      setTimeout(() => {
+        architecturalStepRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  });
+
+  // V2 Transform Mutation
+  const v2TransformMutation = useMutation({
+    mutationFn: async (): Promise<any> => {
+      if (!v2JobId) throw new Error('No preprocessing job available');
+      
+      const selectedMaskPaths = selectedMasks.map(index => v2Masks[index]);
+      
+      const prompt = `Professional architectural interior photography, ${editableParameters?.style || 'modern'} design style, featuring ${editableParameters?.detectedCategories?.map(cat => cat.items.join(' and ')).join(', ')} design elements, photorealistic, 8K resolution, professional lighting, architectural magazine quality, sharp focus, natural shadows`;
+      
+      const response = await fetch('/api/v2/transform-image', {
+        method: 'POST',
+        body: JSON.stringify({
+          jobId: v2JobId,
+          selectedMasks: selectedMaskPaths,
+          positivePrompt: prompt,
+          negativePrompt: "cartoon, illustration, painting, drawing, art, sketch, anime, low quality, blurry, distorted, unrealistic, fake, artificial, stylized",
+          seed: Math.floor(Math.random() * 1000000),
+          controlnetWeights: [1.2, 1.1, 1.0]
+        }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to transform image');
+      }
+      
+      return await response.json();
+      
+      return response;
+    },
+    onSuccess: (data) => {
+      const result = {
+        originalImage: v2PreprocessingResult?.originalImage || '',
+        transformedImage: data.resultURI,
+        transformationStrength: transformationStrength[0],
+        appliedParameters: editableParameters || {} as DesignParameters,
+        interactiveElements: []
+      };
+      
+      setTransformationResult(result);
+      setCurrentStep('review');
+      
+      setTimeout(() => {
+        transformStepRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      
+      toast({
+        title: "V2 Transformation Complete",
+        description: `Image transformed in ${data.processingTime}ms with ${Math.round(data.quality.iouScore * 100)}% geometry preservation`,
       });
     }
   });
@@ -696,22 +838,92 @@ export default function AIVisualization() {
                     </div>
                   </div>
                   
-                  <Button 
-                    onClick={handleAnalyzeArchitecture} 
-                    disabled={architecturalAnalysisMutation.isPending}
-                    className="w-full sm:w-auto bg-black text-white hover:bg-gray-800 font-medium px-8 py-3 shadow-lg hover:shadow-xl transition-all"
-                  >
-                    {architecturalAnalysisMutation.isPending ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Analyzing Design...
-                      </>
+                  <div className="flex flex-col space-y-3">
+                    {/* Pipeline Selection */}
+                    <div className="flex items-center justify-center space-x-3 p-3 bg-white border border-gray-200 rounded-lg">
+                      <Label className="text-sm font-medium text-gray-700">Pipeline:</Label>
+                      <button
+                        onClick={() => setUseV2Pipeline(false)}
+                        className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                          !useV2Pipeline 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        V1 Standard
+                      </button>
+                      <button
+                        onClick={() => setUseV2Pipeline(true)}
+                        className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
+                          useV2Pipeline 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        V2 Advanced
+                      </button>
+                    </div>
+                    
+                    {useV2Pipeline ? (
+                      <div className="space-y-2">
+                        <Button 
+                          onClick={() => v2PreprocessMutation.mutate()} 
+                          disabled={v2PreprocessMutation.isPending || v2ArchitecturalAnalysisMutation.isPending}
+                          className="w-full bg-blue-600 text-white hover:bg-blue-700 font-medium px-8 py-3 shadow-lg hover:shadow-xl transition-all"
+                        >
+                          {v2PreprocessMutation.isPending ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Generating Masks...
+                            </>
+                          ) : v2ArchitecturalAnalysisMutation.isPending ? (
+                            <>
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                              Analyzing Elements...
+                            </>
+                          ) : v2JobId ? (
+                            <>
+                              Continue to Mask Editor <ArrowRight className="w-4 h-4 ml-2" />
+                            </>
+                          ) : (
+                            <>
+                              Begin V2 Analysis <ArrowRight className="w-4 h-4 ml-2" />
+                            </>
+                          )}
+                        </Button>
+                        
+                        {v2JobId && (
+                          <Button 
+                            onClick={() => {
+                              setShowMaskEditor(true);
+                              v2ArchitecturalAnalysisMutation.mutate();
+                            }}
+                            variant="outline"
+                            className="w-full"
+                          >
+                            Open Mask Editor
+                          </Button>
+                        )}
+                      </div>
                     ) : (
-                      <>
-                        Begin AI Analysis <ArrowRight className="w-4 h-4 ml-2" />
-                      </>
+                      <Button 
+                        onClick={handleAnalyzeArchitecture} 
+                        disabled={architecturalAnalysisMutation.isPending}
+                        className="w-full bg-black text-white hover:bg-gray-800 font-medium px-8 py-3 shadow-lg hover:shadow-xl transition-all"
+                      >
+                        {architecturalAnalysisMutation.isPending ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Analyzing Design...
+                          </>
+                        ) : (
+                          <>
+                            Begin AI Analysis <ArrowRight className="w-4 h-4 ml-2" />
+                          </>
+                        )}
+                      </Button>
                     )}
-                  </Button>
+                  </div>
                 </div>
               </div>
             </div>
