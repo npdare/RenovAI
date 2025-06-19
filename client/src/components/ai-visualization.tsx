@@ -158,7 +158,7 @@ export default function AIVisualization() {
   const [selectedElement, setSelectedElement] = useState<InteractiveElement | null>(null);
   const [showProductPanel, setShowProductPanel] = useState(false);
   
-  // Production pipeline state (V1 only for reliability)
+  // Production mode - V1 pipeline only for reliability
   const productionMode = true;
   
   const uploadedPhotoRef = useRef<HTMLDivElement>(null);
@@ -262,44 +262,7 @@ export default function AIVisualization() {
     }
   });
 
-  // V2 Preprocessing Mutation
-  const v2PreprocessMutation = useMutation({
-    mutationFn: async (): Promise<any> => {
-      if (!uploadedPhoto) throw new Error('No photo uploaded');
-      
-      const formData = new FormData();
-      formData.append('photo', uploadedPhoto.file);
-      
-      const response = await fetch('/api/v2/preprocess', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to preprocess image');
-      }
-      
-      return await response.json();
-      
-      return response;
-    },
-    onSuccess: (data) => {
-      setV2PreprocessingResult(data);
-      setV2JobId(data.jobId);
-      setV2Masks(data.maskURIs);
-      toast({
-        title: "V2 Preprocessing Complete",
-        description: "Masks and control images generated successfully",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Preprocessing Failed", 
-        description: "Failed to generate masks and control images",
-        variant: "destructive"
-      });
-    }
-  });
+  // V2 features removed for production stability
 
   // V2 Architectural Analysis Mutation
   const v2ArchitecturalAnalysisMutation = useMutation({
