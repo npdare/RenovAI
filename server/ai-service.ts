@@ -357,17 +357,28 @@ OUTPUT SPECIFICATIONS:
 - High-resolution clarity, magazine quality
 - NO cartoon, illustration, or artistic interpretation`;
 
-    // Use direct image-to-image transformation with SDXL for better compatibility
-    console.log('Applying SDXL transformation...');
+    // Use conservative SDXL transformation focused on photorealism
+    console.log('Applying subtle SDXL transformation...');
     const base64ImageData = `data:image/jpeg;base64,${base64Image}`;
-    const denoisingStrength = Math.max(0.3, (transformationStrength / 100));
     
-    // Build prompt from dynamic categories or fallback to legacy parameters
-    const designElements = parameters.detectedCategories?.length > 0 
-      ? parameters.detectedCategories.map((cat: any) => cat.items.join(' and ')).join(', ')
-      : `${parameters.wallCladding?.join(' and ') || 'modern walls'} wall treatments, ${parameters.flooringMaterial?.join(' and ') || 'premium flooring'} flooring, ${parameters.colorPalette?.join(' and ') || 'neutral colors'} color scheme`;
+    // Use much lower strength for subtle, realistic changes (10-30% instead of 30-100%)
+    const conservativeStrength = Math.min(0.3, (transformationStrength / 400)); // Divide by 400 instead of 100
+    
+    // Select only the most important design element for focused transformation
+    let primaryDesignFocus = '';
+    if (parameters.detectedCategories?.length > 0) {
+      // Take only the first category to avoid overwhelming changes
+      const primaryCategory = parameters.detectedCategories[0];
+      primaryDesignFocus = primaryCategory.items[0] || 'subtle architectural enhancement';
+    } else {
+      primaryDesignFocus = `${parameters.wallCladding?.[0] || 'modern wall'} treatment`;
+    }
 
-    const architecturalPrompt = `Professional architectural ${parameters.spaceType || 'interior'} photography, ${parameters.style} design style, featuring ${designElements}, photorealistic, 8K resolution, professional lighting, architectural magazine quality, sharp focus, natural shadows`;
+    // Much more conservative prompt focused on preserving structure
+    const architecturalPrompt = `Subtle architectural enhancement with ${primaryDesignFocus}, maintain exact structure and proportions, photorealistic professional photography, natural lighting, preserve all existing details`;
+
+    console.log('Transformation strength:', conservativeStrength);
+    console.log('Primary design focus:', primaryDesignFocus);
 
     const transformation = await replicate.run(
       "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
@@ -375,10 +386,10 @@ OUTPUT SPECIFICATIONS:
         input: {
           image: base64ImageData,
           prompt: architecturalPrompt,
-          negative_prompt: "cartoon, illustration, painting, drawing, art, sketch, anime, low quality, blurry, distorted, unrealistic, fake, artificial, stylized",
-          num_inference_steps: 30,
-          guidance_scale: 7.5,
-          strength: denoisingStrength,
+          negative_prompt: "cartoon, illustration, painting, drawing, art, sketch, anime, low quality, blurry, distorted, unrealistic, fake, artificial, stylized, dramatic changes, different building, altered structure, fantasy, concept art",
+          num_inference_steps: 20,  // Reduced for more conservative results
+          guidance_scale: 6.0,      // Reduced for less dramatic interpretation
+          strength: conservativeStrength,
           seed: Math.floor(Math.random() * 1000000)
         }
       }
