@@ -144,6 +144,9 @@ export default function AIVisualization() {
   
   const uploadedPhotoRef = useRef<HTMLDivElement>(null);
   const architecturalStepRef = useRef<HTMLDivElement>(null);
+  const inspirationStepRef = useRef<HTMLDivElement>(null);
+  const parametersStepRef = useRef<HTMLDivElement>(null);
+  const transformStepRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   // Step 1: Photo Upload Dropzone
@@ -473,6 +476,14 @@ export default function AIVisualization() {
   const handleConfirmArchitecture = () => {
     setCurrentStep('inspiration');
     setProgress(25);
+    
+    // Auto-scroll to inspiration step
+    setTimeout(() => {
+      inspirationStepRef.current?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }, 300);
   };
 
   const handleExtractParameters = () => {
