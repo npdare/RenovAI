@@ -448,7 +448,7 @@ export async function analyzeArchitecturalElements(imagePath: string): Promise<A
           content: [
             {
               type: "text",
-              text: `Analyze this interior/exterior photo with detailed architectural assessment. Provide comprehensive space analysis and identify structural elements that can be modified. For each element, suggest 8-10 realistic alternative options.
+              text: `Analyze this interior/exterior photo with detailed architectural assessment. Identify ALL visible architectural elements with specific details. Be comprehensive and specific about what you see.
 
 COMPREHENSIVE SPACE ANALYSIS:
 - Room dimensions and proportions
@@ -458,26 +458,33 @@ COMPREHENSIVE SPACE ANALYSIS:
 - Space functionality and flow
 - Notable architectural details
 
-STRUCTURAL ELEMENTS TO DETECT:
-- Windows (casement, double-hung, sliding, bay, picture, awning, hopper, tilt-turn, garden, etc.)
-- Doors (panel, flush, French, sliding, barn, pivot, glass, pocket, bifold, etc.)
-- Flooring (hardwood, tile, carpet, laminate, vinyl, concrete, stone, bamboo, cork, etc.)
-- Ceilings (flat, coffered, vaulted, tray, cathedral, beamed, dropped, etc.)
-- Wall treatments (paint, wallpaper, wood paneling, brick, stone, tile, fabric, etc.)
-- Lighting fixtures (pendant, chandelier, recessed, track, sconce, floor, table, etc.)
-- Architectural features (columns, beams, moldings, arches, niches, etc.)
+EXTRACT SPECIFIC ARCHITECTURAL ELEMENTS VISIBLE:
+For WINDOWS: Count and describe each window type (e.g., "3 double-hung windows with white trim", "Large bay window with multiple panes")
+For DOORS: Identify all doors (entry, interior, closet, etc.) with styles
+For ROOFING: Describe roof materials, style, gutters, chimneys if visible
+For EXTERIOR CLADDING: Wall materials like brick, siding, stucco, stone, etc.
+For FLOORING: Specific materials and patterns visible
+For WALLS: Paint, wallpaper, paneling, brick, tile - be specific about what's visible
+For CEILINGS: Height, materials, features like beams, coffering
+For LIGHTING: All visible fixtures - pendant, recessed, chandeliers, sconces
+For TRIM/MOLDING: Baseboards, crown molding, window trim, door trim
+For ARCHITECTURAL FEATURES: Columns, arches, built-ins, fireplaces, stairs
+For LANDSCAPING: Plants, hardscaping, outdoor features if exterior
+For FIXTURES: Hardware, faucets, cabinet handles if visible
 
-Return JSON format:
+Return JSON with specific detected elements:
 {
   "roomStructure": "Detailed 3-4 sentence description of the space including dimensions, layout, architectural style, lighting conditions, and overall aesthetic character",
   "detectedFeatures": ["list of notable architectural features and design elements"],
   "elements": [
     {
-      "type": "element category (e.g., 'windows', 'doors', 'flooring')",
-      "current": "current detected type with brief description",
+      "category": "major category (windows, doors, roofing, cladding, flooring, walls, ceilings, lighting, trim, features)",
+      "specificType": "what exactly you see (e.g., 'Double-hung windows with white trim')",
+      "quantity": "how many if countable",
+      "currentCondition": "brief assessment of current state",
       "alternatives": ["alt1", "alt2", "alt3", "alt4", "alt5", "alt6", "alt7", "alt8"],
-      "selected": "current detected type",
-      "keepOriginal": true
+      "action": "retain",
+      "selectedStyle": ""
     }
   ]
 }`

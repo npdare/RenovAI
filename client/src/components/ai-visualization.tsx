@@ -95,11 +95,13 @@ interface ComparableProduct {
 
 // Step 3a: Architectural Elements from Original Photo
 interface ArchitecturalElement {
-  type: string; // 'window', 'door', 'ceiling', 'flooring', etc.
-  current: string; // detected current feature
+  category: string; // 'windows', 'doors', 'roofing', 'cladding', etc.
+  specificType: string; // 'Double-hung windows with white trim'
+  quantity?: string; // 'how many if countable'
+  currentCondition: string; // brief assessment of current state
   alternatives: string[]; // alternative options
-  selected: string; // user's choice
-  keepOriginal: boolean; // whether to preserve this element
+  action: 'retain' | 'inspiration' | 'select'; // user's choice
+  selectedStyle: string; // selected alternative
 }
 
 interface ArchitecturalAnalysis {
@@ -122,6 +124,17 @@ export default function AIVisualization() {
   // Step 2: Architectural Analysis
   const [architecturalAnalysis, setArchitecturalAnalysis] = useState<ArchitecturalAnalysis | null>(null);
   const [editableArchitecture, setEditableArchitecture] = useState<ArchitecturalAnalysis | null>(null);
+  const [manualElements, setManualElements] = useState<ArchitecturalElement[]>([]);
+  const [showAddElement, setShowAddElement] = useState(false);
+  const [newElement, setNewElement] = useState({
+    category: '',
+    specificType: '',
+    quantity: '',
+    currentCondition: '',
+    alternatives: [] as string[],
+    action: 'retain' as 'retain' | 'inspiration' | 'select',
+    selectedStyle: ''
+  });
   
   // Step 3: Design Inspiration
   const [inspiration, setInspiration] = useState<DesignInspiration>({
@@ -457,14 +470,18 @@ export default function AIVisualization() {
     architecturalAnalysisMutation.mutate();
   };
 
-  const handleArchitecturalElementChange = (elementIndex: number, field: 'selected' | 'keepOriginal', value: string | boolean) => {
+  const handleArchitecturalElementChange = (elementIndex: number, field: 'action' | 'selectedStyle', value: string) => {
     if (!editableArchitecture) return;
     
     const updatedElements = [...editableArchitecture.elements];
-    if (field === 'selected') {
-      updatedElements[elementIndex].selected = value as string;
-    } else if (field === 'keepOriginal') {
-      updatedElements[elementIndex].keepOriginal = value as boolean;
+    if (field === 'action') {
+      updatedElements[elementIndex].action = value as 'retain' | 'inspiration' | 'select';
+      // If switching to select action, set first alternative as default
+      if (value === 'select' && !updatedElements[elementIndex].selectedStyle) {
+        updatedElements[elementIndex].selectedStyle = updatedElements[elementIndex].alternatives[0] || '';
+      }
+    } else if (field === 'selectedStyle') {
+      updatedElements[elementIndex].selectedStyle = value;
     }
     
     setEditableArchitecture({
@@ -472,6 +489,26 @@ export default function AIVisualization() {
       elements: updatedElements
     });
   };
+
+  const handleAddManualElement = () => {
+    if (newElement.category && newElement.specificType) {
+      const element: ArchitecturalElement = {
+        ...newElement,
+        alternatives: ['Custom Option 1', 'Custom Option 2', 'Custom Option 3', 'Custom Option 4', 'Custom Option 5']
+      };
+      setManualElements([...manualElements, element]);
+      setNewElement({
+        category: '',
+        specificType: '',
+        quantity: '',
+        currentCondition: '',
+        alternatives: [],
+        action: 'retain',
+        selectedStyle: ''
+      });
+      setShowAddElement(false);
+    }
+  };;
 
   const handleConfirmArchitecture = () => {
     setCurrentStep('inspiration');
@@ -804,25 +841,30 @@ export default function AIVisualization() {
     </div>
   );
 
-  const getElementIcon = (elementType: string) => {
+  const getElementIcon = (category: string) => {
     const iconMap: { [key: string]: any } = {
       'windows': FrameIcon,
       'doors': Square,
       'flooring': Grid3X3,
       'floors': Grid3X3,
-      'walls': Layers,
+      'roofing': Building,
+      'roof': Building,
+      'cladding': Layers,
+      'walls': Paintbrush,
       'wall treatments': Paintbrush,
       'ceilings': Building,
       'ceiling': Building,
       'lighting': Lightbulb,
       'lighting fixtures': Lightbulb,
-      'columns': Columns,
-      'beams': Hammer,
+      'trim': PaintBucket,
       'moldings': PaintBucket,
-      'architectural features': Zap
+      'features': Zap,
+      'architectural features': Zap,
+      'landscaping': TreePine,
+      'fixtures': Hammer
     };
     
-    const IconComponent = iconMap[elementType.toLowerCase()] || Settings;
+    const IconComponent = iconMap[category.toLowerCase()] || Settings;
     return <IconComponent className="w-6 h-6 text-gray-700" />;
   };
 
@@ -899,22 +941,31 @@ export default function AIVisualization() {
             </div>
 
             <div className="space-y-4">
+              {/* Detected Elements */}
               {editableArchitecture.elements.map((element, index) => (
                 <div key={index} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
                   <div className="p-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                       {/* Element Info */}
                       <div className="lg:col-span-4">
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-start space-x-4">
                           <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            {getElementIcon(element.type)}
+                            {getElementIcon(element.category)}
                           </div>
                           <div className="min-w-0 flex-1">
                             <h4 className="font-semibold capitalize text-black luxury-title text-lg mb-1">
-                              {element.type.replace(/([A-Z])/g, ' $1').trim()}
+                              {element.category.replace(/([A-Z])/g, ' $1').trim()}
                             </h4>
-                            <p className="text-sm text-gray-600 luxury-text">
-                              Current: {element.current}
+                            <p className="text-sm text-gray-600 luxury-text mb-1">
+                              <strong>Detected:</strong> {element.specificType}
+                            </p>
+                            {element.quantity && (
+                              <p className="text-xs text-gray-500 luxury-text">
+                                Quantity: {element.quantity}
+                              </p>
+                            )}
+                            <p className="text-xs text-gray-500 luxury-text">
+                              Condition: {element.currentCondition}
                             </p>
                           </div>
                         </div>
@@ -929,8 +980,8 @@ export default function AIVisualization() {
                               type="radio"
                               id={`retain-${index}`}
                               name={`action-${index}`}
-                              checked={element.keepOriginal}
-                              onChange={() => handleArchitecturalElementChange(index, 'keepOriginal', true)}
+                              checked={element.action === 'retain'}
+                              onChange={() => handleArchitecturalElementChange(index, 'action', 'retain')}
                               className="w-4 h-4 text-black focus:ring-black border-gray-300"
                             />
                             <label htmlFor={`retain-${index}`} className="text-sm font-medium text-black cursor-pointer">
@@ -940,14 +991,27 @@ export default function AIVisualization() {
                           <div className="flex items-center space-x-2">
                             <input
                               type="radio"
-                              id={`transform-${index}`}
+                              id={`inspiration-${index}`}
                               name={`action-${index}`}
-                              checked={!element.keepOriginal}
-                              onChange={() => handleArchitecturalElementChange(index, 'keepOriginal', false)}
+                              checked={element.action === 'inspiration'}
+                              onChange={() => handleArchitecturalElementChange(index, 'action', 'inspiration')}
                               className="w-4 h-4 text-black focus:ring-black border-gray-300"
                             />
-                            <label htmlFor={`transform-${index}`} className="text-sm font-medium text-black cursor-pointer">
-                              Transform Design
+                            <label htmlFor={`inspiration-${index}`} className="text-sm font-medium text-black cursor-pointer">
+                              Use Inspiration
+                            </label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id={`select-${index}`}
+                              name={`action-${index}`}
+                              checked={element.action === 'select'}
+                              onChange={() => handleArchitecturalElementChange(index, 'action', 'select')}
+                              className="w-4 h-4 text-black focus:ring-black border-gray-300"
+                            />
+                            <label htmlFor={`select-${index}`} className="text-sm font-medium text-black cursor-pointer">
+                              Select Design Update
                             </label>
                           </div>
                         </div>
@@ -955,15 +1019,15 @@ export default function AIVisualization() {
 
                       {/* Style Selection */}
                       <div className="lg:col-span-5">
-                        {!element.keepOriginal && (
+                        {element.action === 'select' && (
                           <div className="space-y-3">
                             <Label className="text-sm font-medium text-gray-900">Select New Style</Label>
                             <Select 
-                              value={element.selected} 
-                              onValueChange={(value) => handleArchitecturalElementChange(index, 'selected', value)}
+                              value={element.selectedStyle} 
+                              onValueChange={(value) => handleArchitecturalElementChange(index, 'selectedStyle', value)}
                             >
                               <SelectTrigger className="w-full h-11">
-                                <SelectValue placeholder={`Choose ${element.type} style...`} />
+                                <SelectValue placeholder={`Choose ${element.category} style...`} />
                               </SelectTrigger>
                               <SelectContent className="max-h-60">
                                 {element.alternatives.map((alt, altIndex) => (
@@ -975,19 +1039,25 @@ export default function AIVisualization() {
                                 ))}
                               </SelectContent>
                             </Select>
-                            {element.selected && element.selected !== element.current && (
+                            {element.selectedStyle && (
                               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                 <p className="text-sm text-blue-800">
-                                  <strong>Selected:</strong> {element.selected}
+                                  <strong>Selected:</strong> {element.selectedStyle}
                                 </p>
                               </div>
                             )}
                           </div>
                         )}
-                        {element.keepOriginal && (
+                        {element.action === 'retain' && (
                           <div className="flex items-center space-x-2 text-gray-500">
                             <CheckCircle className="w-4 h-4" />
                             <span className="text-sm">Original design will be preserved</span>
+                          </div>
+                        )}
+                        {element.action === 'inspiration' && (
+                          <div className="flex items-center space-x-2 text-blue-600">
+                            <Sparkles className="w-4 h-4" />
+                            <span className="text-sm">Will use inspiration images for styling</span>
                           </div>
                         )}
                       </div>
@@ -995,6 +1065,110 @@ export default function AIVisualization() {
                   </div>
                 </div>
               ))}
+
+              {/* Manual Elements */}
+              {manualElements.map((element, index) => (
+                <div key={`manual-${index}`} className="bg-blue-50 border border-blue-200 rounded-xl shadow-sm">
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                      <div className="lg:col-span-4">
+                        <div className="flex items-start space-x-4">
+                          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            {getElementIcon(element.category)}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <h4 className="font-semibold capitalize text-black luxury-title text-lg">
+                                {element.category}
+                              </h4>
+                              <Badge variant="outline" className="text-xs bg-blue-100 border-blue-300">
+                                Manual
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-gray-600 luxury-text">
+                              {element.specificType}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="lg:col-span-8">
+                        <p className="text-sm text-blue-800">
+                          This element was manually added and will be included in the transformation.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Add Manual Element */}
+            <div className="mt-6">
+              {!showAddElement ? (
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowAddElement(true)}
+                  className="w-full border-dashed border-gray-300 py-6"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Add Missing Element
+                </Button>
+              ) : (
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+                  <h4 className="text-lg font-semibold text-black mb-4">Add Manual Element</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-900 mb-2 block">Category</Label>
+                      <Select 
+                        value={newElement.category} 
+                        onValueChange={(value) => setNewElement(prev => ({ ...prev, category: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="windows">Windows</SelectItem>
+                          <SelectItem value="doors">Doors</SelectItem>
+                          <SelectItem value="roofing">Roofing</SelectItem>
+                          <SelectItem value="cladding">Exterior Cladding</SelectItem>
+                          <SelectItem value="flooring">Flooring</SelectItem>
+                          <SelectItem value="walls">Walls</SelectItem>
+                          <SelectItem value="ceilings">Ceilings</SelectItem>
+                          <SelectItem value="lighting">Lighting</SelectItem>
+                          <SelectItem value="trim">Trim/Molding</SelectItem>
+                          <SelectItem value="features">Architectural Features</SelectItem>
+                          <SelectItem value="landscaping">Landscaping</SelectItem>
+                          <SelectItem value="fixtures">Fixtures</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-900 mb-2 block">Specific Type</Label>
+                      <input
+                        type="text"
+                        value={newElement.specificType}
+                        onChange={(e) => setNewElement(prev => ({ ...prev, specificType: e.target.value }))}
+                        placeholder="e.g., Bay windows with white trim"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-3 mt-4">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setShowAddElement(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleAddManualElement}
+                      className="bg-black text-white hover:bg-gray-800"
+                    >
+                      Add Element
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
