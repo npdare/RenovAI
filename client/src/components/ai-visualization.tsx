@@ -428,31 +428,52 @@ export default function AIVisualization() {
         formData.append('pinterestUrl', inspiration.pinterestUrl);
       }
 
-      const response = await fetch('/api/ai/extract-parameters', {
-        method: 'POST',
-        body: formData
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to extract parameters');
+      // Create an AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
+
+      try {
+        const response = await fetch('/api/ai/extract-parameters', {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error('Failed to extract parameters');
+        }
+        
+        return response.json();
+      } catch (error: any) {
+        clearTimeout(timeoutId);
+        if (error?.name === 'AbortError') {
+          throw new Error('Request timed out - please try again');
+        }
+        throw error;
       }
-      
-      return response.json();
     },
     onSuccess: (data: DesignParameters) => {
       setExtractedParameters(data);
       setEditableParameters(data);
       setCurrentStep('parameters');
       setProgress(50);
+      
+      // Auto-scroll to parameters step
+      setTimeout(() => {
+        parametersStepRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+      
       toast({
         title: "Analysis Complete",
-        description: "Design parameters extracted using natural AI categorization"
+        description: "Design parameters extracted successfully"
       });
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
-        title: "Extraction Failed",
-        description: "Unable to extract design parameters",
+        title: "Analysis Issue",
+        description: error.message || "Please try again",
         variant: "destructive"
       });
     }
