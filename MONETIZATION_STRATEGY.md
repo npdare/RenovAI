@@ -1,4 +1,4 @@
-# HomeVision Monetization Strategy
+# RenovAI Monetization Strategy
 
 ## Current Implementation
 ✅ **Freemium Model**: 3 free visualizations, then subscription required

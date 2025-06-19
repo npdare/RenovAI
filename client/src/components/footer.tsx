@@ -9,9 +9,9 @@ export default function Footer() {
           <div>
             <div className="flex items-center mb-4">
               <Home className="text-accent text-2xl mr-3" />
-              <h5 className="text-xl font-bold">HomeVision</h5>
+              <h5 className="text-xl font-bold">RenovAI</h5>
             </div>
-            <p className="text-gray-300 mb-4">Transform your space with AI-powered design visualization.</p>
+            <p className="text-gray-300 mb-4">Professional AI-powered interior design transformation platform.</p>
             <div className="flex space-x-4">
               <Facebook className="text-gray-300 hover:text-accent cursor-pointer transition-colors" size={20} />
               <Twitter className="text-gray-300 hover:text-accent cursor-pointer transition-colors" size={20} />
@@ -52,7 +52,7 @@ export default function Footer() {
         </div>
         
         <div className="border-t border-gray-600 mt-8 pt-8 text-center text-gray-300">
-          <p>&copy; 2024 HomeVision. All rights reserved.</p>
+          <p>&copy; 2024 RenovAI. All rights reserved.</p>
         </div>
       </div>
     </footer>
