@@ -24,11 +24,13 @@ export interface AIVisualizationResult {
 }
 
 export interface ArchitecturalElement {
-  type: string;
-  current: string;
+  category: string;
+  specificType: string;
+  quantity?: string;
+  currentCondition: string;
   alternatives: string[];
-  selected: string;
-  keepOriginal: boolean;
+  action: 'retain' | 'inspiration' | 'select';
+  selectedStyle: string;
 }
 
 export interface ArchitecturalAnalysis {
@@ -448,25 +450,39 @@ export async function analyzeArchitecturalElements(imagePath: string): Promise<A
           content: [
             {
               type: "text",
-              text: `Analyze this photo and identify architectural elements. Return valid JSON only.
+              text: `Analyze this photo exhaustively and identify ALL visible architectural design elements. You must examine every part of the image and return comprehensive details.
 
+MANDATORY: Detect and list every architectural element you can see including:
+- Windows (count each one, describe style, trim, hardware)
+- Doors (entry doors, interior doors, closets, French doors, sliding doors)
+- Roofing (materials, style, gutters, downspouts, chimneys, vents)
+- Exterior cladding (siding, brick, stone, stucco, panels)
+- Flooring (materials, patterns, transitions)
+- Walls (paint, wallpaper, paneling, tile, stone, brick)
+- Ceilings (height, materials, beams, molding, lighting integration)
+- Lighting fixtures (pendant, chandelier, recessed, sconces, outdoor)
+- Trim and molding (baseboards, crown molding, window trim, door casings)
+- Architectural features (columns, arches, built-ins, fireplaces, stairs, railings)
+- Hardware (door handles, cabinet pulls, hinges, locks)
+- Outdoor elements (decking, patios, landscaping, fencing, pergolas)
+
+Return only valid JSON:
 {
-  "roomStructure": "Describe the space in 2-3 sentences including style and condition",
+  "roomStructure": "Brief description of space style and layout",
   "detectedFeatures": ["feature1", "feature2", "feature3"],
   "elements": [
     {
       "category": "windows",
-      "specificType": "what you see",
-      "quantity": "count if applicable",
-      "currentCondition": "condition assessment", 
-      "alternatives": ["option1", "option2", "option3", "option4", "option5"],
+      "specificType": "Double-hung windows with white trim",
+      "quantity": "3",
+      "alternatives": ["Casement windows", "Bay windows", "Picture windows", "Sliding windows", "Arched windows"],
       "action": "retain",
       "selectedStyle": ""
     }
   ]
 }
 
-Identify these categories if visible: windows, doors, flooring, walls, ceilings, lighting, roofing, cladding, trim, features. Provide 5 realistic alternatives for each element.`
+Be thorough - include every visible architectural element, no matter how minor.`
             },
             {
               type: "image_url",
@@ -534,6 +550,24 @@ Identify these categories if visible: windows, doors, flooring, walls, ceilings,
             quantity: 'Multiple',
             currentCondition: 'Functional',
             alternatives: ['Pendant lights', 'Chandeliers', 'Recessed lighting', 'Track lighting', 'Sconces'],
+            action: 'retain',
+            selectedStyle: ''
+          },
+          {
+            category: 'doors',
+            specificType: 'Standard interior doors',
+            quantity: '2-4',
+            currentCondition: 'Good condition',
+            alternatives: ['Panel doors', 'French doors', 'Barn doors', 'Pocket doors', 'Glass doors'],
+            action: 'retain',
+            selectedStyle: ''
+          },
+          {
+            category: 'trim',
+            specificType: 'Basic trim and molding',
+            quantity: 'Throughout',
+            currentCondition: 'Standard',
+            alternatives: ['Crown molding', 'Baseboards', 'Chair rail', 'Wainscoting', 'Custom millwork'],
             action: 'retain',
             selectedStyle: ''
           }

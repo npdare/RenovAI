@@ -901,9 +901,8 @@ export default function AIVisualization() {
               </div>
               
               <div className="lg:col-span-3">
-                <h3 className="text-xl font-semibold text-black mb-4 luxury-title flex items-center">
-                  <Building className="w-5 h-5 mr-2 text-gray-700" />
-                  Comprehensive Space Analysis
+                <h3 className="text-xl font-semibold text-black mb-4 luxury-title">
+                  Space Analysis
                 </h3>
                 <div className="prose prose-gray max-w-none">
                   <p className="text-gray-700 luxury-text leading-relaxed text-base">
@@ -949,9 +948,6 @@ export default function AIVisualization() {
                       {/* Element Info */}
                       <div className="lg:col-span-4">
                         <div className="flex items-start space-x-4">
-                          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            {getElementIcon(element.category)}
-                          </div>
                           <div className="min-w-0 flex-1">
                             <h4 className="font-semibold capitalize text-black luxury-title text-lg mb-1">
                               {element.category.replace(/([A-Z])/g, ' $1').trim()}
@@ -964,9 +960,6 @@ export default function AIVisualization() {
                                 Quantity: {element.quantity}
                               </p>
                             )}
-                            <p className="text-xs text-gray-500 luxury-text">
-                              Condition: {element.currentCondition}
-                            </p>
                           </div>
                         </div>
                       </div>
@@ -1073,9 +1066,6 @@ export default function AIVisualization() {
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                       <div className="lg:col-span-4">
                         <div className="flex items-start space-x-4">
-                          <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            {getElementIcon(element.category)}
-                          </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center space-x-2 mb-1">
                               <h4 className="font-semibold capitalize text-black luxury-title text-lg">
