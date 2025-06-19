@@ -404,12 +404,8 @@ OUTPUT SPECIFICATIONS:
 - High-resolution clarity, magazine quality
 - NO cartoon, illustration, or artistic interpretation`;
 
-    // Apply SDXL ControlNet transformation with maximum structure preservation
-    console.log('Applying SDXL ControlNet transformation with maximum structure preservation...');
-    const base64ImageData = `data:image/jpeg;base64,${base64Image}`;
-    
-    // Use extremely low strength for structural preservation
-    const conservativeStrength = Math.min(0.25, (transformationStrength / 400)); // Maximum structure preservation
+    // Apply DALL-E 3 transformation with precise structural preservation prompts
+    console.log('Applying DALL-E 3 transformation with structural preservation...');
     
     // Build intelligent material application prompt based on selected design elements
     let intelligentMaterialPrompt = '';
@@ -430,39 +426,52 @@ OUTPUT SPECIFICATIONS:
       intelligentMaterialPrompt = `${parameters.wallCladding?.[0] || 'modern wall'} treatment`;
     }
 
-    // Conservative prompt focused on preserving structure with intelligent material application
-    const architecturalPrompt = `Professional architectural photography with ${intelligentMaterialPrompt}, preserve exact building structure and proportions, photorealistic, natural lighting, maintain all architectural details`;
-
-    console.log('Transformation strength:', conservativeStrength);
     console.log('Intelligent material prompt:', intelligentMaterialPrompt);
 
-    const transformation = await replicate.run(
-      "andreasjansson/stable-diffusion-xl-controlnet:9b98f6ac55be50b3b05ad35c4b2dd4dd30d8f2ed2d57eebbfbee5e11d132ce6e",
-      {
-        input: {
-          image: base64ImageData,
-          prompt: architecturalPrompt,
-          negative_prompt: "cartoon, illustration, painting, drawing, art, sketch, anime, low quality, blurry, distorted, unrealistic, fake, artificial, stylized, dramatic changes, different building, altered structure, fantasy, concept art, deformed architecture",
-          num_inference_steps: 25,
-          guidance_scale: 7.5,
-          controlnet_conditioning_scale: 1.5,  // Maximum structural preservation
-          seed: Math.floor(Math.random() * 1000000)
-        }
-      }
-    );
+    // Use DALL-E 3 with extremely precise structural preservation prompt
+    const structuralPreservationPrompt = `Create a photorealistic architectural photograph that shows the exact same building structure with only material changes. CRITICAL REQUIREMENTS: 
+    
+    PRESERVE EXACTLY (NO CHANGES):
+    - Identical building proportions and dimensions: ${roomLayout}
+    - Exact window positions, sizes, and frame configurations  
+    - Same door locations, openings, and architectural details
+    - Identical roofline, angles, and structural elements
+    - Same camera angle, perspective, and composition
+    - Natural lighting direction and shadow patterns
+    - All architectural features and built-in elements
 
-    // ControlNet transformation complete
-    console.log('ControlNet transformation complete');
-    const enhancedImage = transformation;
+    APPLY ONLY MATERIAL CHANGES:
+    - ${intelligentMaterialPrompt}
+    - Professional architectural photography quality
+    - Photorealistic material textures and natural wear
+    - Maintain authentic building proportions
+    
+    OUTPUT: Ultra-photorealistic architectural photography, magazine quality, natural lighting, sharp details, maintain exact structural geometry`;
+
+    const transformation = await openai.images.generate({
+      model: "dall-e-3",
+      prompt: structuralPreservationPrompt,
+      size: "1024x1024",
+      quality: "hd",
+      n: 1,
+    });
+
+    // DALL-E 3 transformation complete
+    console.log('DALL-E 3 structural preservation transformation complete');
+    
+    if (!transformation.data || transformation.data.length === 0) {
+      throw new Error('Failed to generate transformation image');
+    }
+    
+    const enhancedImage = transformation.data[0].url;
 
     // Download and save the final enhanced image
-    const finalImageUrl = Array.isArray(enhancedImage) ? enhancedImage[0] : enhancedImage;
-    const imageResponse = await fetch(finalImageUrl);
+    const imageResponse = await fetch(enhancedImage);
     const imageArrayBuffer = await imageResponse.arrayBuffer();
     const imageBufferNew = Buffer.from(imageArrayBuffer);
     
     const timestamp = Date.now();
-    const transformedFileName = `controlnet_transformed_${timestamp}.png`;
+    const transformedFileName = `dalle3_structural_${timestamp}.png`;
     const transformedPath = path.join('uploads', transformedFileName);
     
     fs.writeFileSync(transformedPath, imageBufferNew);
