@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -140,6 +140,7 @@ export default function AIVisualization() {
   const [selectedElement, setSelectedElement] = useState<InteractiveElement | null>(null);
   const [showProductPanel, setShowProductPanel] = useState(false);
   
+  const uploadedPhotoRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   // Step 1: Photo Upload Dropzone
@@ -159,6 +160,14 @@ export default function AIVisualization() {
           type: 'auto-detected' // Will be detected by AI
         });
         setProgress(10);
+        
+        // Smooth scroll to uploaded photo after a brief delay
+        setTimeout(() => {
+          uploadedPhotoRef.current?.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+          });
+        }, 300);
       }
     },
     onDropRejected: (fileRejections) => {
@@ -589,33 +598,53 @@ export default function AIVisualization() {
           </div>
           
           {uploadedPhoto && (
-            <div className="mt-8">
-              <img 
-                src={uploadedPhoto.preview} 
-                alt="Uploaded preview"
-                className="w-full h-64 sm:h-80 object-cover rounded-xl border border-gray-200"
-              />
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6 gap-4">
-                <Badge className="bg-green-50 text-green-700 border-green-200 w-fit">
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Photo uploaded successfully
-                </Badge>
-                <Button 
-                  onClick={handleAnalyzeArchitecture} 
-                  disabled={architecturalAnalysisMutation.isPending}
-                  className="w-full sm:w-auto bg-black text-white hover:bg-gray-800 font-medium px-8 py-3"
-                >
-                  {architecturalAnalysisMutation.isPending ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Analyzing Design...
-                    </>
-                  ) : (
-                    <>
-                      Begin Analysis <ArrowRight className="w-4 h-4 ml-2" />
-                    </>
-                  )}
-                </Button>
+            <div 
+              ref={uploadedPhotoRef}
+              className="mt-8 animate-in slide-in-from-bottom-4 duration-500"
+            >
+              <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-white p-2">
+                <img 
+                  src={uploadedPhoto.preview} 
+                  alt="Uploaded preview"
+                  className="w-full h-64 sm:h-80 object-cover rounded-lg"
+                />
+                <div className="absolute top-4 right-4">
+                  <Badge className="bg-black/80 text-white border-0 backdrop-blur-sm">
+                    <CheckCircle className="w-3 h-3 mr-1" />
+                    Ready
+                  </Badge>
+                </div>
+              </div>
+              
+              <div className="mt-6 p-6 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-black luxury-title">Photo Uploaded Successfully</h3>
+                      <p className="text-sm text-gray-600 luxury-text">Ready for AI architectural analysis</p>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    onClick={handleAnalyzeArchitecture} 
+                    disabled={architecturalAnalysisMutation.isPending}
+                    className="w-full sm:w-auto bg-black text-white hover:bg-gray-800 font-medium px-8 py-3 shadow-lg hover:shadow-xl transition-all"
+                  >
+                    {architecturalAnalysisMutation.isPending ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Analyzing Design...
+                      </>
+                    ) : (
+                      <>
+                        Begin AI Analysis <ArrowRight className="w-4 h-4 ml-2" />
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
