@@ -404,8 +404,8 @@ OUTPUT SPECIFICATIONS:
 - High-resolution clarity, magazine quality
 - NO cartoon, illustration, or artistic interpretation`;
 
-    // Apply ControlNet transformation with maximum structure preservation
-    console.log('Applying ControlNet transformation with maximum structure preservation...');
+    // Apply SDXL ControlNet transformation with maximum structure preservation
+    console.log('Applying SDXL ControlNet transformation with maximum structure preservation...');
     const base64ImageData = `data:image/jpeg;base64,${base64Image}`;
     
     // Use extremely low strength for structural preservation
@@ -437,17 +437,15 @@ OUTPUT SPECIFICATIONS:
     console.log('Intelligent material prompt:', intelligentMaterialPrompt);
 
     const transformation = await replicate.run(
-      "jagilley/controlnet-canny:aff48af9c68d162388d230a2ab003f68d2638d88307bdaf1c2f1ac95079c9613",
+      "andreasjansson/stable-diffusion-xl-controlnet:9b98f6ac55be50b3b05ad35c4b2dd4dd30d8f2ed2d57eebbfbee5e11d132ce6e",
       {
         input: {
           image: base64ImageData,
           prompt: architecturalPrompt,
           negative_prompt: "cartoon, illustration, painting, drawing, art, sketch, anime, low quality, blurry, distorted, unrealistic, fake, artificial, stylized, dramatic changes, different building, altered structure, fantasy, concept art, deformed architecture",
-          num_inference_steps: 20,
+          num_inference_steps: 25,
           guidance_scale: 7.5,
           controlnet_conditioning_scale: 1.5,  // Maximum structural preservation
-          low_threshold: 50,
-          high_threshold: 100,
           seed: Math.floor(Math.random() * 1000000)
         }
       }
