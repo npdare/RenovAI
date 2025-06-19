@@ -14,7 +14,9 @@ import { Separator } from "@/components/ui/separator";
 import { 
   Wand2, Camera, Sparkles, ArrowRight, Upload, Image, 
   Link, Download, Share2, RefreshCw, Eye, Settings, 
-  Palette, Home, TreePine, CheckCircle, Info, ShoppingBag, DollarSign 
+  Palette, Home, TreePine, CheckCircle, Info, ShoppingBag, DollarSign,
+  Square, FrameIcon, Layers, Paintbrush, Lightbulb, Grid3X3, 
+  Building, Columns, Hammer, Zap, PaintBucket
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -141,6 +143,7 @@ export default function AIVisualization() {
   const [showProductPanel, setShowProductPanel] = useState(false);
   
   const uploadedPhotoRef = useRef<HTMLDivElement>(null);
+  const architecturalStepRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   // Step 1: Photo Upload Dropzone
@@ -214,6 +217,15 @@ export default function AIVisualization() {
       setEditableArchitecture(data);
       setCurrentStep('architecture');
       setProgress(20);
+      
+      // Auto-scroll to architectural step
+      setTimeout(() => {
+        architecturalStepRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+      }, 500);
+      
       toast({
         title: "Architecture Analyzed",
         description: "Review detected structural elements and choose modifications"
@@ -781,150 +793,214 @@ export default function AIVisualization() {
     </div>
   );
 
+  const getElementIcon = (elementType: string) => {
+    const iconMap: { [key: string]: any } = {
+      'windows': FrameIcon,
+      'doors': Square,
+      'flooring': Grid3X3,
+      'floors': Grid3X3,
+      'walls': Layers,
+      'wall treatments': Paintbrush,
+      'ceilings': Building,
+      'ceiling': Building,
+      'lighting': Lightbulb,
+      'lighting fixtures': Lightbulb,
+      'columns': Columns,
+      'beams': Hammer,
+      'moldings': PaintBucket,
+      'architectural features': Zap
+    };
+    
+    const IconComponent = iconMap[elementType.toLowerCase()] || Settings;
+    return <IconComponent className="w-6 h-6 text-gray-700" />;
+  };
+
   const renderArchitecturalStep = () => (
-    <div className="max-w-5xl mx-auto px-4">
+    <div ref={architecturalStepRef} className="max-w-6xl mx-auto px-4 scroll-mt-20">
       <div className="text-center mb-12">
         <h2 className="text-3xl sm:text-4xl font-light text-black mb-6 luxury-title">
-          Design Elements
+          Design Elements Analysis
         </h2>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed luxury-text">
-          Choose which elements to transform and which to keep as they are
+        <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed luxury-text">
+          Review the detailed analysis of your space and choose how to transform each element
         </p>
       </div>
 
       {editableArchitecture && (
         <div className="space-y-8">
-          {/* Space Overview */}
-          <div className="bg-white/60 backdrop-blur-sm border border-gray-200/60 rounded-xl p-6">
-            <div className="grid md:grid-cols-4 gap-6 items-center">
-              <div className="md:col-span-1">
-                <img 
-                  src={uploadedPhoto?.preview} 
-                  alt="Original space"
-                  className="w-full h-24 object-cover rounded-lg border border-gray-200"
-                />
+          {/* Enhanced Space Analysis */}
+          <div className="bg-gradient-to-br from-gray-50 to-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+            <div className="grid lg:grid-cols-5 gap-8 items-start">
+              <div className="lg:col-span-2">
+                <div className="relative">
+                  <img 
+                    src={uploadedPhoto?.preview} 
+                    alt="Space under analysis"
+                    className="w-full h-48 object-cover rounded-xl border border-gray-200 shadow-sm"
+                  />
+                  <div className="absolute top-4 left-4">
+                    <Badge className="bg-black/80 text-white border-0 backdrop-blur-sm">
+                      <Eye className="w-3 h-3 mr-1" />
+                      Analyzed
+                    </Badge>
+                  </div>
+                </div>
               </div>
-              <div className="md:col-span-3">
-                <h3 className="text-lg font-medium text-black mb-2 luxury-title">Space Analysis</h3>
-                <p className="text-gray-700 luxury-text text-sm leading-relaxed">
-                  {editableArchitecture.roomStructure}
-                </p>
+              
+              <div className="lg:col-span-3">
+                <h3 className="text-xl font-semibold text-black mb-4 luxury-title flex items-center">
+                  <Building className="w-5 h-5 mr-2 text-gray-700" />
+                  Comprehensive Space Analysis
+                </h3>
+                <div className="prose prose-gray max-w-none">
+                  <p className="text-gray-700 luxury-text leading-relaxed text-base">
+                    {editableArchitecture.roomStructure}
+                  </p>
+                </div>
+                
+                {editableArchitecture?.detectedFeatures && editableArchitecture.detectedFeatures.length > 0 && (
+                  <div className="mt-6">
+                    <h4 className="text-sm font-medium text-gray-900 mb-3 uppercase tracking-wide">
+                      Notable Features Detected
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {editableArchitecture.detectedFeatures.map((feature, index) => (
+                        <Badge key={index} variant="outline" className="text-xs bg-blue-50 border-blue-200 text-blue-800">
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Element Controls */}
+          {/* Vertical Element List */}
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="text-center">
+              <h3 className="text-2xl font-semibold text-black mb-3 luxury-title">
+                Design Element Preferences
+              </h3>
+              <p className="text-gray-600 luxury-text max-w-2xl mx-auto">
+                For each detected element, choose to retain the current design, transform it, or specify custom changes
+              </p>
+            </div>
+
+            <div className="space-y-4">
               {editableArchitecture.elements.map((element, index) => (
-                <div key={index} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-200">
-                  <div className="space-y-4">
-                    {/* Element Info */}
-                    <div className="text-center">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                        {element.type === 'windows' && <Eye className="w-8 h-8 text-gray-600" />}
-                        {element.type === 'doors' && <ArrowRight className="w-8 h-8 text-gray-600" />}
-                        {element.type === 'flooring' && <Home className="w-8 h-8 text-gray-600" />}
-                        {element.type === 'walls' && <Settings className="w-8 h-8 text-gray-600" />}
-                        {!['windows', 'doors', 'flooring', 'walls'].includes(element.type) && 
-                          <Settings className="w-8 h-8 text-gray-600" />}
+                <div key={index} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                      {/* Element Info */}
+                      <div className="lg:col-span-4">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                            {getElementIcon(element.type)}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-semibold capitalize text-black luxury-title text-lg mb-1">
+                              {element.type.replace(/([A-Z])/g, ' $1').trim()}
+                            </h4>
+                            <p className="text-sm text-gray-600 luxury-text">
+                              Current: {element.current}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                      <h4 className="font-semibold capitalize text-black luxury-title mb-1">
-                        {element.type}
-                      </h4>
-                      <p className="text-sm text-gray-600 luxury-text">
-                        {element.current}
-                      </p>
-                    </div>
 
-                    {/* Toggle */}
-                    <div className="flex items-center justify-center space-x-4">
-                      <span className={`text-sm font-medium ${element.keepOriginal ? 'text-black' : 'text-gray-400'}`}>
-                        Keep
-                      </span>
-                      <button
-                        onClick={() => handleArchitecturalElementChange(index, 'keepOriginal', !element.keepOriginal)}
-                        className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 ${
-                          element.keepOriginal ? 'bg-gray-300' : 'bg-black'
-                        }`}
-                      >
-                        <span
-                          className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                            element.keepOriginal ? 'translate-x-1' : 'translate-x-7'
-                          }`}
-                        />
-                      </button>
-                      <span className={`text-sm font-medium ${!element.keepOriginal ? 'text-black' : 'text-gray-400'}`}>
-                        Transform
-                      </span>
-                    </div>
-
-                    {/* Style Selection */}
-                    {!element.keepOriginal && (
-                      <div className="space-y-2 pt-4 border-t border-gray-200">
-                        <Select 
-                          value={element.selected} 
-                          onValueChange={(value) => handleArchitecturalElementChange(index, 'selected', value)}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Choose style..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {element.alternatives.map((alt, altIndex) => (
-                              <SelectItem key={altIndex} value={alt}>
-                                {alt}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                      {/* Action Selection */}
+                      <div className="lg:col-span-3">
+                        <Label className="text-sm font-medium text-gray-900 mb-3 block">Action</Label>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id={`retain-${index}`}
+                              name={`action-${index}`}
+                              checked={element.keepOriginal}
+                              onChange={() => handleArchitecturalElementChange(index, 'keepOriginal', true)}
+                              className="w-4 h-4 text-black focus:ring-black border-gray-300"
+                            />
+                            <label htmlFor={`retain-${index}`} className="text-sm font-medium text-black cursor-pointer">
+                              Retain Original
+                            </label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="radio"
+                              id={`transform-${index}`}
+                              name={`action-${index}`}
+                              checked={!element.keepOriginal}
+                              onChange={() => handleArchitecturalElementChange(index, 'keepOriginal', false)}
+                              className="w-4 h-4 text-black focus:ring-black border-gray-300"
+                            />
+                            <label htmlFor={`transform-${index}`} className="text-sm font-medium text-black cursor-pointer">
+                              Transform Design
+                            </label>
+                          </div>
+                        </div>
                       </div>
-                    )}
+
+                      {/* Style Selection */}
+                      <div className="lg:col-span-5">
+                        {!element.keepOriginal && (
+                          <div className="space-y-3">
+                            <Label className="text-sm font-medium text-gray-900">Select New Style</Label>
+                            <Select 
+                              value={element.selected} 
+                              onValueChange={(value) => handleArchitecturalElementChange(index, 'selected', value)}
+                            >
+                              <SelectTrigger className="w-full h-11">
+                                <SelectValue placeholder={`Choose ${element.type} style...`} />
+                              </SelectTrigger>
+                              <SelectContent className="max-h-60">
+                                {element.alternatives.map((alt, altIndex) => (
+                                  <SelectItem key={altIndex} value={alt} className="py-2">
+                                    <div className="flex items-center space-x-2">
+                                      <span className="font-medium">{alt}</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            {element.selected && element.selected !== element.current && (
+                              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                <p className="text-sm text-blue-800">
+                                  <strong>Selected:</strong> {element.selected}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {element.keepOriginal && (
+                          <div className="flex items-center space-x-2 text-gray-500">
+                            <CheckCircle className="w-4 h-4" />
+                            <span className="text-sm">Original design will be preserved</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Enhanced Features Summary */}
-          {editableArchitecture.detectedFeatures.length > 0 && (
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-6">
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  <Sparkles className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-medium text-black mb-2 luxury-title">
-                    Features to Enhance
-                  </h3>
-                  <p className="text-sm text-gray-700 mb-3 luxury-text">
-                    These distinctive features will be highlighted and improved in your transformation
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {editableArchitecture.detectedFeatures.map((feature, index) => (
-                      <Badge key={index} variant="secondary" className="text-sm bg-white/80 border-blue-300">
-                        {feature}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 pb-4">
             <Button 
               variant="outline" 
               onClick={() => setCurrentStep('upload')}
-              className="luxury-text w-full sm:w-auto border-gray-300"
+              className="luxury-text w-full sm:w-auto border-gray-300 px-6"
             >
-              ← Back
+              ← Back to Upload
             </Button>
             <Button 
               onClick={handleConfirmArchitecture}
-              className="bg-black text-white hover:bg-gray-800 w-full sm:w-auto px-8"
+              className="bg-black text-white hover:bg-gray-800 w-full sm:w-auto px-8 py-3 shadow-lg hover:shadow-xl transition-all"
             >
-              Continue to Inspiration →
+              Continue to Design Inspiration →
             </Button>
           </div>
         </div>

@@ -448,26 +448,34 @@ export async function analyzeArchitecturalElements(imagePath: string): Promise<A
           content: [
             {
               type: "text",
-              text: `Analyze this interior/exterior photo and identify structural elements that can be modified. For each element, provide the current type and suggest 3-4 alternative options.
+              text: `Analyze this interior/exterior photo with detailed architectural assessment. Provide comprehensive space analysis and identify structural elements that can be modified. For each element, suggest 8-10 realistic alternative options.
+
+COMPREHENSIVE SPACE ANALYSIS:
+- Room dimensions and proportions
+- Natural light sources and orientation
+- Architectural style and period
+- Current design aesthetic and condition
+- Space functionality and flow
+- Notable architectural details
 
 STRUCTURAL ELEMENTS TO DETECT:
-- Windows (types: casement, double-hung, sliding, bay, etc.)
-- Doors (types: panel, flush, French, sliding, etc.)
-- Flooring (types: hardwood, tile, carpet, laminate, etc.)
-- Ceilings (types: flat, coffered, vaulted, tray, etc.)
-- Wall treatments (types: paint, wallpaper, wood paneling, brick, etc.)
-- Lighting fixtures (types: pendant, chandelier, recessed, track, etc.)
-- Architectural features (columns, beams, moldings, etc.)
+- Windows (casement, double-hung, sliding, bay, picture, awning, hopper, tilt-turn, garden, etc.)
+- Doors (panel, flush, French, sliding, barn, pivot, glass, pocket, bifold, etc.)
+- Flooring (hardwood, tile, carpet, laminate, vinyl, concrete, stone, bamboo, cork, etc.)
+- Ceilings (flat, coffered, vaulted, tray, cathedral, beamed, dropped, etc.)
+- Wall treatments (paint, wallpaper, wood paneling, brick, stone, tile, fabric, etc.)
+- Lighting fixtures (pendant, chandelier, recessed, track, sconce, floor, table, etc.)
+- Architectural features (columns, beams, moldings, arches, niches, etc.)
 
 Return JSON format:
 {
-  "roomStructure": "Brief description of the overall room layout and structure",
-  "detectedFeatures": ["list of notable architectural features"],
+  "roomStructure": "Detailed 3-4 sentence description of the space including dimensions, layout, architectural style, lighting conditions, and overall aesthetic character",
+  "detectedFeatures": ["list of notable architectural features and design elements"],
   "elements": [
     {
-      "type": "element category (e.g., 'windows', 'doors')",
-      "current": "current detected type",
-      "alternatives": ["alternative 1", "alternative 2", "alternative 3"],
+      "type": "element category (e.g., 'windows', 'doors', 'flooring')",
+      "current": "current detected type with brief description",
+      "alternatives": ["alt1", "alt2", "alt3", "alt4", "alt5", "alt6", "alt7", "alt8"],
       "selected": "current detected type",
       "keepOriginal": true
     }
