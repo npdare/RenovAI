@@ -357,12 +357,26 @@ OUTPUT SPECIFICATIONS:
 - High-resolution clarity, magazine quality
 - NO cartoon, illustration, or artistic interpretation`;
 
-    // Use conservative SDXL transformation focused on photorealism
-    console.log('Applying subtle SDXL transformation...');
+    // Step 1: Generate ControlNet edge detection for structure preservation
+    console.log('Generating ControlNet edge detection...');
     const base64ImageData = `data:image/jpeg;base64,${base64Image}`;
     
-    // Use much lower strength for subtle, realistic changes (10-30% instead of 30-100%)
-    const conservativeStrength = Math.min(0.3, (transformationStrength / 400)); // Divide by 400 instead of 100
+    const edgeDetection = await replicate.run(
+      "andreasjansson/canny-edge:a88b3abc148077b5195446b63c32e58bd12f923a0ac50fd19f3b24ecf956b4b1",
+      {
+        input: {
+          image: base64ImageData,
+          low_threshold: 100,
+          high_threshold: 200
+        }
+      }
+    );
+
+    // Step 2: Apply ControlNet transformation with conservative settings
+    console.log('Applying ControlNet transformation with edge preservation...');
+    
+    // Use much lower strength for subtle, realistic changes
+    const conservativeStrength = Math.min(0.4, (transformationStrength / 200)); // More conservative than before
     
     // Select only the most important design element for focused transformation
     let primaryDesignFocus = '';
@@ -374,21 +388,23 @@ OUTPUT SPECIFICATIONS:
       primaryDesignFocus = `${parameters.wallCladding?.[0] || 'modern wall'} treatment`;
     }
 
-    // Much more conservative prompt focused on preserving structure
-    const architecturalPrompt = `Subtle architectural enhancement with ${primaryDesignFocus}, maintain exact structure and proportions, photorealistic professional photography, natural lighting, preserve all existing details`;
+    // Conservative prompt focused on preserving structure with specific material change
+    const architecturalPrompt = `Professional architectural photography with subtle ${primaryDesignFocus} enhancement, preserve exact building structure and proportions, photorealistic, natural lighting, maintain all architectural details`;
 
     console.log('Transformation strength:', conservativeStrength);
     console.log('Primary design focus:', primaryDesignFocus);
 
     const transformation = await replicate.run(
-      "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
+      "jagilley/controlnet-canny:aff48af9c68d162388d230a2ab003f68d2638d88307bdaf1c2f1ac95079c9613",
       {
         input: {
           image: base64ImageData,
+          control_image: edgeDetection,
           prompt: architecturalPrompt,
           negative_prompt: "cartoon, illustration, painting, drawing, art, sketch, anime, low quality, blurry, distorted, unrealistic, fake, artificial, stylized, dramatic changes, different building, altered structure, fantasy, concept art",
-          num_inference_steps: 20,  // Reduced for more conservative results
-          guidance_scale: 6.0,      // Reduced for less dramatic interpretation
+          num_inference_steps: 25,
+          guidance_scale: 6.5,
+          controlnet_conditioning_scale: 0.9,  // High edge preservation
           strength: conservativeStrength,
           seed: Math.floor(Math.random() * 1000000)
         }
