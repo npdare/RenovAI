@@ -254,7 +254,61 @@ Return JSON:
     }
   });
 
-  // Transform image endpoint
+  // V2 Preprocessing endpoint
+  app.post('/api/v2/preprocess', upload.single('photo'), async (req: any, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'Photo file is required for preprocessing' });
+      }
+
+      const { preprocessImageV2 } = await import('./ai-service-v2');
+      const result = await preprocessImageV2(req.file.path);
+      res.json(result);
+    } catch (error) {
+      console.error('V2 preprocessing error:', error);
+      res.status(500).json({ error: 'Failed to preprocess image' });
+    }
+  });
+
+  // V2 Architectural analysis endpoint
+  app.post('/api/v2/architectural-analysis', async (req: Request, res: Response) => {
+    try {
+      const { jobId, maskURIs } = req.body;
+      
+      if (!jobId || !maskURIs) {
+        return res.status(400).json({ error: 'Job ID and mask URIs are required' });
+      }
+
+      const { analyzeArchitecturalElementsV2 } = await import('./ai-service-v2');
+      const analysis = await analyzeArchitecturalElementsV2(jobId, maskURIs);
+      res.json(analysis);
+    } catch (error) {
+      console.error('V2 architectural analysis error:', error);
+      res.status(500).json({ error: 'Failed to analyze architectural elements' });
+    }
+  });
+
+  // V2 Transform image endpoint
+  app.post('/api/v2/transform-image', async (req: Request, res: Response) => {
+    try {
+      const { transformImageV2, saveJobMetadata } = await import('./ai-service-v2');
+      
+      const result = await transformImageV2(req.body);
+      
+      // Save metadata for tracking
+      saveJobMetadata(req.body.jobId, {
+        request: req.body,
+        result: result
+      });
+      
+      res.json(result);
+    } catch (error) {
+      console.error('V2 image transformation error:', error);
+      res.status(500).json({ error: 'Failed to transform image' });
+    }
+  });
+
+  // Transform image endpoint (legacy v1)
   app.post('/api/ai/transform-image', upload.single('photo'), async (req: any, res: Response) => {
     try {
       if (!req.file) {

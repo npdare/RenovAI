@@ -1,0 +1,197 @@
+========================================================
+RenovAI Workflow - v2  (2025-06-19)
+========================================================
+Objective
+---------
+Replace SD-1.5 + single-ControlNet + GFPGAN with a
+geometry-locked, photorealistic stack:
+
+• Semantic-SAM  → editable masks
+• DPT-Hybrid-Large → depth map
+• Stable-Diffusion-XL (or SD-3) backbone
+• Multi-ControlNet (Canny + Depth + Segmentation)
+• Tiled Diffusion + SAM-DiffSR upscaler
+• Lightweight IoU drift guard
+• GPT-4o kept only for text reasoning / option lists
+
+--------------------------------------------------------
+0. Dependencies  (replit.nix  or  requirements.txt)
+--------------------------------------------------------
+# Core
+torch>=2.1.0
+transformers>=4.40
+diffusers>=0.27.2
+controlnet_aux>=0.0.7
+opencv-python
+timm
+# Optional UI / mask brush
+gradio
+# OpenAI
+openai>=1.15.0
+
+--------------------------------------------------------
+1. Endpoint  /api/v2/preprocess   (POST)
+--------------------------------------------------------
+Purpose   : create edge, depth, and segmentation assets
+Returns   : JSON with URIs to assets on temp storage
+
+Python pseudo-handler
+---------------------
+from controlnet_aux import CannyDetector
+from transformers import DPTForDepthEstimation, AutoImageProcessor
+from segment_anything import SamPredictor, sam_model_registry
+import cv2, numpy as np, uuid, json, os
+
+def preprocess_handler(file):
+    img      = cv2.imread(file)
+    job_id   = str(uuid.uuid4())                             # traceability
+    path     = f"/tmp/{job_id}"
+
+    # 1A – Edge map (Canny)
+    edges    = CannyDetector()(img)
+    cv2.imwrite(f"{path}_edge.png", edges)
+
+    # 1B – Depth map (DPT-Hybrid-Large)
+    depth_model   = DPTForDepthEstimation.from_pretrained(
+                       "Intel/dpt-hybrid-large")
+    proc          = AutoImageProcessor.from_pretrained(
+                       "Intel/dpt-hybrid-large")
+    depth         = depth_model(**proc(img, return_tensors="pt")).predicted_depth
+    depth_np      = depth.squeeze().cpu().numpy()
+    depth_norm    = cv2.normalize(depth_np, None, 0, 255, cv2.NORM_MINMAX)
+    cv2.imwrite(f"{path}_depth.png", depth_norm.astype(np.uint8))
+
+    # 1C – Segmentation masks (Semantic-SAM)
+    sam = sam_model_registry["vit_h"](checkpoint="./sam_vit_h.pth").to("cuda")
+    predictor = SamPredictor(sam)
+    predictor.set_image(img)
+    masks, _, _ = predictor.predict()          # returns [H,W] boolean masks
+    for i, m in enumerate(masks):
+        cv2.imwrite(f"{path}_mask_{i}.png", m.astype(np.uint8) * 255)
+
+    return json.dumps({
+        "jobId"   : job_id,
+        "edgeURI" : f"{path}_edge.png",
+        "depthURI": f"{path}_depth.png",
+        "maskURIs": [f"{path}_mask_{i}.png" for i in range(len(masks))]
+    })
+
+--------------------------------------------------------
+2. Endpoint  /api/v2/architectural-analysis   (POST)
+--------------------------------------------------------
+Purpose   : text-only list of elements + alt options
+Model     : GPT-4o  (vision OFF)  – give it the mask file names
+
+System Prompt  (unchanged except mask hint)
+-------------------------------------------
+You are an expert architectural analyst...
+You have access to segmentation mask IDs: {{maskURIs}}.
+Always reference elements by mask file name (e.g. mask_3.png)...
+
+--------------------------------------------------------
+3. Endpoint  /api/v2/transform-image   (POST)
+--------------------------------------------------------
+Request JSON
+------------
+{
+  "jobId"          : "...",
+  "styleLoRAs"     : ["japandi.safetensors", 0.6],         # list of [file, α]
+  "selectedMasks"  : ["mask_0.png", "mask_2.png"],
+  "positivePrompt" : "Professional architectural photo...",
+  "negativePrompt" : "cartoon, illustration, ...",
+  "seed"           : 42
+}
+
+Pipeline Skeleton
+-----------------
+from diffusers import StableDiffusionControlNetPipeline, ControlNetModel
+import torch, cv2
+def transform_image(req):
+    path = f"/tmp/{req['jobId']}"
+
+    # Load control hints
+    edge  = cv2.imread(f"{path}_edge.png")
+    depth = cv2.imread(f"{path}_depth.png")
+
+    # Load segmentation control only for selected masks
+    seg   = np.zeros_like(edge[:, :, 0])
+    for m in req["selectedMasks"]:
+        seg |= cv2.imread(m, 0)
+
+    # Build ControlNet stack
+    cn_edge  = ControlNetModel.from_pretrained("lllyasviel/controlnet-canny-sdxl-1.0")
+    cn_depth = ControlNetModel.from_pretrained("lllyasviel/controlnet-depth-sdxl-1.0")
+    cn_seg   = ControlNetModel.from_pretrained("lllyasviel/controlnet-seg-sdxl-1.0")
+
+    pipe = StableDiffusionControlNetPipeline.from_pretrained(
+        "stabilityai/stable-diffusion-xl-base-1.0",
+        controlnet=[cn_edge, cn_depth, cn_seg],
+        torch_dtype=torch.float16
+    ).to("cuda").enable_xformers_memory_efficient_attention()
+
+    # LoRA blending
+    for lora_path, alpha in req["styleLoRAs"]:
+        pipe.load_lora_weights(lora_path, weight=alpha)
+
+    image = pipe(
+        prompt         = req["positivePrompt"],
+        negative_prompt= req["negativePrompt"],
+        image          = [edge, depth, seg],
+        num_inference_steps=30,
+        generator=torch.Generator("cuda").manual_seed(req["seed"]),
+        controlnet_conditioning_scale=[1.2,1.1,1.0]
+    ).images[0]
+
+    # Hi-res fix
+    image = pipe.run_tiled_diffusion(image, upscale=2)      # pseudocode
+    image = pipe.sr_with_sam_diffsr(image)                  # pseudocode
+
+    out_path = f"{path}_final.png"
+    image.save(out_path)
+
+    return {"resultURI": out_path}
+
+--------------------------------------------------------
+4. Post-transform QA  (internal helper)
+--------------------------------------------------------
+Compute IoU between each original mask and re-segmented output:
+
+iou = intersection / union
+if iou < 0.85 for any selected mask → flag drift.
+
+Simple OpenCV/NumPy routine; abort or warn user.
+
+--------------------------------------------------------
+5. Endpoint  /api/v2/recommend-products   (POST)
+--------------------------------------------------------
+Unchanged – GPT-4o text-only.
+
+--------------------------------------------------------
+6. Side-car Metadata  (saved per render)
+--------------------------------------------------------
+jobId.json
+----------
+{
+  "originalHash"  : "sha256:...",
+  "maskURIs"      : [...],
+  "depthURI"      : "...",
+  "edgeURI"       : "...",
+  "lora"          : ["japandi.safetensors", 0.6],
+  "seed"          : 42,
+  "prompt"        : "Professional architectural...",
+  "pipelineVer"   : "v2"
+}
+
+--------------------------------------------------------
+Testing Checklist
+--------------------------------------------------------
+☑ Run /api/v2/preprocess – verify edge, depth, masks are saved  
+☑ Re-paint a mask in UI → send updated mask back to server  
+☑ Run /transform-image with SD-XL “turbo” 20-step preview  
+☑ Validate IoU guard triggers by deliberately overshooting CFG  
+☑ Swap LoRA α 0→1 and check style interpolation  
+☑ Benchmark latency: aim ≤ 12 s preview, ≤ 45 s hi-res render
+
+========================================================
+END OF FILE – copy above into Replit as `RenovAI_Workflow_v2.txt`
+========================================================
