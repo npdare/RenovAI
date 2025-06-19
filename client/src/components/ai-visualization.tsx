@@ -390,101 +390,91 @@ export default function AIVisualization() {
     setTransformationStrength([75]);
   };
 
-  // Step Components
-  const renderStepIndicator = () => (
-    <div className="flex items-center justify-center mb-6 sm:mb-8 px-4">
-      <div className="flex items-center space-x-2 sm:space-x-4 overflow-x-auto pb-2">
-        {[
-          { step: 'upload', label: 'Upload', icon: Upload },
-          { step: 'architecture', label: 'Design', icon: Home },
-          { step: 'inspiration', label: 'Inspiration', icon: Sparkles },
-          { step: 'parameters', label: 'Parameters', icon: Settings },
-          { step: 'transform', label: 'Transform', icon: Wand2 },
-          { step: 'review', label: 'Review', icon: Eye },
-          { step: 'export', label: 'Export', icon: Download }
-        ].map(({ step, label, icon: Icon }, index) => (
-          <div key={step} className="flex items-center flex-shrink-0">
-            <div className={`flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 ${
-              currentStep === step 
-                ? 'bg-black text-white border-black' 
-                : progress >= (index + 1) * 16.67
-                ? 'bg-green-100 text-green-600 border-green-600'
-                : 'bg-neutral-100 text-neutral-400 border-neutral-300'
-            }`}>
-              <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
-            <span className="ml-1 sm:ml-2 text-xs sm:text-sm font-medium text-neutral-700 hidden sm:inline">{label}</span>
-            {index < 6 && <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 mx-1 sm:mx-3 text-neutral-400" />}
-          </div>
-        ))}
+  // Studio Navigation
+  const renderStudioNavigation = () => (
+    <div className="text-center mb-8 sm:mb-12">
+      <div className="mb-6">
+        <span className="text-xs tracking-widest text-gray-500 uppercase luxury-text">
+          Professional Design Platform
+        </span>
       </div>
+      
+      <h1 className="text-4xl sm:text-5xl md:text-6xl font-light text-black mb-6 leading-tight luxury-title">
+        Studio
+      </h1>
+      
+      <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed luxury-text">
+        Transform your space with professional AI-powered design visualization
+      </p>
     </div>
   );
 
   const renderUploadStep = () => (
-    <Card className="max-w-2xl mx-auto mx-4">
-      <CardHeader>
-        <CardTitle className="flex items-center text-lg sm:text-xl">
-          <Upload className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
-          Upload Original Photo
-        </CardTitle>
-        <p className="text-neutral-600 text-sm sm:text-base">
-          Upload a photo of your interior or exterior space to get started
+    <div className="max-w-4xl mx-auto px-4">
+      <div className="text-center mb-12">
+        <h2 className="text-3xl sm:text-4xl font-light text-black mb-6 luxury-title">
+          Upload Your Space
+        </h2>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed luxury-text">
+          Begin your design transformation by sharing your space with our AI design team
         </p>
-      </CardHeader>
-      <CardContent>
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-4 sm:p-8 text-center cursor-pointer transition-colors ${
-            isDragActive 
-              ? 'border-black bg-neutral-50' 
-              : 'border-neutral-300 hover:border-neutral-400'
-          }`}
-        >
-          <input {...getInputProps()} />
-          <Camera className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-neutral-400" />
-          <p className="text-base sm:text-lg font-medium text-neutral-900 mb-2">
-            {isDragActive ? 'Drop your photo here' : 'Drag & drop your photo'}
-          </p>
-          <p className="text-sm sm:text-base text-neutral-600 mb-3 sm:mb-4">
-            or tap to browse files
-          </p>
-          <Badge variant="outline" className="text-xs sm:text-sm">JPG, PNG, HEIC up to 10MB</Badge>
-        </div>
-        
-        {uploadedPhoto && (
-          <div className="mt-4 sm:mt-6">
-            <img 
-              src={uploadedPhoto.preview} 
-              alt="Uploaded preview"
-              className="w-full h-48 sm:h-64 object-cover rounded-lg"
-            />
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3">
-              <Badge className="bg-green-100 text-green-800 w-fit">
-                <CheckCircle className="w-4 h-4 mr-1" />
-                Photo uploaded successfully
-              </Badge>
-              <Button 
-                onClick={handleAnalyzeArchitecture} 
-                disabled={architecturalAnalysisMutation.isPending}
-                className="w-full sm:w-auto"
-              >
-                {architecturalAnalysisMutation.isPending ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Analyzing Design...
-                  </>
-                ) : (
-                  <>
-                    Analyze Design <ArrowRight className="w-4 h-4 ml-2" />
-                  </>
-                )}
-              </Button>
-            </div>
+      </div>
+      
+      <Card className="border-none shadow-xl bg-white/50 backdrop-blur-sm">
+        <CardContent className="p-8 sm:p-12">
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-lg p-4 sm:p-8 text-center cursor-pointer transition-colors ${
+              isDragActive 
+                ? 'border-black bg-neutral-50' 
+                : 'border-neutral-300 hover:border-neutral-400'
+            }`}
+          >
+            <input {...getInputProps()} />
+            <Camera className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-neutral-400" />
+            <p className="text-base sm:text-lg font-medium text-neutral-900 mb-2">
+              {isDragActive ? 'Drop your photo here' : 'Drag & drop your photo'}
+            </p>
+            <p className="text-sm sm:text-base text-neutral-600 mb-3 sm:mb-4">
+              or tap to browse files
+            </p>
+            <Badge variant="outline" className="text-xs sm:text-sm">JPG, PNG, HEIC up to 10MB</Badge>
           </div>
-        )}
-      </CardContent>
-    </Card>
+          
+          {uploadedPhoto && (
+            <div className="mt-4 sm:mt-6">
+              <img 
+                src={uploadedPhoto.preview} 
+                alt="Uploaded preview"
+                className="w-full h-48 sm:h-64 object-cover rounded-lg"
+              />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3">
+                <Badge className="bg-green-100 text-green-800 w-fit">
+                  <CheckCircle className="w-4 h-4 mr-1" />
+                  Photo uploaded successfully
+                </Badge>
+                <Button 
+                  onClick={handleAnalyzeArchitecture} 
+                  disabled={architecturalAnalysisMutation.isPending}
+                  className="w-full sm:w-auto"
+                >
+                  {architecturalAnalysisMutation.isPending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Analyzing Design...
+                    </>
+                  ) : (
+                    <>
+                      Analyze Design <ArrowRight className="w-4 h-4 ml-2" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 
   const renderArchitecturalStep = () => (
@@ -1088,36 +1078,20 @@ export default function AIVisualization() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-          AI Design Studio
-        </h1>
-        <p className="text-neutral-600">
-          Transform your space with AI-powered design visualization
-        </p>
+    <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 via-white to-gray-50">
+      <div className="max-w-7xl mx-auto">
+        {renderStudioNavigation()}
+
+        {currentStep === 'upload' && renderUploadStep()}
+
+        {progress > 0 && (
+          <div className="text-center mt-16">
+            <Button variant="outline" onClick={resetWorkflow} className="luxury-text">
+              Start New Project
+            </Button>
+          </div>
+        )}
       </div>
-
-      <div className="mb-8">
-        <Progress value={progress} className="w-full" />
-      </div>
-
-      {renderStepIndicator()}
-
-      {currentStep === 'upload' && renderUploadStep()}
-      {currentStep === 'architecture' && renderArchitecturalStep()}
-      {currentStep === 'inspiration' && renderInspirationStep()}
-      {currentStep === 'parameters' && renderParametersStep()}
-      {currentStep === 'transform' && renderTransformStep()}
-      {currentStep === 'review' && renderReviewStep()}
-
-      {progress > 0 && (
-        <div className="text-center mt-8">
-          <Button variant="outline" onClick={resetWorkflow}>
-            Start New Project
-          </Button>
-        </div>
-      )}
     </div>
   );
 }
