@@ -1204,16 +1204,17 @@ export default function AIVisualization() {
         selected: string;
         suggestions: string[];
       }> = [];
+      
       editableArchitecture.elements.forEach(element => {
-        if (!element.keepOriginal) {
-          switch (element.type) {
+        if (element.action === 'inspiration' || element.action === 'select') {
+          switch (element.category) {
             case 'walls':
             case 'wall treatments':
               prompts.push({
                 category: 'Wall Treatments',
-                element: element.type,
-                current: element.current,
-                selected: element.selected,
+                element: element.category,
+                current: element.specificType,
+                selected: element.selectedStyle,
                 suggestions: [
                   'Modern minimalist paint in neutral tones',
                   'Natural wood paneling or shiplap',
@@ -1226,9 +1227,9 @@ export default function AIVisualization() {
             case 'flooring':
               prompts.push({
                 category: 'Flooring Materials',
-                element: element.type,
-                current: element.current,
-                selected: element.selected,
+                element: element.category,
+                current: element.specificType,
+                selected: element.selectedStyle,
                 suggestions: [
                   'Wide-plank hardwood with natural finish',
                   'Large format porcelain or ceramic tiles',
@@ -1241,9 +1242,9 @@ export default function AIVisualization() {
             case 'windows':
               prompts.push({
                 category: 'Window Styles',
-                element: element.type,
-                current: element.current,
-                selected: element.selected,
+                element: element.category,
+                current: element.specificType,
+                selected: element.selectedStyle,
                 suggestions: [
                   'Black steel frame casement windows',
                   'Floor-to-ceiling glass panels',
@@ -1256,9 +1257,9 @@ export default function AIVisualization() {
             case 'doors':
               prompts.push({
                 category: 'Door Designs',
-                element: element.type,
-                current: element.current,
-                selected: element.selected,
+                element: element.category,
+                current: element.specificType,
+                selected: element.selectedStyle,
                 suggestions: [
                   'Sleek modern flush doors',
                   'Traditional panel doors with molding',
@@ -1268,12 +1269,42 @@ export default function AIVisualization() {
                 ]
               });
               break;
+            case 'roofing':
+              prompts.push({
+                category: 'Roofing Styles',
+                element: element.category,
+                current: element.specificType,
+                selected: element.selectedStyle,
+                suggestions: [
+                  'Modern metal roofing in charcoal',
+                  'Classic asphalt shingles',
+                  'Clay tile Mediterranean style',
+                  'Slate for luxury appeal',
+                  'Green roof with vegetation'
+                ]
+              });
+              break;
+            case 'cladding':
+              prompts.push({
+                category: 'Exterior Cladding',
+                element: element.category,
+                current: element.specificType,
+                selected: element.selectedStyle,
+                suggestions: [
+                  'Modern fiber cement siding',
+                  'Natural stone veneer',
+                  'Wood cedar shingles',
+                  'Contemporary metal panels',
+                  'Traditional brick facade'
+                ]
+              });
+              break;
             default:
               prompts.push({
-                category: `${element.type.charAt(0).toUpperCase() + element.type.slice(1)} Styles`,
-                element: element.type,
-                current: element.current,
-                selected: element.selected,
+                category: `${element.category.charAt(0).toUpperCase() + element.category.slice(1)} Styles`,
+                element: element.category,
+                current: element.specificType,
+                selected: element.selectedStyle,
                 suggestions: [
                   'Modern contemporary style',
                   'Traditional classic approach',
