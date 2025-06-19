@@ -392,18 +392,18 @@ export default function AIVisualization() {
 
   // Studio Navigation
   const renderStudioNavigation = () => (
-    <div className="text-center mb-8 sm:mb-12">
-      <div className="mb-6">
-        <span className="text-xs tracking-widest text-gray-500 uppercase luxury-text">
+    <div className="text-center mb-12 sm:mb-16">
+      <div className="mb-8">
+        <span className="text-xs tracking-widest text-white/60 uppercase luxury-text">
           Professional Design Platform
         </span>
       </div>
       
-      <h1 className="text-4xl sm:text-5xl md:text-6xl font-light text-black mb-6 leading-tight luxury-title">
+      <h1 className="text-5xl sm:text-6xl md:text-7xl font-light text-white mb-8 leading-tight luxury-title">
         Studio
       </h1>
       
-      <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed luxury-text">
+      <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed luxury-text">
         Transform your space with professional AI-powered design visualization
       </p>
     </div>
@@ -411,61 +411,63 @@ export default function AIVisualization() {
 
   const renderUploadStep = () => (
     <div className="max-w-4xl mx-auto px-4">
-      <div className="text-center mb-12">
-        <h2 className="text-3xl sm:text-4xl font-light text-black mb-6 luxury-title">
+      <div className="text-center mb-16">
+        <h2 className="text-4xl sm:text-5xl font-light text-white mb-8 luxury-title">
           Upload Your Space
         </h2>
-        <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed luxury-text">
+        <p className="text-xl text-white/70 max-w-3xl mx-auto leading-relaxed luxury-text">
           Begin your design transformation by sharing your space with our AI design team
         </p>
       </div>
       
-      <Card className="border-none shadow-xl bg-white/50 backdrop-blur-sm">
-        <CardContent className="p-8 sm:p-12">
+      <Card className="border border-white/10 shadow-2xl bg-white/5 backdrop-blur-md">
+        <CardContent className="p-8 sm:p-16">
           <div
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-4 sm:p-8 text-center cursor-pointer transition-colors ${
+            className={`border-2 border-dashed rounded-xl p-8 sm:p-16 text-center cursor-pointer transition-all duration-300 ${
               isDragActive 
-                ? 'border-black bg-neutral-50' 
-                : 'border-neutral-300 hover:border-neutral-400'
+                ? 'border-white/60 bg-white/10' 
+                : 'border-white/30 hover:border-white/50 hover:bg-white/5'
             }`}
           >
             <input {...getInputProps()} />
-            <Camera className="w-8 h-8 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 text-neutral-400" />
-            <p className="text-base sm:text-lg font-medium text-neutral-900 mb-2">
+            <Camera className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-6 text-white/60" />
+            <p className="text-xl sm:text-2xl font-light text-white mb-3 luxury-title">
               {isDragActive ? 'Drop your photo here' : 'Drag & drop your photo'}
             </p>
-            <p className="text-sm sm:text-base text-neutral-600 mb-3 sm:mb-4">
+            <p className="text-base sm:text-lg text-white/60 mb-6 luxury-text">
               or tap to browse files
             </p>
-            <Badge variant="outline" className="text-xs sm:text-sm">JPG, PNG, HEIC up to 10MB</Badge>
+            <Badge variant="outline" className="text-sm border-white/20 text-white/80 bg-transparent">
+              JPG, PNG, HEIC up to 10MB
+            </Badge>
           </div>
           
           {uploadedPhoto && (
-            <div className="mt-4 sm:mt-6">
+            <div className="mt-8">
               <img 
                 src={uploadedPhoto.preview} 
                 alt="Uploaded preview"
-                className="w-full h-48 sm:h-64 object-cover rounded-lg"
+                className="w-full h-64 sm:h-80 object-cover rounded-xl border border-white/20"
               />
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 gap-3">
-                <Badge className="bg-green-100 text-green-800 w-fit">
-                  <CheckCircle className="w-4 h-4 mr-1" />
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6 gap-4">
+                <Badge className="bg-green-500/20 text-green-300 border-green-500/30 w-fit">
+                  <CheckCircle className="w-4 h-4 mr-2" />
                   Photo uploaded successfully
                 </Badge>
                 <Button 
                   onClick={handleAnalyzeArchitecture} 
                   disabled={architecturalAnalysisMutation.isPending}
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto bg-white text-black hover:bg-white/90 font-medium px-8 py-3"
                 >
                   {architecturalAnalysisMutation.isPending ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
                       Analyzing Design...
                     </>
                   ) : (
                     <>
-                      Analyze Design <ArrowRight className="w-4 h-4 ml-2" />
+                      Begin Analysis <ArrowRight className="w-4 h-4 ml-2" />
                     </>
                   )}
                 </Button>
@@ -1078,15 +1080,15 @@ export default function AIVisualization() {
   );
 
   return (
-    <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 via-white to-gray-50">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8 relative">
+      <div className="max-w-7xl mx-auto relative z-10">
         {renderStudioNavigation()}
 
         {currentStep === 'upload' && renderUploadStep()}
 
         {progress > 0 && (
           <div className="text-center mt-16">
-            <Button variant="outline" onClick={resetWorkflow} className="luxury-text">
+            <Button variant="outline" onClick={resetWorkflow} className="luxury-text border-white/20 text-white hover:bg-white/10">
               Start New Project
             </Button>
           </div>
