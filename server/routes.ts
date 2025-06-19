@@ -159,31 +159,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const imageBuffer = fs.readFileSync(photoPath);
       const base64Image = imageBuffer.toString('base64');
 
+      // Get the user's selected architectural elements first
+      let architecturalContext = '';
+      if (req.body.architecturalElements) {
+        const elements = JSON.parse(req.body.architecturalElements);
+        const transformElements = elements.filter((el: any) => el.action === 'inspiration' || el.action === 'select');
+        architecturalContext = transformElements.map((el: any) => `${el.category}: ${el.specificType}`).join(', ');
+      }
+
       const analysisResponse = await openai.chat.completions.create({
         model: "gpt-4o",
         messages: [
           {
             role: "system",
-            content: "You are an expert architectural analyst. Analyze images and identify all visible elements naturally, creating categories based on what you observe rather than predefined structures."
+            content: "You are an expert design consultant. Extract inspiration elements that align with specific architectural elements from the original photo. Create dynamic categories based on what's being transformed."
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: `Analyze this architectural image and identify all visible elements. Organize your findings by the natural categories you observe. Return JSON format:
-                {
-                  "spaceType": "what type of space this is",
-                  "architecturalStyle": "design style observed",
-                  "surfaceMaterials": {
-                    "category1": ["detailed descriptions"],
-                    "category2": ["detailed descriptions"]
-                  },
-                  "colorScheme": ["color observations"],
-                  "notableFeatures": ["architectural elements you identify"]
-                }
-                
-                Let the image guide what categories you create - don't force predefined categories. Describe materials with specific details like texture, color, and finish.`
+                text: `CONTEXT: User wants to transform these architectural elements: ${architecturalContext || 'User will specify elements to transform'}
+
+Analyze this original photo and the inspiration content to extract design parameters that align with the architectural elements being transformed.
+
+Create dynamic categories based on the architectural elements detected. For example:
+- If transforming windows → create "Window Treatments" category
+- If transforming exterior cladding → create "Exterior Materials" category  
+- If transforming flooring → create "Flooring Materials" category
+- If transforming walls → create "Wall Treatments" category
+
+Return JSON:
+{
+  "roomType": "detected space type",
+  "style": "overall design style from inspiration",
+  "spaceType": "interior or exterior",
+  "dynamicCategories": [
+    {
+      "name": "Category aligned with architectural element",
+      "alignedElement": "which architectural element this relates to",
+      "items": ["specific material/style options from inspiration"],
+      "visualExamples": ["description of visual elements for mini design board"],
+      "confidence": 0.9
+    }
+  ]
+}`
               },
               {
                 type: "image_url",
@@ -196,98 +216,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
           },
         ],
         response_format: { type: "json_object" },
-        max_tokens: 500,
+        max_tokens: 800,
       });
 
       const analysisResult = JSON.parse(analysisResponse.choices[0].message.content || '{}');
       
-      // Transform AI's natural categorization into our parameter structure
-      const transformNaturalAnalysis = (aiResult: any) => {
-        const surfaceMaterials = aiResult.surfaceMaterials || {};
-        
-        const allMaterials = [];
-        const wallMaterials = [];
-        const floorMaterials = [];
-        
-        // Intelligently map AI's natural categories
-        for (const [category, materials] of Object.entries(surfaceMaterials)) {
-          const categoryLower = category.toLowerCase();
-          const materialList = materials as string[];
-          
-          allMaterials.push(...materialList);
-          
-          if (categoryLower.includes('wall') || categoryLower.includes('cladding') || categoryLower.includes('siding') || categoryLower.includes('facade')) {
-            wallMaterials.push(...materialList);
-          } else if (categoryLower.includes('floor') || categoryLower.includes('ground') || categoryLower.includes('deck') || categoryLower.includes('surface')) {
-            floorMaterials.push(...materialList);
-          }
-        }
-        
-        return {
-          roomType: aiResult.spaceType || 'Living Space',
-          style: aiResult.architecturalStyle || 'Contemporary',
-          spaceType: 'interior' as 'interior' | 'exterior',
-          detectedCategories: [] as { name: string; items: string[]; confidence: number }[],
-          wallCladding: wallMaterials.length > 0 ? wallMaterials : ['Natural wall finish'],
-          flooringMaterial: floorMaterials.length > 0 ? floorMaterials : ['Natural flooring'],
-          materials: allMaterials.length > 0 ? allMaterials : ['Natural materials'],
-          colorPalette: aiResult.colorScheme || ['Neutral tones'],
-          furnitureTypes: [] as string[],
-          ceilingDetails: [] as string[],
-          lightingFixtures: [] as string[],
-          architecturalFeatures: aiResult.notableFeatures || []
-        };
+      // Create dynamic parameters structure aligned with architectural elements
+      const dynamicCategories = analysisResult.dynamicCategories || [];
+      
+      // Build the dynamic parameters response
+      const dynamicParameters = {
+        roomType: analysisResult.roomType || 'Living Space',
+        style: analysisResult.style || 'Contemporary',
+        spaceType: analysisResult.spaceType || 'interior' as 'interior' | 'exterior',
+        detectedCategories: dynamicCategories.map((cat: any) => ({
+          name: cat.name,
+          alignedElement: cat.alignedElement,
+          items: cat.items || [],
+          visualExamples: cat.visualExamples || [],
+          confidence: cat.confidence || 0.8
+        })),
+        // Legacy support - these will be deprecated
+        materials: [],
+        colorPalette: [],
+        furnitureTypes: [],
+        wallCladding: [],
+        flooringMaterial: [],
+        ceilingDetails: [],
+        lightingFixtures: [],
+        architecturalFeatures: []
       };
 
-      let enhancedParameters = transformNaturalAnalysis(analysisResult);
-
-      // Process reference images
-      const referenceImages = [];
-      for (let i = 0; i < 5; i++) {
-        if (files[`referenceImage${i}`]) {
-          referenceImages.push(files[`referenceImage${i}`][0]);
-        }
-      }
-
-      if (referenceImages.length > 0) {
-        const refAnalysis = await analyzeReferenceImages(referenceImages);
-        
-        if (refAnalysis.style) enhancedParameters.style = refAnalysis.style;
-        enhancedParameters.spaceType = refAnalysis.spaceType;
-        
-        // Store dynamic categories and map to legacy arrays for compatibility
-        enhancedParameters.detectedCategories = refAnalysis.detectedCategories;
-        
-        refAnalysis.detectedCategories.forEach(category => {
-          switch (category.name) {
-            case 'wall cladding':
-              enhancedParameters.wallCladding.push(...category.items);
-              break;
-            case 'flooring':
-              enhancedParameters.flooringMaterial.push(...category.items);
-              break;
-            case 'furniture':
-            case 'exterior furniture':
-              enhancedParameters.furnitureTypes.push(...category.items);
-              break;
-            case 'materials':
-              enhancedParameters.materials.push(...category.items);
-              break;
-            case 'color palette':
-              enhancedParameters.colorPalette.push(...category.items);
-              break;
-            case 'architectural features':
-              enhancedParameters.architecturalFeatures.push(...category.items);
-              break;
-            case 'lighting fixtures':
-              enhancedParameters.lightingFixtures.push(...category.items);
-              break;
-            case 'ceiling details':
-              enhancedParameters.ceilingDetails.push(...category.items);
-              break;
-          }
-        });
-      }
+      res.json(dynamicParameters);
 
       // Process Pinterest URL
       if (pinterestUrl) {

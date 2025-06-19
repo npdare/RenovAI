@@ -264,6 +264,11 @@ export default function AIVisualization() {
         formData.append('photo', uploadedPhoto.file);
       }
       
+      // Pass architectural elements context for dynamic parameter alignment
+      if (editableArchitecture) {
+        formData.append('architecturalElements', JSON.stringify(editableArchitecture.elements));
+      }
+      
       if (inspiration.type === 'text' && inspiration.textPrompt) {
         formData.append('textPrompt', inspiration.textPrompt);
       }
