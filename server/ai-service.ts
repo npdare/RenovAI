@@ -8,6 +8,52 @@ const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
 });
 
+// Smart material application function
+async function generateSmartMaterialApplication(
+  selectedMaterials: string[],
+  spaceType: string
+): Promise<string> {
+  try {
+    console.log('Generating smart material application for:', selectedMaterials);
+    
+    const materialAnalysis = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert architectural designer. Given multiple materials, determine how they should be applied to a building according to modern design principles."
+        },
+        {
+          role: "user",
+          content: `Materials selected: ${selectedMaterials.join(', ')}
+Space type: ${spaceType}
+
+Apply modern architectural design principles to determine how these materials should work together. Consider:
+- Primary vs accent material placement
+- Structural hierarchy (base, middle, top)
+- Visual weight and texture balance
+- Contemporary design trends
+- Functional appropriateness
+
+Return a concise application strategy (max 15 words) for image transformation prompt:
+Example: "natural stone base with timber accent panels on upper level"`
+        }
+      ],
+      max_tokens: 100
+    });
+
+    const strategy = materialAnalysis.choices[0].message.content?.trim() || 
+                    `${selectedMaterials[0]} with ${selectedMaterials.slice(1).join(' and ')} accents`;
+    
+    console.log('Generated material strategy:', strategy);
+    return strategy;
+  } catch (error) {
+    console.error('Error generating material application:', error);
+    // Fallback to simple combination
+    return `${selectedMaterials[0]} with ${selectedMaterials.slice(1).join(' and ')} accents`;
+  }
+}
+
 export interface DesignAnalysis {
   roomType: string;
   currentStyle: string;
@@ -378,21 +424,30 @@ OUTPUT SPECIFICATIONS:
     // Use much lower strength for subtle, realistic changes
     const conservativeStrength = Math.min(0.4, (transformationStrength / 200)); // More conservative than before
     
-    // Select only the most important design element for focused transformation
-    let primaryDesignFocus = '';
+    // Build intelligent material application prompt based on selected design elements
+    let intelligentMaterialPrompt = '';
     if (parameters.detectedCategories?.length > 0) {
-      // Take only the first category to avoid overwhelming changes
-      const primaryCategory = parameters.detectedCategories[0];
-      primaryDesignFocus = primaryCategory.items[0] || 'subtle architectural enhancement';
+      // Get all selected materials from user's chosen categories
+      const selectedMaterials = parameters.detectedCategories.flatMap((cat: any) => cat.items);
+      
+      if (selectedMaterials.length === 1) {
+        // Single material - apply directly
+        intelligentMaterialPrompt = `subtle ${selectedMaterials[0]} enhancement`;
+      } else if (selectedMaterials.length > 1) {
+        // Multiple materials - use AI to determine proper application
+        intelligentMaterialPrompt = await generateSmartMaterialApplication(selectedMaterials, parameters.spaceType);
+      } else {
+        intelligentMaterialPrompt = 'subtle architectural enhancement';
+      }
     } else {
-      primaryDesignFocus = `${parameters.wallCladding?.[0] || 'modern wall'} treatment`;
+      intelligentMaterialPrompt = `${parameters.wallCladding?.[0] || 'modern wall'} treatment`;
     }
 
-    // Conservative prompt focused on preserving structure with specific material change
-    const architecturalPrompt = `Professional architectural photography with subtle ${primaryDesignFocus} enhancement, preserve exact building structure and proportions, photorealistic, natural lighting, maintain all architectural details`;
+    // Conservative prompt focused on preserving structure with intelligent material application
+    const architecturalPrompt = `Professional architectural photography with ${intelligentMaterialPrompt}, preserve exact building structure and proportions, photorealistic, natural lighting, maintain all architectural details`;
 
     console.log('Transformation strength:', conservativeStrength);
-    console.log('Primary design focus:', primaryDesignFocus);
+    console.log('Intelligent material prompt:', intelligentMaterialPrompt);
 
     const transformation = await replicate.run(
       "jagilley/controlnet-canny:aff48af9c68d162388d230a2ab003f68d2638d88307bdaf1c2f1ac95079c9613",
