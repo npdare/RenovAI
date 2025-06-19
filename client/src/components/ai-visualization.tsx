@@ -2217,71 +2217,136 @@ export default function AIVisualization() {
   );
 
   const renderTransformStep = () => (
-    <Card className="max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Wand2 className="w-6 h-6 mr-2" />
-          Transform Image
-        </CardTitle>
-        <p className="text-neutral-600">
-          Apply the design parameters to your original photo
-        </p>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          <div>
-            <Label className="text-base font-medium">Transformation Strength</Label>
-            <div className="mt-4">
-              <Slider
-                value={transformationStrength}
-                onValueChange={setTransformationStrength}
-                max={100}
-                min={10}
-                step={5}
-                className="w-full"
-              />
-              <div className="flex justify-between text-sm text-neutral-600 mt-2">
-                <span>Subtle (10%)</span>
-                <span className="font-medium">{transformationStrength[0]}%</span>
-                <span>Complete (100%)</span>
+    <div className="space-y-8">
+      {/* V2 Mask Editor Interface */}
+      {useV2Pipeline && v2PreprocessingResult && (
+        <Card className="max-w-7xl mx-auto">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Layers className="w-6 h-6 mr-2" />
+                Advanced Mask Editor
+              </div>
+              <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-800">
+                V2 Pipeline
+              </Badge>
+            </CardTitle>
+            <p className="text-gray-600">
+              Select and edit the elements you want to transform using precise mask controls
+            </p>
+          </CardHeader>
+          <CardContent>
+            <MaskEditor
+              originalImage={v2PreprocessingResult.originalImage}
+              masks={v2Masks}
+              onMaskUpdate={(maskIndex, updatedMask) => {
+                const newMasks = [...v2Masks];
+                newMasks[maskIndex] = updatedMask;
+                setV2Masks(newMasks);
+              }}
+              onSelectionChange={setSelectedMasks}
+              selectedMasks={selectedMasks}
+            />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Transform Controls */}
+      <Card className="max-w-2xl mx-auto">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Wand2 className="w-6 h-6 mr-2" />
+              Transform Image
+            </div>
+            <Badge variant="outline" className="text-xs">
+              {useV2Pipeline ? 'V2 Multi-ControlNet' : 'V1 Standard'}
+            </Badge>
+          </CardTitle>
+          <p className="text-gray-600">
+            {useV2Pipeline 
+              ? "Apply design parameters using advanced multi-ControlNet transformation"
+              : "Apply the design parameters to your original photo"
+            }
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            {useV2Pipeline && (
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-sm font-medium text-blue-900">Selected Masks</Label>
+                  <span className="text-xs text-blue-700">{selectedMasks.length} selected</span>
+                </div>
+                {selectedMasks.length > 0 ? (
+                  <div className="flex flex-wrap gap-1">
+                    {selectedMasks.map(index => (
+                      <Badge key={index} variant="secondary" className="text-xs bg-blue-100 text-blue-800">
+                        Mask {index + 1}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-blue-600">No masks selected for transformation</p>
+                )}
+              </div>
+            )}
+
+            <div>
+              <Label className="text-base font-medium">Transformation Strength</Label>
+              <div className="mt-4">
+                <Slider
+                  value={transformationStrength}
+                  onValueChange={setTransformationStrength}
+                  max={100}
+                  min={10}
+                  step={5}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-sm text-gray-600 mt-2">
+                  <span>Subtle (10%)</span>
+                  <span className="font-medium">{transformationStrength[0]}%</span>
+                  <span>Complete (100%)</span>
+                </div>
               </div>
             </div>
-          </div>
-          
-          {uploadedPhoto && (
-            <div>
-              <Label className="text-base font-medium">Original Photo</Label>
-              <img 
-                src={uploadedPhoto.preview}
-                alt="Original"
-                className="w-full h-64 object-cover rounded-lg mt-2"
-              />
+            
+            {uploadedPhoto && (
+              <div>
+                <Label className="text-base font-medium">Original Photo</Label>
+                <img 
+                  src={uploadedPhoto.preview}
+                  alt="Original"
+                  className="w-full h-64 object-cover rounded-lg mt-2"
+                />
+              </div>
+            )}
+            
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => setCurrentStep('parameters')}>
+                Back
+              </Button>
+              <Button 
+                onClick={useV2Pipeline ? () => v2TransformMutation.mutate() : handleTransformImage}
+                disabled={useV2Pipeline ? v2TransformMutation.isPending : transformImageMutation.isPending}
+                className={useV2Pipeline ? "bg-blue-600 hover:bg-blue-700" : ""}
+              >
+                {(useV2Pipeline ? v2TransformMutation.isPending : transformImageMutation.isPending) ? (
+                  <>
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                    {useV2Pipeline ? 'V2 Processing...' : 'Transforming...'}
+                  </>
+                ) : (
+                  <>
+                    {useV2Pipeline ? 'Transform with V2' : 'Transform'} <Wand2 className="w-4 h-4 ml-2" />
+                  </>
+                )}
+              </Button>
             </div>
-          )}
-          
-          <div className="flex justify-between">
-            <Button variant="outline" onClick={() => setCurrentStep('parameters')}>
-              Back
-            </Button>
-            <Button 
-              onClick={handleTransformImage}
-              disabled={transformImageMutation.isPending}
-            >
-              {transformImageMutation.isPending ? (
-                <>
-                  <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
-                  Transforming...
-                </>
-              ) : (
-                <>
-                  Transform <Wand2 className="w-4 h-4 ml-2" />
-                </>
-              )}
-            </Button>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 
   const renderReviewStep = () => (
