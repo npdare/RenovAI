@@ -1811,6 +1811,110 @@ export default function AIVisualization() {
               </div>
             ))}
             
+            {/* Add Additional Inspiration Categories */}
+            {isEditingParameters && (
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <Label className="text-lg font-semibold text-black luxury-title">
+                      Add Additional Inspiration
+                    </Label>
+                    <p className="text-sm text-gray-600 luxury-text mt-1">
+                      Create inspiration boards for elements not detected in your original photo
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {[
+                    'Lighting Fixtures', 'Decorative Accessories', 'Artwork & Wall Decor', 
+                    'Textiles & Fabrics', 'Outdoor Furniture', 'Landscaping Elements',
+                    'Hardware & Finishes', 'Color Accents'
+                  ].map((categoryName) => (
+                    <Button
+                      key={categoryName}
+                      variant="outline"
+                      size="sm"
+                      className="h-auto p-3 text-left justify-start bg-white hover:bg-blue-50 border-blue-200"
+                      onClick={() => {
+                        if (editableParameters) {
+                          const newCategory: DetectedCategory = {
+                            name: categoryName,
+                            alignedElement: 'Additional element',
+                            items: [],
+                            visualExamples: [],
+                            confidence: 1.0
+                          };
+                          setEditableParameters({
+                            ...editableParameters,
+                            detectedCategories: [...editableParameters.detectedCategories, newCategory]
+                          });
+                        }
+                      }}
+                    >
+                      <div>
+                        <div className="font-medium text-xs text-black">{categoryName}</div>
+                        <div className="text-xs text-gray-500 mt-1">Add inspiration board</div>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+                
+                {/* Custom Category Input */}
+                <div className="mt-4 pt-4 border-t border-blue-200">
+                  <div className="flex space-x-2">
+                    <Input
+                      placeholder="Create custom inspiration category..."
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                          const categoryName = e.currentTarget.value.trim();
+                          if (editableParameters) {
+                            const newCategory: DetectedCategory = {
+                              name: categoryName,
+                              alignedElement: 'Custom element',
+                              items: [],
+                              visualExamples: [],
+                              confidence: 1.0
+                            };
+                            setEditableParameters({
+                              ...editableParameters,
+                              detectedCategories: [...editableParameters.detectedCategories, newCategory]
+                            });
+                          }
+                          e.currentTarget.value = '';
+                        }
+                      }}
+                      className="flex-1"
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        const input = document.querySelector('input[placeholder="Create custom inspiration category..."]') as HTMLInputElement;
+                        if (input?.value.trim() && editableParameters) {
+                          const categoryName = input.value.trim();
+                          const newCategory: DetectedCategory = {
+                            name: categoryName,
+                            alignedElement: 'Custom element',
+                            items: [],
+                            visualExamples: [],
+                            confidence: 1.0
+                          };
+                          setEditableParameters({
+                            ...editableParameters,
+                            detectedCategories: [...editableParameters.detectedCategories, newCategory]
+                          });
+                          input.value = '';
+                        }
+                      }}
+                    >
+                      Add Category
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {/* Fallback to Legacy Categories if No Dynamic Detection */}
             {(!editableParameters?.detectedCategories || editableParameters.detectedCategories.length === 0) && (
               <>
