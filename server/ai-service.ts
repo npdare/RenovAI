@@ -474,23 +474,43 @@ Be thorough - include every visible architectural element, no matter how minor.`
         }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 800
+      max_tokens: 2000
     });
 
     let result;
     try {
       const content = analysis.choices[0].message.content || '{}';
-      // Clean up potential JSON issues
-      const cleanContent = content
-        .replace(/[\u0000-\u001F\u007F-\u009F]/g, '') // Remove control characters
-        .replace(/\\/g, '\\\\') // Escape backslashes
-        .replace(/"/g, '"') // Normalize quotes
-        .trim();
+      console.log('Raw OpenAI response length:', content.length);
       
-      result = JSON.parse(cleanContent);
+      // Check if response is truncated
+      if (!content.trim().endsWith('}')) {
+        console.warn('Response appears truncated, attempting to fix...');
+        // Try to close the JSON structure
+        let fixedContent = content.trim();
+        if (fixedContent.endsWith(',')) {
+          fixedContent = fixedContent.slice(0, -1);
+        }
+        // Count open braces and brackets to determine what to close
+        const openBraces = (fixedContent.match(/{/g) || []).length;
+        const closeBraces = (fixedContent.match(/}/g) || []).length;
+        const openBrackets = (fixedContent.match(/\[/g) || []).length;
+        const closeBrackets = (fixedContent.match(/\]/g) || []).length;
+        
+        // Add missing closing characters
+        for (let i = 0; i < openBrackets - closeBrackets; i++) {
+          fixedContent += ']';
+        }
+        for (let i = 0; i < openBraces - closeBraces; i++) {
+          fixedContent += '}';
+        }
+        
+        result = JSON.parse(fixedContent);
+      } else {
+        result = JSON.parse(content);
+      }
     } catch (error) {
       console.error('JSON parsing error:', error);
-      console.error('Raw content:', analysis.choices[0].message.content);
+      console.error('Raw content preview:', analysis.choices[0].message.content?.substring(0, 500));
       
       // Return fallback structure with common architectural elements
       return {
