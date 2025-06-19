@@ -753,148 +753,101 @@ export default function AIVisualization() {
   );
 
   const renderArchitecturalStep = () => (
-    <Card className="max-w-4xl mx-auto mx-4">
-      <CardHeader>
-        <CardTitle className="flex items-center text-lg sm:text-xl">
-          <Home className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
-          Existing Design Elements
-        </CardTitle>
-        <p className="text-neutral-600 text-sm sm:text-base">
-          Review detected design elements from your space and choose whether to keep or modify them
+    <div className="max-w-5xl mx-auto px-4">
+      <div className="text-center mb-12">
+        <h2 className="text-3xl sm:text-4xl font-light text-black mb-6 luxury-title">
+          Design Elements
+        </h2>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed luxury-text">
+          Choose which elements to transform and which to keep as they are
         </p>
-      </CardHeader>
-      <CardContent>
-        {editableArchitecture && (
-          <div className="space-y-4 sm:space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-              <div>
+      </div>
+
+      {editableArchitecture && (
+        <div className="space-y-8">
+          {/* Space Overview */}
+          <div className="bg-white/60 backdrop-blur-sm border border-gray-200/60 rounded-xl p-6">
+            <div className="grid md:grid-cols-4 gap-6 items-center">
+              <div className="md:col-span-1">
                 <img 
                   src={uploadedPhoto?.preview} 
-                  alt="Original photo"
-                  className="w-full h-48 sm:h-64 object-cover rounded-lg"
+                  alt="Original space"
+                  className="w-full h-24 object-cover rounded-lg border border-gray-200"
                 />
-                <p className="text-sm text-neutral-600 mt-2">Original Photo</p>
               </div>
-              
-              <div className="space-y-3 sm:space-y-4">
-                <div>
-                  <Label className="text-sm sm:text-base font-medium">Room Structure</Label>
-                  <p className="text-sm sm:text-base text-neutral-700 bg-neutral-50 p-2 sm:p-3 rounded-lg mt-2">
-                    {editableArchitecture.roomStructure}
-                  </p>
-                </div>
-                
-                <div>
-                  <Label className="text-sm sm:text-base font-medium">Detected Features</Label>
-                  <p className="text-xs sm:text-sm text-neutral-600 mt-1 mb-3">
-                    These features will be preserved or enhanced in your transformation
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                    {editableArchitecture.detectedFeatures.map((feature, index) => (
-                      <div key={index} className="flex items-center justify-between p-2 bg-neutral-50 rounded-lg border">
-                        <span className="text-xs sm:text-sm font-medium">{feature}</span>
-                        <div className="flex items-center space-x-2">
-                          <Label className="text-xs">Include</Label>
-                          <input
-                            type="checkbox"
-                            defaultChecked={true}
-                            className="rounded"
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <Separator />
-            
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold">Structural Elements</h3>
-                <p className="text-sm text-neutral-600 mt-1">
-                  Choose to keep original elements or select alternatives for transformation
+              <div className="md:col-span-3">
+                <h3 className="text-lg font-medium text-black mb-2 luxury-title">Space Analysis</h3>
+                <p className="text-gray-700 luxury-text text-sm leading-relaxed">
+                  {editableArchitecture.roomStructure}
                 </p>
               </div>
-              
+            </div>
+          </div>
+
+          {/* Element Controls */}
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {editableArchitecture.elements.map((element, index) => (
-                <div key={index} className="border border-gray-200 rounded-xl p-4 sm:p-6 space-y-4 bg-white/50 backdrop-blur-sm">
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className="font-semibold capitalize text-black luxury-title">{element.type}</h4>
-                        <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                          <Label className="text-xs text-gray-600 uppercase tracking-wide">Currently Detected</Label>
-                          <p className="text-sm font-medium text-gray-800 mt-1">{element.current}</p>
-                        </div>
+                <div key={index} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-200">
+                  <div className="space-y-4">
+                    {/* Element Info */}
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                        {element.type === 'windows' && <Eye className="w-8 h-8 text-gray-600" />}
+                        {element.type === 'doors' && <ArrowRight className="w-8 h-8 text-gray-600" />}
+                        {element.type === 'flooring' && <Home className="w-8 h-8 text-gray-600" />}
+                        {element.type === 'walls' && <Settings className="w-8 h-8 text-gray-600" />}
+                        {!['windows', 'doors', 'flooring', 'walls'].includes(element.type) && 
+                          <Settings className="w-8 h-8 text-gray-600" />}
                       </div>
+                      <h4 className="font-semibold capitalize text-black luxury-title mb-1">
+                        {element.type}
+                      </h4>
+                      <p className="text-sm text-gray-600 luxury-text">
+                        {element.current}
+                      </p>
                     </div>
-                    
-                    <div className="space-y-3">
-                      <Label className="text-sm font-medium text-black luxury-title">Design Choice</Label>
-                      <div className="grid grid-cols-1 gap-3">
-                        {/* Keep Original Option */}
-                        <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                          <input
-                            type="radio"
-                            id={`keep-${index}`}
-                            name={`element-${index}`}
-                            checked={element.keepOriginal}
-                            onChange={(e) => handleArchitecturalElementChange(index, 'keepOriginal', e.target.checked)}
-                            className="w-4 h-4 text-black"
-                          />
-                          <label htmlFor={`keep-${index}`} className="flex-1 cursor-pointer">
-                            <div className="font-medium text-black">Keep Original</div>
-                            <div className="text-sm text-gray-600">Preserve the current {element.type.toLowerCase()}</div>
-                          </label>
-                        </div>
-                        
-                        {/* Transform Option */}
-                        <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                          <input
-                            type="radio"
-                            id={`transform-${index}`}
-                            name={`element-${index}`}
-                            checked={!element.keepOriginal}
-                            onChange={(e) => handleArchitecturalElementChange(index, 'keepOriginal', !e.target.checked)}
-                            className="w-4 h-4 text-black"
-                          />
-                          <label htmlFor={`transform-${index}`} className="flex-1 cursor-pointer">
-                            <div className="font-medium text-black">Transform Design</div>
-                            <div className="text-sm text-gray-600">Apply new style to this {element.type.toLowerCase()}</div>
-                          </label>
-                        </div>
-                      </div>
+
+                    {/* Toggle */}
+                    <div className="flex items-center justify-center space-x-4">
+                      <span className={`text-sm font-medium ${element.keepOriginal ? 'text-black' : 'text-gray-400'}`}>
+                        Keep
+                      </span>
+                      <button
+                        onClick={() => handleArchitecturalElementChange(index, 'keepOriginal', !element.keepOriginal)}
+                        className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2 ${
+                          element.keepOriginal ? 'bg-gray-300' : 'bg-black'
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                            element.keepOriginal ? 'translate-x-1' : 'translate-x-7'
+                          }`}
+                        />
+                      </button>
+                      <span className={`text-sm font-medium ${!element.keepOriginal ? 'text-black' : 'text-gray-400'}`}>
+                        Transform
+                      </span>
                     </div>
-                    
+
+                    {/* Style Selection */}
                     {!element.keepOriginal && (
-                      <div className="space-y-3 pt-3 border-t border-gray-200">
-                        <Label className="text-sm font-medium text-black luxury-title">Select New Style</Label>
+                      <div className="space-y-2 pt-4 border-t border-gray-200">
                         <Select 
                           value={element.selected} 
                           onValueChange={(value) => handleArchitecturalElementChange(index, 'selected', value)}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder={`Choose new ${element.type.toLowerCase()} style...`} />
+                            <SelectValue placeholder="Choose style..." />
                           </SelectTrigger>
                           <SelectContent>
                             {element.alternatives.map((alt, altIndex) => (
                               <SelectItem key={altIndex} value={alt}>
-                                <div className="flex items-center space-x-2">
-                                  <span>{alt}</span>
-                                </div>
+                                {alt}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-                        {element.selected && (
-                          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                            <p className="text-sm text-blue-800">
-                              <strong>Selected:</strong> {element.selected}
-                            </p>
-                          </div>
-                        )}
                       </div>
                     )}
                   </div>
@@ -902,18 +855,52 @@ export default function AIVisualization() {
               ))}
             </div>
           </div>
-        )}
-        
-        <div className="flex justify-between mt-8">
-          <Button variant="outline" onClick={() => setCurrentStep('upload')}>
-            Back
-          </Button>
-          <Button onClick={handleConfirmArchitecture}>
-            Continue to Inspiration <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
+
+          {/* Enhanced Features Summary */}
+          {editableArchitecture.detectedFeatures.length > 0 && (
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-6">
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  <Sparkles className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-black mb-2 luxury-title">
+                    Features to Enhance
+                  </h3>
+                  <p className="text-sm text-gray-700 mb-3 luxury-text">
+                    These distinctive features will be highlighted and improved in your transformation
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {editableArchitecture.detectedFeatures.map((feature, index) => (
+                      <Badge key={index} variant="secondary" className="text-sm bg-white/80 border-blue-300">
+                        {feature}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6">
+            <Button 
+              variant="outline" 
+              onClick={() => setCurrentStep('upload')}
+              className="luxury-text w-full sm:w-auto border-gray-300"
+            >
+              ← Back
+            </Button>
+            <Button 
+              onClick={handleConfirmArchitecture}
+              className="bg-black text-white hover:bg-gray-800 w-full sm:w-auto px-8"
+            >
+              Continue to Inspiration →
+            </Button>
+          </div>
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 
   const renderInspirationStep = () => (
