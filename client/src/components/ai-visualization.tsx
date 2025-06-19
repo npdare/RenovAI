@@ -786,9 +786,22 @@ export default function AIVisualization() {
                 
                 <div>
                   <Label className="text-sm sm:text-base font-medium">Detected Features</Label>
-                  <div className="flex flex-wrap gap-1 sm:gap-2 mt-2">
+                  <p className="text-xs sm:text-sm text-neutral-600 mt-1 mb-3">
+                    These features will be preserved or enhanced in your transformation
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
                     {editableArchitecture.detectedFeatures.map((feature, index) => (
-                      <Badge key={index} variant="outline" className="text-xs sm:text-sm">{feature}</Badge>
+                      <div key={index} className="flex items-center justify-between p-2 bg-neutral-50 rounded-lg border">
+                        <span className="text-xs sm:text-sm font-medium">{feature}</span>
+                        <div className="flex items-center space-x-2">
+                          <Label className="text-xs">Include</Label>
+                          <input
+                            type="checkbox"
+                            defaultChecked={true}
+                            className="rounded"
+                          />
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -798,44 +811,93 @@ export default function AIVisualization() {
             <Separator />
             
             <div className="space-y-6">
-              <h3 className="text-lg font-semibold">Structural Elements</h3>
+              <div>
+                <h3 className="text-lg font-semibold">Structural Elements</h3>
+                <p className="text-sm text-neutral-600 mt-1">
+                  Choose to keep original elements or select alternatives for transformation
+                </p>
+              </div>
               
               {editableArchitecture.elements.map((element, index) => (
-                <div key={index} className="border rounded-lg p-4 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-medium capitalize">{element.type}</h4>
-                      <p className="text-sm text-neutral-600">Current: {element.current}</p>
+                <div key={index} className="border border-gray-200 rounded-xl p-4 sm:p-6 space-y-4 bg-white/50 backdrop-blur-sm">
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-semibold capitalize text-black luxury-title">{element.type}</h4>
+                        <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                          <Label className="text-xs text-gray-600 uppercase tracking-wide">Currently Detected</Label>
+                          <p className="text-sm font-medium text-gray-800 mt-1">{element.current}</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Label className="text-sm">Keep Original</Label>
-                      <input
-                        type="checkbox"
-                        checked={element.keepOriginal}
-                        onChange={(e) => handleArchitecturalElementChange(index, 'keepOriginal', e.target.checked)}
-                        className="rounded"
-                      />
+                    
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium text-black luxury-title">Design Choice</Label>
+                      <div className="grid grid-cols-1 gap-3">
+                        {/* Keep Original Option */}
+                        <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                          <input
+                            type="radio"
+                            id={`keep-${index}`}
+                            name={`element-${index}`}
+                            checked={element.keepOriginal}
+                            onChange={(e) => handleArchitecturalElementChange(index, 'keepOriginal', e.target.checked)}
+                            className="w-4 h-4 text-black"
+                          />
+                          <label htmlFor={`keep-${index}`} className="flex-1 cursor-pointer">
+                            <div className="font-medium text-black">Keep Original</div>
+                            <div className="text-sm text-gray-600">Preserve the current {element.type.toLowerCase()}</div>
+                          </label>
+                        </div>
+                        
+                        {/* Transform Option */}
+                        <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                          <input
+                            type="radio"
+                            id={`transform-${index}`}
+                            name={`element-${index}`}
+                            checked={!element.keepOriginal}
+                            onChange={(e) => handleArchitecturalElementChange(index, 'keepOriginal', !e.target.checked)}
+                            className="w-4 h-4 text-black"
+                          />
+                          <label htmlFor={`transform-${index}`} className="flex-1 cursor-pointer">
+                            <div className="font-medium text-black">Transform Design</div>
+                            <div className="text-sm text-gray-600">Apply new style to this {element.type.toLowerCase()}</div>
+                          </label>
+                        </div>
+                      </div>
                     </div>
+                    
+                    {!element.keepOriginal && (
+                      <div className="space-y-3 pt-3 border-t border-gray-200">
+                        <Label className="text-sm font-medium text-black luxury-title">Select New Style</Label>
+                        <Select 
+                          value={element.selected} 
+                          onValueChange={(value) => handleArchitecturalElementChange(index, 'selected', value)}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder={`Choose new ${element.type.toLowerCase()} style...`} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {element.alternatives.map((alt, altIndex) => (
+                              <SelectItem key={altIndex} value={alt}>
+                                <div className="flex items-center space-x-2">
+                                  <span>{alt}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {element.selected && (
+                          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <p className="text-sm text-blue-800">
+                              <strong>Selected:</strong> {element.selected}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
-                  
-                  {!element.keepOriginal && (
-                    <div className="space-y-2">
-                      <Label className="text-sm">Select Alternative</Label>
-                      <Select 
-                        value={element.selected} 
-                        onValueChange={(value) => handleArchitecturalElementChange(index, 'selected', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choose alternative..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {element.alternatives.map((alt, altIndex) => (
-                            <SelectItem key={altIndex} value={alt}>{alt}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
