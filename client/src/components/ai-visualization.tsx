@@ -158,13 +158,8 @@ export default function AIVisualization() {
   const [selectedElement, setSelectedElement] = useState<InteractiveElement | null>(null);
   const [showProductPanel, setShowProductPanel] = useState(false);
   
-  // V2 Pipeline State
-  const [useV2Pipeline, setUseV2Pipeline] = useState(false);
-  const [v2JobId, setV2JobId] = useState<string | null>(null);
-  const [v2Masks, setV2Masks] = useState<string[]>([]);
-  const [selectedMasks, setSelectedMasks] = useState<number[]>([]);
-  const [v2PreprocessingResult, setV2PreprocessingResult] = useState<any>(null);
-  const [showMaskEditor, setShowMaskEditor] = useState(false);
+  // Production pipeline state (V1 only for reliability)
+  const productionMode = true;
   
   const uploadedPhotoRef = useRef<HTMLDivElement>(null);
   const architecturalStepRef = useRef<HTMLDivElement>(null);
@@ -2300,15 +2295,12 @@ export default function AIVisualization() {
               <Wand2 className="w-6 h-6 mr-2" />
               Transform Image
             </div>
-            <Badge variant="outline" className="text-xs">
-              {useV2Pipeline ? 'V2 Multi-ControlNet' : 'V1 Standard'}
+            <Badge variant="outline" className="bg-green-50 border-green-200 text-green-800 text-xs">
+              Production SDXL
             </Badge>
           </CardTitle>
           <p className="text-gray-600">
-            {useV2Pipeline 
-              ? "Apply design parameters using advanced multi-ControlNet transformation"
-              : "Apply the design parameters to your original photo"
-            }
+            Apply the design parameters using professional SDXL transformation
           </p>
         </CardHeader>
         <CardContent>

@@ -123,6 +123,7 @@ The platform features a minimalist black and white aesthetic inspired by luxury 
 
 Preferred communication style: Simple, everyday language.
 Target audience: Interior designers, architects, and design-conscious homeowners seeking premium solutions.
+Production deployment: Focus on reliability over experimental features - use V1 Standard Pipeline exclusively for real-world deployment without local dependencies.
 
 ## AI Implementation
 
