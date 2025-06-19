@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { 
   Wand2, Camera, Sparkles, ArrowRight, Upload, Image, 
   Link, Download, Share2, RefreshCw, Eye, Settings, 
-  Palette, Home, TreePine, CheckCircle 
+  Palette, Home, TreePine, CheckCircle, Info, ShoppingBag, DollarSign 
 } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -64,6 +64,31 @@ interface TransformationResult {
   transformedImage: string;
   transformationStrength: number;
   appliedParameters: DesignParameters;
+  interactiveElements?: InteractiveElement[];
+}
+
+interface InteractiveElement {
+  id: string;
+  x: number; // percentage position from left
+  y: number; // percentage position from top
+  type: 'furniture' | 'material' | 'lighting' | 'decor';
+  name: string;
+  description: string;
+  estimatedCost: number;
+  material?: string;
+  brand?: string;
+  comparableProducts: ComparableProduct[];
+}
+
+interface ComparableProduct {
+  name: string;
+  brand: string;
+  price: number;
+  image: string;
+  retailer: string;
+  url: string;
+  rating: number;
+  features: string[];
 }
 
 // Step 3a: Architectural Elements from Original Photo
@@ -112,6 +137,8 @@ export default function AIVisualization() {
   // Step 4: Transformation
   const [transformationResult, setTransformationResult] = useState<TransformationResult | null>(null);
   const [transformationStrength, setTransformationStrength] = useState([75]);
+  const [selectedElement, setSelectedElement] = useState<InteractiveElement | null>(null);
+  const [showProductPanel, setShowProductPanel] = useState(false);
   
   const { toast } = useToast();
 
@@ -266,12 +293,130 @@ export default function AIVisualization() {
       return response.json();
     },
     onSuccess: (data: TransformationResult) => {
-      setTransformationResult(data);
+      // Mock interactive elements for demonstration
+      const mockInteractiveElements: InteractiveElement[] = [
+        {
+          id: 'sofa-1',
+          x: 25,
+          y: 65,
+          type: 'furniture',
+          name: 'Modern Sectional Sofa',
+          description: 'Performance fabric sectional with modular design',
+          estimatedCost: 1299,
+          material: 'Performance Velvet',
+          brand: 'West Elm',
+          comparableProducts: [
+            {
+              name: 'Andes Sectional Sofa',
+              brand: 'West Elm',
+              price: 1299,
+              image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=400&h=300&q=80',
+              retailer: 'West Elm',
+              url: 'https://www.westelm.com/products/andes-sectional-sofa-h2835/',
+              rating: 4.8,
+              features: ['Modular design', 'Performance fabric', 'Deep seating']
+            },
+            {
+              name: 'Haven Sectional',
+              brand: 'West Elm',
+              price: 1599,
+              image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=400&h=300&q=80',
+              retailer: 'West Elm',
+              url: 'https://www.westelm.com/products/haven-sectional-h1499/',
+              rating: 4.6,
+              features: ['Down-filled cushions', 'Kiln-dried frame', 'Stain-resistant']
+            },
+            {
+              name: 'Harmony Sectional',
+              brand: 'CB2',
+              price: 999,
+              image: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=400&h=300&q=80',
+              retailer: 'CB2',
+              url: 'https://www.cb2.com/harmony-sectional/s266610',
+              rating: 4.4,
+              features: ['Contemporary design', 'Easy assembly', 'Pet-friendly fabric']
+            }
+          ]
+        },
+        {
+          id: 'table-1',
+          x: 45,
+          y: 75,
+          type: 'furniture',
+          name: 'Live Edge Coffee Table',
+          description: 'Solid wood coffee table with natural edge',
+          estimatedCost: 899,
+          material: 'Reclaimed Oak',
+          brand: 'CB2',
+          comparableProducts: [
+            {
+              name: 'Slab Large Coffee Table',
+              brand: 'CB2',
+              price: 899,
+              image: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=400&h=300&q=80',
+              retailer: 'CB2',
+              url: 'https://www.cb2.com/slab-large-coffee-table/s266609',
+              rating: 4.6,
+              features: ['Carrara marble top', 'Steel base', 'Handcrafted']
+            },
+            {
+              name: 'Parsons Coffee Table',
+              brand: 'West Elm',
+              price: 649,
+              image: 'https://images.unsplash.com/photo-1506439773649-6e0eb8cfb237?auto=format&fit=crop&w=400&h=300&q=80',
+              retailer: 'West Elm',
+              url: 'https://www.westelm.com/products/parsons-coffee-table-h1847/',
+              rating: 4.3,
+              features: ['Reclaimed wood', 'Simple design', 'Sustainable materials']
+            }
+          ]
+        },
+        {
+          id: 'lighting-1',
+          x: 75,
+          y: 25,
+          type: 'lighting',
+          name: 'Pendant Light Fixture',
+          description: 'Modern brass pendant with glass shade',
+          estimatedCost: 549,
+          material: 'Brass & Glass',
+          brand: 'Design Within Reach',
+          comparableProducts: [
+            {
+              name: 'IC F1 Floor Lamp',
+              brand: 'FLOS',
+              price: 549,
+              image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&h=300&q=80',
+              retailer: 'Design Within Reach',
+              url: 'https://www.dwr.com/lighting-floor-lamps/ic-f1-floor-lamp/2544206.html',
+              rating: 4.9,
+              features: ['Brass orb design', 'Dimmer compatible', 'Designer piece']
+            },
+            {
+              name: 'Globe Pendant',
+              brand: 'West Elm',
+              price: 299,
+              image: 'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?auto=format&fit=crop&w=400&h=300&q=80',
+              retailer: 'West Elm',
+              url: 'https://www.westelm.com/products/globe-pendant-h2156/',
+              rating: 4.5,
+              features: ['Glass globe shade', 'Adjustable height', 'Easy installation']
+            }
+          ]
+        }
+      ];
+
+      const enhancedResult = {
+        ...data,
+        interactiveElements: mockInteractiveElements
+      };
+      
+      setTransformationResult(enhancedResult);
       setCurrentStep('review');
       setProgress(80);
       toast({
         title: "Transformation Complete",
-        description: "Your design has been applied successfully"
+        description: "Your design has been applied successfully. Click on items to explore products!"
       });
     },
     onError: () => {
@@ -1146,65 +1291,200 @@ export default function AIVisualization() {
   );
 
   const renderReviewStep = () => (
-    <Card className="max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Eye className="w-6 h-6 mr-2" />
-          Review & Fine-tune
-        </CardTitle>
-        <p className="text-neutral-600">
-          Review your transformation and make adjustments
+    <div className="max-w-7xl mx-auto px-4">
+      <div className="text-center mb-12">
+        <h2 className="text-3xl sm:text-4xl font-light text-black mb-6 luxury-title">
+          Interactive Design Review
+        </h2>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed luxury-text">
+          Explore your transformed space. Click on items to see product details and pricing
         </p>
-      </CardHeader>
-      <CardContent>
-        {transformationResult && (
-          <div className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div>
-                <Label className="text-base font-medium">Original</Label>
+      </div>
+
+      {transformationResult && (
+        <div className="space-y-8">
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Original Image */}
+            <div>
+              <Label className="text-lg font-medium text-black mb-4 block luxury-title">Original Space</Label>
+              <div className="relative">
                 <img 
                   src={transformationResult.originalImage}
                   alt="Original"
-                  className="w-full h-64 object-cover rounded-lg mt-2"
+                  className="w-full h-80 object-cover rounded-xl border border-gray-200"
                 />
               </div>
-              <div>
-                <Label className="text-base font-medium">Transformed</Label>
+            </div>
+
+            {/* Interactive Transformed Image */}
+            <div>
+              <Label className="text-lg font-medium text-black mb-4 block luxury-title">AI-Transformed Design</Label>
+              <div className="relative">
                 <img 
                   src={transformationResult.transformedImage}
                   alt="Transformed"
-                  className="w-full h-64 object-cover rounded-lg mt-2"
+                  className="w-full h-80 object-cover rounded-xl border border-gray-200"
                 />
-              </div>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <div className="flex space-x-2">
-                <Button variant="outline" size="sm" onClick={() => setCurrentStep('transform')}>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Regenerate
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Adjust
-                </Button>
-              </div>
-              
-              <div className="flex space-x-2">
-                <Button variant="outline" onClick={handleDownload}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Download
-                </Button>
-                <Button>
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share
-                </Button>
+                
+                {/* Interactive Hotspots */}
+                {transformationResult.interactiveElements?.map((element) => (
+                  <button
+                    key={element.id}
+                    onClick={() => {
+                      setSelectedElement(element);
+                      setShowProductPanel(true);
+                    }}
+                    className="absolute w-6 h-6 bg-white border-2 border-blue-500 rounded-full flex items-center justify-center hover:scale-110 transition-all duration-200 shadow-lg hover:shadow-xl"
+                    style={{
+                      left: `${element.x}%`,
+                      top: `${element.y}%`,
+                      transform: 'translate(-50%, -50%)'
+                    }}
+                  >
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  </button>
+                ))}
+
+                {/* Floating Info Badge */}
+                <div className="absolute top-4 right-4 bg-black/80 text-white px-4 py-2 rounded-lg text-sm luxury-text backdrop-blur-sm">
+                  <Info className="w-4 h-4 inline mr-2" />
+                  Click items to explore
+                </div>
               </div>
             </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+
+          {/* Cost Summary */}
+          {transformationResult.interactiveElements && (
+            <div className="bg-white/60 backdrop-blur-sm border border-gray-200/60 rounded-xl p-6">
+              <h3 className="text-xl font-medium text-black mb-4 luxury-title">Design Cost Summary</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {transformationResult.interactiveElements.map((element) => (
+                  <div key={element.id} className="flex items-center justify-between p-3 bg-white/80 rounded-lg border border-gray-200">
+                    <div>
+                      <p className="font-medium text-black text-sm">{element.name}</p>
+                      <p className="text-xs text-gray-600">{element.material}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium text-black">${element.estimatedCost.toLocaleString()}</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-1 h-6 px-2 text-xs"
+                        onClick={() => {
+                          setSelectedElement(element);
+                          setShowProductPanel(true);
+                        }}
+                      >
+                        <ShoppingBag className="w-3 h-3 mr-1" />
+                        Shop
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="flex justify-between items-center">
+                  <span className="text-lg font-medium text-black luxury-title">Total Estimated Cost:</span>
+                  <span className="text-xl font-semibold text-black">
+                    ${transformationResult.interactiveElements.reduce((sum, el) => sum + el.estimatedCost, 0).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="flex space-x-3">
+              <Button variant="outline" onClick={() => setCurrentStep('transform')} className="luxury-text">
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Regenerate
+              </Button>
+              <Button variant="outline" className="luxury-text">
+                <Settings className="w-4 h-4 mr-2" />
+                Adjust Style
+              </Button>
+            </div>
+            
+            <div className="flex space-x-3">
+              <Button variant="outline" onClick={handleDownload} className="luxury-text">
+                <Download className="w-4 h-4 mr-2" />
+                Download
+              </Button>
+              <Button className="bg-black text-white hover:bg-gray-800">
+                <Share2 className="w-4 h-4 mr-2" />
+                Share Design
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Product Details Panel */}
+      {showProductPanel && selectedElement && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50" onClick={() => setShowProductPanel(false)}>
+          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-2xl font-medium text-black luxury-title">{selectedElement.name}</h3>
+                  <p className="text-gray-600 luxury-text mt-1">{selectedElement.description}</p>
+                  <div className="flex items-center mt-2 space-x-4">
+                    <Badge variant="outline" className="text-sm">
+                      {selectedElement.type}
+                    </Badge>
+                    <span className="text-sm text-gray-600">{selectedElement.material}</span>
+                    <span className="text-lg font-semibold text-black">${selectedElement.estimatedCost.toLocaleString()}</span>
+                  </div>
+                </div>
+                <Button variant="ghost" onClick={() => setShowProductPanel(false)}>
+                  ×
+                </Button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              <h4 className="text-lg font-medium text-black mb-4 luxury-title">Comparable Products</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {selectedElement.comparableProducts.map((product, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                    <img 
+                      src={product.image} 
+                      alt={product.name}
+                      className="w-full h-48 object-cover"
+                    />
+                    <div className="p-4">
+                      <h5 className="font-medium text-black mb-1">{product.name}</h5>
+                      <p className="text-sm text-gray-600 mb-2">{product.brand}</p>
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-lg font-semibold text-black">${product.price.toLocaleString()}</span>
+                        <div className="flex items-center">
+                          <span className="text-yellow-500">★</span>
+                          <span className="text-sm text-gray-600 ml-1">{product.rating}</span>
+                        </div>
+                      </div>
+                      <div className="space-y-1 mb-3">
+                        {product.features.slice(0, 2).map((feature, idx) => (
+                          <p key={idx} className="text-xs text-gray-600">• {feature}</p>
+                        ))}
+                      </div>
+                      <Button 
+                        className="w-full bg-black text-white hover:bg-gray-800"
+                        onClick={() => window.open(product.url, '_blank')}
+                      >
+                        <ShoppingBag className="w-4 h-4 mr-2" />
+                        Shop at {product.retailer}
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 
   return (
