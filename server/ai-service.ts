@@ -404,8 +404,9 @@ OUTPUT SPECIFICATIONS:
 - High-resolution clarity, magazine quality
 - NO cartoon, illustration, or artistic interpretation`;
 
-    // Apply DALL-E 3 transformation with precise structural preservation prompts
-    console.log('Applying DALL-E 3 transformation with structural preservation...');
+    // Apply Stable Diffusion XL img2img transformation with maximum structural preservation
+    console.log('Applying SDXL img2img transformation with structural preservation...');
+    const base64ImageData = `data:image/jpeg;base64,${base64Image}`;
     
     // Build intelligent material application prompt based on selected design elements
     let intelligentMaterialPrompt = '';
@@ -415,7 +416,7 @@ OUTPUT SPECIFICATIONS:
       
       if (selectedMaterials.length === 1) {
         // Single material - apply directly
-        intelligentMaterialPrompt = `subtle ${selectedMaterials[0]} enhancement`;
+        intelligentMaterialPrompt = `${selectedMaterials[0]}`;
       } else if (selectedMaterials.length > 1) {
         // Multiple materials - use AI to determine proper application
         intelligentMaterialPrompt = await generateSmartMaterialApplication(selectedMaterials, parameters.spaceType);
@@ -423,47 +424,32 @@ OUTPUT SPECIFICATIONS:
         intelligentMaterialPrompt = 'subtle architectural enhancement';
       }
     } else {
-      intelligentMaterialPrompt = `${parameters.wallCladding?.[0] || 'modern wall'} treatment`;
+      intelligentMaterialPrompt = `${parameters.wallCladding?.[0] || 'modern materials'}`;
     }
 
     console.log('Intelligent material prompt:', intelligentMaterialPrompt);
 
-    // Use DALL-E 3 with extremely precise structural preservation prompt
-    const structuralPreservationPrompt = `Create a photorealistic architectural photograph that shows the exact same building structure with only material changes. CRITICAL REQUIREMENTS: 
-    
-    PRESERVE EXACTLY (NO CHANGES):
-    - Identical building proportions and dimensions: ${roomLayout}
-    - Exact window positions, sizes, and frame configurations  
-    - Same door locations, openings, and architectural details
-    - Identical roofline, angles, and structural elements
-    - Same camera angle, perspective, and composition
-    - Natural lighting direction and shadow patterns
-    - All architectural features and built-in elements
+    // Use extremely low strength for maximum structural preservation
+    const preservationStrength = 0.25; // Very conservative transformation
 
-    APPLY ONLY MATERIAL CHANGES:
-    - ${intelligentMaterialPrompt}
-    - Professional architectural photography quality
-    - Photorealistic material textures and natural wear
-    - Maintain authentic building proportions
-    
-    OUTPUT: Ultra-photorealistic architectural photography, magazine quality, natural lighting, sharp details, maintain exact structural geometry`;
+    const transformation = await replicate.run(
+      "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
+      {
+        input: {
+          image: base64ImageData,
+          prompt: `Professional architectural photography with ${intelligentMaterialPrompt}, photorealistic, natural lighting, preserve exact building structure`,
+          negative_prompt: "cartoon, illustration, painting, drawing, art, sketch, anime, low quality, blurry, distorted, unrealistic, fake, artificial, stylized, dramatic changes, different building, altered structure, fantasy, concept art, deformed architecture, wrong proportions",
+          num_inference_steps: 25,
+          guidance_scale: 7.5,
+          strength: preservationStrength,
+          seed: Math.floor(Math.random() * 1000000)
+        }
+      }
+    );
 
-    const transformation = await openai.images.generate({
-      model: "dall-e-3",
-      prompt: structuralPreservationPrompt,
-      size: "1024x1024",
-      quality: "hd",
-      n: 1,
-    });
-
-    // DALL-E 3 transformation complete
-    console.log('DALL-E 3 structural preservation transformation complete');
-    
-    if (!transformation.data || transformation.data.length === 0) {
-      throw new Error('Failed to generate transformation image');
-    }
-    
-    const enhancedImage = transformation.data[0].url;
+    // SDXL img2img transformation complete
+    console.log('SDXL img2img structural preservation transformation complete');
+    const enhancedImage = Array.isArray(transformation) ? transformation[0] : transformation;
 
     // Download and save the final enhanced image
     const imageResponse = await fetch(enhancedImage);
@@ -471,7 +457,7 @@ OUTPUT SPECIFICATIONS:
     const imageBufferNew = Buffer.from(imageArrayBuffer);
     
     const timestamp = Date.now();
-    const transformedFileName = `dalle3_structural_${timestamp}.png`;
+    const transformedFileName = `sdxl_structural_${timestamp}.png`;
     const transformedPath = path.join('uploads', transformedFileName);
     
     fs.writeFileSync(transformedPath, imageBufferNew);
