@@ -404,23 +404,9 @@ OUTPUT SPECIFICATIONS:
 - High-resolution clarity, magazine quality
 - NO cartoon, illustration, or artistic interpretation`;
 
-    // Step 1: Generate ControlNet edge detection for structure preservation
-    console.log('Generating ControlNet edge detection...');
+    // Apply ControlNet transformation with maximum structure preservation
+    console.log('Applying ControlNet transformation with maximum structure preservation...');
     const base64ImageData = `data:image/jpeg;base64,${base64Image}`;
-    
-    const edgeDetection = await replicate.run(
-      "andreasjansson/canny-edge:a88b3abc148077b5195446b63c32e58bd12f923a0ac50fd19f3b24ecf956b4b1",
-      {
-        input: {
-          image: base64ImageData,
-          low_threshold: 100,
-          high_threshold: 200
-        }
-      }
-    );
-
-    // Step 2: Apply ControlNet transformation with conservative settings
-    console.log('Applying ControlNet transformation with edge preservation...');
     
     // Use extremely low strength for structural preservation
     const conservativeStrength = Math.min(0.25, (transformationStrength / 400)); // Maximum structure preservation
@@ -455,13 +441,13 @@ OUTPUT SPECIFICATIONS:
       {
         input: {
           image: base64ImageData,
-          control_image: edgeDetection,
           prompt: architecturalPrompt,
-          negative_prompt: "cartoon, illustration, painting, drawing, art, sketch, anime, low quality, blurry, distorted, unrealistic, fake, artificial, stylized, dramatic changes, different building, altered structure, fantasy, concept art",
-          num_inference_steps: 25,
-          guidance_scale: 6.5,
-          controlnet_conditioning_scale: 1.2,  // Maximum edge preservation
-          strength: conservativeStrength,
+          negative_prompt: "cartoon, illustration, painting, drawing, art, sketch, anime, low quality, blurry, distorted, unrealistic, fake, artificial, stylized, dramatic changes, different building, altered structure, fantasy, concept art, deformed architecture",
+          num_inference_steps: 20,
+          guidance_scale: 7.5,
+          controlnet_conditioning_scale: 1.5,  // Maximum structural preservation
+          low_threshold: 50,
+          high_threshold: 100,
           seed: Math.floor(Math.random() * 1000000)
         }
       }
