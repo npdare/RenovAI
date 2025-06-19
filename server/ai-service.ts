@@ -331,6 +331,7 @@ export async function transformImageWithParameters(
   transformationStrength: number;
   appliedParameters: any;
 }> {
+  console.log('DEBUG: transformImageWithParameters called - using ControlNet pipeline');
   try {
     const imageBuffer = fs.readFileSync(imagePath);
     const base64Image = imageBuffer.toString('base64');
