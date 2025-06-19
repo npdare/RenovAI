@@ -1494,8 +1494,13 @@ export default function AIVisualization() {
 
         {currentStep === 'upload' && renderUploadStep()}
         {currentStep === 'upload' && renderProcessGuide()}
+        {currentStep === 'architecture' && renderArchitecturalStep()}
+        {currentStep === 'inspiration' && renderInspirationStep()}
+        {currentStep === 'parameters' && renderParametersStep()}
+        {currentStep === 'transform' && renderTransformStep()}
+        {currentStep === 'review' && renderReviewStep()}
 
-        {progress > 0 && (
+        {progress > 0 && currentStep === 'upload' && (
           <div className="text-center mt-16">
             <Button variant="outline" onClick={resetWorkflow} className="luxury-text border-gray-300 text-gray-700 hover:bg-gray-50">
               Start New Project
