@@ -366,6 +366,7 @@ OUTPUT SPECIFICATIONS:
       {
         input: {
           image: base64ImageData,
+          prompt: "architectural edge detection, clean lines, structural details",
           low_threshold: 100,
           high_threshold: 200
         }
@@ -376,7 +377,12 @@ OUTPUT SPECIFICATIONS:
     console.log('Applying ControlNet transformation...');
     const denoisingStrength = Math.max(0.3, (100 - transformationStrength) / 100);
     
-    const architecturalPrompt = `Professional architectural interior photography, ${parameters.style} design style, featuring ${parameters.wallCladding?.join(' and ') || 'modern walls'} wall treatments, ${parameters.flooringMaterial?.join(' and ') || 'premium flooring'} flooring, ${parameters.colorPalette?.join(' and ') || 'neutral colors'} color scheme, photorealistic, 8K resolution, professional lighting, architectural magazine quality, sharp focus, natural shadows`;
+    // Build prompt from dynamic categories or fallback to legacy parameters
+    const designElements = parameters.detectedCategories?.length > 0 
+      ? parameters.detectedCategories.map((cat: any) => cat.items.join(' and ')).join(', ')
+      : `${parameters.wallCladding?.join(' and ') || 'modern walls'} wall treatments, ${parameters.flooringMaterial?.join(' and ') || 'premium flooring'} flooring, ${parameters.colorPalette?.join(' and ') || 'neutral colors'} color scheme`;
+
+    const architecturalPrompt = `Professional architectural ${parameters.spaceType || 'interior'} photography, ${parameters.style} design style, featuring ${designElements}, photorealistic, 8K resolution, professional lighting, architectural magazine quality, sharp focus, natural shadows`;
 
     const transformation = await replicate.run(
       "rossjillian/controlnet:795433b19458d0f4fa172a7ccf93178d2adb1cb8ab2ad6c8faeee8dd8bfa2907",
