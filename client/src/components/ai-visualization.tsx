@@ -903,102 +903,337 @@ export default function AIVisualization() {
     </div>
   );
 
-  const renderInspirationStep = () => (
-    <Card className="max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Sparkles className="w-6 h-6 mr-2" />
-          Design Inspiration
-        </CardTitle>
-        <p className="text-neutral-600">
-          Tell us about the style you want to achieve
-        </p>
-      </CardHeader>
-      <CardContent>
-        <Tabs value={inspiration.type} onValueChange={(value) => 
-          setInspiration(prev => ({ ...prev, type: value as 'text' | 'images' | 'pinterest' }))
-        }>
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="text">Text Prompt</TabsTrigger>
-            <TabsTrigger value="images">Reference Images</TabsTrigger>
-            <TabsTrigger value="pinterest">Pinterest Board</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="text" className="space-y-4">
-            <Label htmlFor="textPrompt">Describe your desired style</Label>
-            <Textarea
-              id="textPrompt"
-              placeholder="e.g., modern boho with natural textures and pastel tones"
-              value={inspiration.textPrompt || ''}
-              onChange={(e) => setInspiration(prev => ({ ...prev, textPrompt: e.target.value }))}
-              className="min-h-32"
-            />
-          </TabsContent>
-          
-          <TabsContent value="images" className="space-y-4">
-            <Label>Upload reference images</Label>
-            <div
-              {...referenceDropzone.getRootProps()}
-              className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center cursor-pointer hover:border-neutral-400"
-            >
-              <input {...referenceDropzone.getInputProps()} />
-              <Image className="w-8 h-8 mx-auto mb-2 text-neutral-400" />
-              <p className="text-sm text-neutral-600">Add up to 5 reference images</p>
+  const renderInspirationStep = () => {
+    const getElementSpecificPrompts = () => {
+      if (!editableArchitecture) return [];
+      
+      const prompts: Array<{
+        category: string;
+        element: string;
+        current: string;
+        selected: string;
+        suggestions: string[];
+      }> = [];
+      editableArchitecture.elements.forEach(element => {
+        if (!element.keepOriginal) {
+          switch (element.type) {
+            case 'walls':
+            case 'wall treatments':
+              prompts.push({
+                category: 'Wall Treatments',
+                element: element.type,
+                current: element.current,
+                selected: element.selected,
+                suggestions: [
+                  'Modern minimalist paint in neutral tones',
+                  'Natural wood paneling or shiplap',
+                  'Textured wallpaper with geometric patterns',
+                  'Exposed brick or stone accent walls',
+                  'Contemporary tile feature walls'
+                ]
+              });
+              break;
+            case 'flooring':
+              prompts.push({
+                category: 'Flooring Materials',
+                element: element.type,
+                current: element.current,
+                selected: element.selected,
+                suggestions: [
+                  'Wide-plank hardwood with natural finish',
+                  'Large format porcelain or ceramic tiles',
+                  'Luxury vinyl plank with wood grain texture',
+                  'Natural stone tiles for elegance',
+                  'Polished concrete for industrial style'
+                ]
+              });
+              break;
+            case 'windows':
+              prompts.push({
+                category: 'Window Styles',
+                element: element.type,
+                current: element.current,
+                selected: element.selected,
+                suggestions: [
+                  'Black steel frame casement windows',
+                  'Floor-to-ceiling glass panels',
+                  'Traditional double-hung with grids',
+                  'Modern sliding glass doors',
+                  'Arched windows for character'
+                ]
+              });
+              break;
+            case 'doors':
+              prompts.push({
+                category: 'Door Designs',
+                element: element.type,
+                current: element.current,
+                selected: element.selected,
+                suggestions: [
+                  'Sleek modern flush doors',
+                  'Traditional panel doors with molding',
+                  'Glass-paneled French doors',
+                  'Barn doors for rustic charm',
+                  'Pivot doors for contemporary appeal'
+                ]
+              });
+              break;
+            default:
+              prompts.push({
+                category: `${element.type.charAt(0).toUpperCase() + element.type.slice(1)} Styles`,
+                element: element.type,
+                current: element.current,
+                selected: element.selected,
+                suggestions: [
+                  'Modern contemporary style',
+                  'Traditional classic approach',
+                  'Industrial minimalist design',
+                  'Natural organic materials',
+                  'Luxury premium finishes'
+                ]
+              });
+          }
+        }
+      });
+      return prompts;
+    };
+
+    const elementPrompts = getElementSpecificPrompts();
+    const spaceType = editableArchitecture?.roomStructure.toLowerCase().includes('exterior') ? 'exterior' : 'interior';
+
+    return (
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-light text-black mb-6 luxury-title">
+            Design Inspiration
+          </h2>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed luxury-text">
+            Choose inspiration for the elements you want to transform
+          </p>
+        </div>
+
+        <div className="space-y-8">
+          {/* Current Space Context */}
+          <div className="bg-white/60 backdrop-blur-sm border border-gray-200/60 rounded-xl p-6">
+            <div className="grid md:grid-cols-4 gap-6 items-center">
+              <div className="md:col-span-1">
+                <img 
+                  src={uploadedPhoto?.preview} 
+                  alt="Current space"
+                  className="w-full h-24 object-cover rounded-lg border border-gray-200"
+                />
+              </div>
+              <div className="md:col-span-3">
+                <h3 className="text-lg font-medium text-black mb-2 luxury-title">
+                  {spaceType === 'exterior' ? 'Exterior' : 'Interior'} Space Analysis
+                </h3>
+                <p className="text-gray-700 luxury-text text-sm leading-relaxed">
+                  {editableArchitecture?.roomStructure}
+                </p>
+              </div>
             </div>
-            
-            {referenceImages.length > 0 && (
-              <div className="grid grid-cols-3 gap-4 mt-4">
-                {referenceImages.map((img, index) => (
-                  <img 
-                    key={index}
-                    src={URL.createObjectURL(img)}
-                    alt={`Reference ${index + 1}`}
-                    className="w-full h-24 object-cover rounded"
-                  />
+          </div>
+
+          {/* Element-Specific Inspiration Categories */}
+          {elementPrompts.length > 0 && (
+            <div className="space-y-6">
+              <h3 className="text-xl font-medium text-black luxury-title text-center">
+                Inspiration for Elements to Transform
+              </h3>
+              
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {elementPrompts.map((prompt, index) => (
+                  <div key={index} className="bg-white border border-gray-200 rounded-xl p-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-lg font-semibold text-black luxury-title">
+                          {prompt.category}
+                        </h4>
+                        <Badge variant="outline" className="text-xs">
+                          {prompt.element}
+                        </Badge>
+                      </div>
+                      
+                      <div className="text-sm text-gray-600 luxury-text">
+                        <span className="font-medium">Current:</span> {prompt.current}
+                        {prompt.selected && (
+                          <>
+                            <br />
+                            <span className="font-medium">Selected:</span> {prompt.selected}
+                          </>
+                        )}
+                      </div>
+
+                      <div className="space-y-3">
+                        <Label className="text-sm font-medium text-black">Style Inspiration</Label>
+                        <div className="grid grid-cols-1 gap-2">
+                          {prompt.suggestions.map((suggestion: string, suggestionIndex: number) => (
+                            <button
+                              key={suggestionIndex}
+                              onClick={() => {
+                                setInspiration(prev => ({
+                                  ...prev,
+                                  type: 'text',
+                                  textPrompt: (prev.textPrompt || '') + 
+                                    (prev.textPrompt ? ', ' : '') + 
+                                    `${prompt.element}: ${suggestion}`
+                                }));
+                              }}
+                              className="text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                            >
+                              <div className="text-sm font-medium text-black">{suggestion}</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="pinterest" className="space-y-4">
-            <Label htmlFor="pinterestUrl">Pinterest board URL</Label>
-            <Input
-              id="pinterestUrl"
-              placeholder="https://pinterest.com/username/board-name"
-              value={inspiration.pinterestUrl || ''}
-              onChange={(e) => setInspiration(prev => ({ ...prev, pinterestUrl: e.target.value }))}
-            />
-          </TabsContent>
-        </Tabs>
-        
-        <div className="flex justify-between mt-6">
-          <Button variant="outline" onClick={() => setCurrentStep('upload')}>
-            Back
-          </Button>
-          <Button 
-            onClick={handleExtractParameters}
-            disabled={
-              extractParametersMutation.isPending ||
-              (inspiration.type === 'text' && !inspiration.textPrompt) ||
-              (inspiration.type === 'images' && referenceImages.length === 0) ||
-              (inspiration.type === 'pinterest' && !inspiration.pinterestUrl)
-            }
-          >
-            {extractParametersMutation.isPending ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Analyzing...
-              </>
-            ) : (
-              <>
-                Extract Parameters <ArrowRight className="w-4 h-4 ml-2" />
-              </>
-            )}
-          </Button>
+            </div>
+          )}
+
+          {/* Enhanced Features Integration */}
+          {editableArchitecture?.detectedFeatures && editableArchitecture.detectedFeatures.length > 0 && (
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6">
+              <h3 className="text-lg font-medium text-black mb-4 luxury-title flex items-center">
+                <Sparkles className="w-5 h-5 mr-2 text-purple-600" />
+                Features to Enhance & Highlight
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {editableArchitecture?.detectedFeatures?.map((feature, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-white/80 rounded-lg border border-purple-200">
+                    <span className="text-sm font-medium text-black">{feature}</span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setInspiration(prev => ({
+                          ...prev,
+                          type: 'text',
+                          textPrompt: (prev.textPrompt || '') + 
+                            (prev.textPrompt ? ', ' : '') + 
+                            `enhance and highlight ${feature}`
+                        }));
+                      }}
+                      className="text-xs h-6 px-2"
+                    >
+                      Add to Inspiration
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Consolidated Inspiration Input */}
+          <div className="bg-white border border-gray-200 rounded-xl p-6">
+            <h3 className="text-lg font-medium text-black mb-4 luxury-title">
+              Your Design Vision
+            </h3>
+            <Tabs value={inspiration.type} onValueChange={(value) => 
+              setInspiration(prev => ({ ...prev, type: value as 'text' | 'images' | 'pinterest' }))
+            }>
+              <TabsList className="grid w-full grid-cols-3 mb-6">
+                <TabsTrigger value="text">Style Description</TabsTrigger>
+                <TabsTrigger value="images">Reference Images</TabsTrigger>
+                <TabsTrigger value="pinterest">Pinterest Board</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="text" className="space-y-4">
+                <Label htmlFor="textPrompt">Describe your complete vision</Label>
+                <Textarea
+                  id="textPrompt"
+                  placeholder={`Describe your ${spaceType} design vision, incorporating the elements you've selected above...`}
+                  value={inspiration.textPrompt || ''}
+                  onChange={(e) => setInspiration(prev => ({ ...prev, textPrompt: e.target.value }))}
+                  className="min-h-32"
+                />
+                {inspiration.textPrompt && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs text-blue-800 font-medium mb-1">Current Vision:</p>
+                    <p className="text-sm text-blue-700">{inspiration.textPrompt}</p>
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="images" className="space-y-4">
+                <Label>Upload reference images for your vision</Label>
+                <div
+                  {...referenceDropzone.getRootProps()}
+                  className="border-2 border-dashed border-neutral-300 rounded-lg p-6 text-center cursor-pointer hover:border-neutral-400"
+                >
+                  <input {...referenceDropzone.getInputProps()} />
+                  <Image className="w-8 h-8 mx-auto mb-2 text-neutral-400" />
+                  <p className="text-sm text-neutral-600">Add up to 5 reference images</p>
+                </div>
+                
+                {referenceImages.length > 0 && (
+                  <div className="grid grid-cols-3 gap-4 mt-4">
+                    {referenceImages.map((img, index) => (
+                      <div key={index} className="relative">
+                        <img 
+                          src={URL.createObjectURL(img)} 
+                          alt={`Reference ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-lg"
+                        />
+                        <button
+                          onClick={() => setReferenceImages(prev => prev.filter((_, i) => i !== index))}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full text-xs"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="pinterest" className="space-y-4">
+                <Label htmlFor="pinterestUrl">Pinterest board URL</Label>
+                <Input
+                  id="pinterestUrl"
+                  placeholder="https://pinterest.com/username/board-name"
+                  value={inspiration.pinterestUrl || ''}
+                  onChange={(e) => setInspiration(prev => ({ ...prev, pinterestUrl: e.target.value }))}
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6">
+            <Button 
+              variant="outline" 
+              onClick={() => setCurrentStep('architecture')}
+              className="luxury-text w-full sm:w-auto border-gray-300"
+            >
+              ← Back to Elements
+            </Button>
+            <Button 
+              onClick={handleExtractParameters}
+              disabled={
+                extractParametersMutation.isPending ||
+                (inspiration.type === 'text' && !inspiration.textPrompt) ||
+                (inspiration.type === 'images' && referenceImages.length === 0) ||
+                (inspiration.type === 'pinterest' && !inspiration.pinterestUrl)
+              }
+              className="bg-black text-white hover:bg-gray-800 w-full sm:w-auto px-8"
+            >
+              {extractParametersMutation.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Analyzing...
+                </>
+              ) : (
+                'Generate Design Parameters →'
+              )}
+            </Button>
+          </div>
         </div>
-      </CardContent>
-    </Card>
-  );
+      </div>
+    );
+  };
 
   // Design examples and suggestions
   const designExamples = {
