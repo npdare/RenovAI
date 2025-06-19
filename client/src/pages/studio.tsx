@@ -1,4 +1,4 @@
-import AIVisualizationV1 from "@/components/ai-visualization-v1";
+import AIVisualization from "@/components/ai-visualization";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 
@@ -43,7 +43,7 @@ export default function Studio() {
       <div className="absolute inset-0 opacity-[0.02] pointer-events-none bg-gradient-to-br from-transparent via-stone-300 to-transparent"></div>
 
       <main className="pt-16 relative z-10">
-        <AIVisualizationV1 />
+        <AIVisualization />
       </main>
       <Footer />
     </div>
