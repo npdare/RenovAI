@@ -264,7 +264,8 @@ export async function transformImageV2(request: TransformRequest): Promise<Trans
     );
     
     // Download and save final result
-    const resultResponse = await fetch(enhanced as string);
+    const enhancedUrl = Array.isArray(enhanced) ? enhanced[0] : String(enhanced);
+    const resultResponse = await fetch(enhancedUrl);
     const resultBuffer = Buffer.from(await resultResponse.arrayBuffer());
     const resultPath = path.join(assetsDir, 'result.png');
     fs.writeFileSync(resultPath, resultBuffer);

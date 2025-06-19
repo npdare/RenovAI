@@ -21,6 +21,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import MaskEditor from "./mask-editor";
 
 // Step 1: Photo Upload
 interface UploadedPhoto {
