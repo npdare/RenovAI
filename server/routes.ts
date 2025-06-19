@@ -248,58 +248,6 @@ Return JSON:
       };
 
       res.json(dynamicParameters);
-
-      // Process Pinterest URL
-      if (pinterestUrl) {
-        const pinterestAnalysis = await analyzePinterestBoard(pinterestUrl);
-        
-        if (pinterestAnalysis.style) enhancedParameters.style = pinterestAnalysis.style;
-        if (pinterestAnalysis.materials?.length) {
-          enhancedParameters.materials = [...enhancedParameters.materials, ...pinterestAnalysis.materials];
-        }
-        if (pinterestAnalysis.colors?.length) {
-          enhancedParameters.colorPalette = [...enhancedParameters.colorPalette, ...pinterestAnalysis.colors];
-        }
-      }
-
-      // Process text prompt
-      if (textPrompt) {
-        const textAnalysis = await analyzeTextPrompt(textPrompt);
-        
-        if (textAnalysis.style) enhancedParameters.style = textAnalysis.style;
-        if (textAnalysis.materials?.length) {
-          enhancedParameters.materials = [...enhancedParameters.materials, ...textAnalysis.materials];
-        }
-        if (textAnalysis.colors?.length) {
-          enhancedParameters.colorPalette = [...enhancedParameters.colorPalette, ...textAnalysis.colors];
-        }
-        if (textAnalysis.architecturalFeatures?.length) {
-          enhancedParameters.architecturalFeatures = [...enhancedParameters.architecturalFeatures, ...textAnalysis.architecturalFeatures];
-        }
-      }
-      
-      // Remove duplicates
-      const removeDuplicates = (arr: any[]) => {
-        if (!Array.isArray(arr)) return [];
-        return arr.filter((item, index, self) => self.indexOf(item) === index);
-      };
-
-      const parameters = {
-        roomType: enhancedParameters.roomType || 'Living Space',
-        style: enhancedParameters.style || 'Contemporary',
-        spaceType: enhancedParameters.spaceType || 'interior' as 'interior' | 'exterior',
-        detectedCategories: enhancedParameters.detectedCategories || [],
-        wallCladding: removeDuplicates(enhancedParameters.wallCladding || ['Natural wall finish']),
-        flooringMaterial: removeDuplicates(enhancedParameters.flooringMaterial || ['Natural flooring']),
-        materials: removeDuplicates(enhancedParameters.materials || ['Natural materials']),
-        colorPalette: removeDuplicates(enhancedParameters.colorPalette || ['Neutral tones']),
-        furnitureTypes: removeDuplicates(enhancedParameters.furnitureTypes || []),
-        ceilingDetails: removeDuplicates(enhancedParameters.ceilingDetails || []),
-        lightingFixtures: removeDuplicates(enhancedParameters.lightingFixtures || []),
-        architecturalFeatures: enhancedParameters.architecturalFeatures || []
-      };
-
-      res.json(parameters);
     } catch (error) {
       console.error('Parameter extraction error:', error);
       res.status(500).json({ error: 'Failed to extract design parameters' });

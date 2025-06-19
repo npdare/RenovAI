@@ -40,7 +40,9 @@ interface DesignInspiration {
 // Step 3: Content-Aware Dynamic Parameters
 interface DetectedCategory {
   name: string;
+  alignedElement: string;
   items: string[];
+  visualExamples: string[];
   confidence: number;
 }
 
@@ -1732,24 +1734,80 @@ export default function AIVisualization() {
               )}
             </div>
             
-            {/* Dynamic Categories Based on AI Detection */}
+            {/* Visual Mini Design Boards - Dynamic Categories */}
             {editableParameters?.detectedCategories?.map((category, index) => (
-              <div key={index} className="space-y-3">
+              <div key={index} className="space-y-4 bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-xl p-6">
                 <div className="flex items-center justify-between">
-                  <Label className="text-base font-medium capitalize">
-                    {category.name}
-                  </Label>
-                  <Badge variant="outline" className="text-xs">
+                  <div>
+                    <Label className="text-lg font-semibold text-black capitalize luxury-title">
+                      {category.name}
+                    </Label>
+                    <p className="text-sm text-gray-600 luxury-text mt-1">
+                      Aligned with {category.alignedElement} from your photo
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="text-xs bg-blue-50 border-blue-200 text-blue-800">
                     {Math.round(category.confidence * 100)}% confidence
                   </Badge>
                 </div>
-                <div className="flex flex-wrap gap-2">
+                
+                {/* Design Options Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {category.items.map((item, itemIndex) => (
-                    <Badge key={itemIndex} variant="secondary" className="text-sm">
-                      {item}
-                    </Badge>
+                    <div key={itemIndex} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-3 flex items-center justify-center">
+                        <span className="text-xs text-gray-500 text-center px-2">
+                          {item}
+                        </span>
+                      </div>
+                      <h4 className="font-medium text-sm text-black mb-1">{item}</h4>
+                      <p className="text-xs text-gray-500">Design option</p>
+                    </div>
                   ))}
                 </div>
+                
+                {/* Visual Examples */}
+                {category.visualExamples && category.visualExamples.length > 0 && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700 mb-2 block">
+                      Visual Inspiration
+                    </Label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                      {category.visualExamples.map((example, exampleIndex) => (
+                        <div key={exampleIndex} className="aspect-square bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center p-2">
+                          <span className="text-xs text-gray-600 text-center">{example}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Add Custom Option */}
+                {isEditingParameters && (
+                  <div className="pt-3 border-t border-gray-200">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => {
+                        const newItem = prompt(`Add custom ${category.name.toLowerCase()} option:`);
+                        if (newItem && editableParameters) {
+                          const updatedCategories = [...editableParameters.detectedCategories];
+                          updatedCategories[index] = {
+                            ...category,
+                            items: [...category.items, newItem]
+                          };
+                          setEditableParameters({
+                            ...editableParameters,
+                            detectedCategories: updatedCategories
+                          });
+                        }
+                      }}
+                    >
+                      + Add Custom Option
+                    </Button>
+                  </div>
+                )}
               </div>
             ))}
             
