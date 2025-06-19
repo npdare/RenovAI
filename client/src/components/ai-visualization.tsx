@@ -2007,17 +2007,45 @@ export default function AIVisualization() {
                 
                 {/* Design Options Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {category.items.map((item, itemIndex) => (
-                    <div key={itemIndex} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-3 flex items-center justify-center">
-                        <span className="text-xs text-gray-500 text-center px-2">
-                          {item}
-                        </span>
+                  {category.items.map((item, itemIndex) => {
+                    // Generate realistic inspiration images based on the item type
+                    const getInspirationImage = (itemName: string, categoryName: string) => {
+                      const searchTerms = itemName.toLowerCase().replace(/[^a-z0-9\s]/g, '');
+                      if (categoryName.toLowerCase().includes('exterior') || categoryName.toLowerCase().includes('cladding')) {
+                        return `https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=400&h=400&q=80`;
+                      } else if (categoryName.toLowerCase().includes('driveway') || categoryName.toLowerCase().includes('pathway')) {
+                        return `https://images.unsplash.com/photo-1542621334-a254cf47733d?auto=format&fit=crop&w=400&h=400&q=80`;
+                      } else if (categoryName.toLowerCase().includes('wall')) {
+                        return `https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=400&h=400&q=80`;
+                      } else if (categoryName.toLowerCase().includes('flooring')) {
+                        return `https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?auto=format&fit=crop&w=400&h=400&q=80`;
+                      } else {
+                        return `https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=400&h=400&q=80`;
+                      }
+                    };
+
+                    return (
+                      <div key={itemIndex} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer group">
+                        <div className="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-3 overflow-hidden">
+                          <img 
+                            src={getInspirationImage(item, category.name)}
+                            alt={item}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.style.display = 'none';
+                              const parent = target.parentElement;
+                              if (parent) {
+                                parent.innerHTML = `<div class="w-full h-full flex items-center justify-center"><span class="text-xs text-gray-500 text-center px-2">${item}</span></div>`;
+                              }
+                            }}
+                          />
+                        </div>
+                        <h4 className="font-medium text-sm text-black mb-1">{item}</h4>
+                        <p className="text-xs text-gray-500">Design inspiration</p>
                       </div>
-                      <h4 className="font-medium text-sm text-black mb-1">{item}</h4>
-                      <p className="text-xs text-gray-500">Design option</p>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
                 
                 {/* Visual Examples */}
