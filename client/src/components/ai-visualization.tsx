@@ -394,16 +394,16 @@ export default function AIVisualization() {
   const renderStudioNavigation = () => (
     <div className="text-center mb-12 sm:mb-16">
       <div className="mb-8">
-        <span className="text-xs tracking-widest text-white/60 uppercase luxury-text">
+        <span className="text-xs tracking-widest text-gray-500 uppercase luxury-text">
           Professional Design Platform
         </span>
       </div>
       
-      <h1 className="text-5xl sm:text-6xl md:text-7xl font-light text-white mb-8 leading-tight luxury-title">
+      <h1 className="text-5xl sm:text-6xl md:text-7xl font-light text-black mb-8 leading-tight luxury-title">
         Studio
       </h1>
       
-      <p className="text-xl text-white/80 max-w-3xl mx-auto leading-relaxed luxury-text">
+      <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed luxury-text">
         Transform your space with professional AI-powered design visualization
       </p>
     </div>
@@ -412,33 +412,33 @@ export default function AIVisualization() {
   const renderUploadStep = () => (
     <div className="max-w-4xl mx-auto px-4">
       <div className="text-center mb-16">
-        <h2 className="text-4xl sm:text-5xl font-light text-white mb-8 luxury-title">
+        <h2 className="text-4xl sm:text-5xl font-light text-black mb-8 luxury-title">
           Upload Your Space
         </h2>
-        <p className="text-xl text-white/70 max-w-3xl mx-auto leading-relaxed luxury-text">
+        <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed luxury-text">
           Begin your design transformation by sharing your space with our AI design team
         </p>
       </div>
       
-      <Card className="border border-white/10 shadow-2xl bg-white/5 backdrop-blur-md">
+      <Card className="border border-gray-200/60 shadow-2xl bg-white/80 backdrop-blur-md">
         <CardContent className="p-8 sm:p-16">
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-xl p-8 sm:p-16 text-center cursor-pointer transition-all duration-300 ${
               isDragActive 
-                ? 'border-white/60 bg-white/10' 
-                : 'border-white/30 hover:border-white/50 hover:bg-white/5'
+                ? 'border-black/40 bg-gray-50' 
+                : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50/50'
             }`}
           >
             <input {...getInputProps()} />
-            <Camera className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-6 text-white/60" />
-            <p className="text-xl sm:text-2xl font-light text-white mb-3 luxury-title">
+            <Camera className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-6 text-gray-400" />
+            <p className="text-xl sm:text-2xl font-light text-black mb-3 luxury-title">
               {isDragActive ? 'Drop your photo here' : 'Drag & drop your photo'}
             </p>
-            <p className="text-base sm:text-lg text-white/60 mb-6 luxury-text">
+            <p className="text-base sm:text-lg text-gray-600 mb-6 luxury-text">
               or tap to browse files
             </p>
-            <Badge variant="outline" className="text-sm border-white/20 text-white/80 bg-transparent">
+            <Badge variant="outline" className="text-sm border-gray-300 text-gray-700 bg-white/50">
               JPG, PNG, HEIC up to 10MB
             </Badge>
           </div>
@@ -448,21 +448,21 @@ export default function AIVisualization() {
               <img 
                 src={uploadedPhoto.preview} 
                 alt="Uploaded preview"
-                className="w-full h-64 sm:h-80 object-cover rounded-xl border border-white/20"
+                className="w-full h-64 sm:h-80 object-cover rounded-xl border border-gray-200"
               />
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6 gap-4">
-                <Badge className="bg-green-500/20 text-green-300 border-green-500/30 w-fit">
+                <Badge className="bg-green-50 text-green-700 border-green-200 w-fit">
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Photo uploaded successfully
                 </Badge>
                 <Button 
                   onClick={handleAnalyzeArchitecture} 
                   disabled={architecturalAnalysisMutation.isPending}
-                  className="w-full sm:w-auto bg-white text-black hover:bg-white/90 font-medium px-8 py-3"
+                  className="w-full sm:w-auto bg-black text-white hover:bg-gray-800 font-medium px-8 py-3"
                 >
                   {architecturalAnalysisMutation.isPending ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                       Analyzing Design...
                     </>
                   ) : (
@@ -1088,7 +1088,7 @@ export default function AIVisualization() {
 
         {progress > 0 && (
           <div className="text-center mt-16">
-            <Button variant="outline" onClick={resetWorkflow} className="luxury-text border-white/20 text-white hover:bg-white/10">
+            <Button variant="outline" onClick={resetWorkflow} className="luxury-text border-gray-300 text-gray-700 hover:bg-gray-50">
               Start New Project
             </Button>
           </div>
