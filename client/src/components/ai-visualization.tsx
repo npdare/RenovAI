@@ -1316,6 +1316,25 @@ export default function AIVisualization() {
           }
         }
       });
+      
+      // Add manual elements that need transformation
+      manualElements.forEach(element => {
+        if (element.action === 'inspiration' || element.action === 'select') {
+          prompts.push({
+            category: `${element.category.charAt(0).toUpperCase() + element.category.slice(1)} Styles`,
+            element: element.category,
+            current: element.specificType,
+            selected: element.selectedStyle,
+            suggestions: [
+              'Modern contemporary style',
+              'Traditional classic approach',
+              'Industrial minimalist design',
+              'Natural organic materials',
+              'Luxury premium finishes'
+            ]
+          });
+        }
+      });
       return prompts;
     };
 
