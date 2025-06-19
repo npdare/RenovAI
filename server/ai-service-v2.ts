@@ -46,60 +46,82 @@ export async function preprocessImageV2(imagePath: string): Promise<Preprocessin
     
     console.log(`Starting preprocessing job: ${jobId}`);
     
-    // Generate enhanced image processing for V2 pipeline
-    console.log('Processing image enhancement...');
-    const enhancedImage = await replicate.run(
-      "nightmareai/real-esrgan:42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b",
+    // 1A: Generate Canny edge detection
+    console.log('Generating edge detection...');
+    const edgeDetection = await replicate.run(
+      "jagilley/controlnet-canny:aff48af9c68d162388d230a2ab003f68d2638d88307bdaf1c2f1ac95079c9613",
       {
         input: {
           image: imageData,
-          scale: 2,
-          face_enhance: false
+          low_threshold: 100,
+          high_threshold: 200
         }
       }
     );
     
-    // Create structured mask regions for precise element control
-    console.log('Generating element masks...');
-    const maskRegions = [
-      'walls_and_surfaces',
-      'flooring_materials', 
-      'windows_and_doors',
-      'furniture_elements',
-      'lighting_fixtures',
-      'architectural_details'
-    ];
+    // 1B: Generate depth map using MiDaS
+    console.log('Generating depth map...');
+    const depthMap = await replicate.run(
+      "andreasjansson/midas:4d7626efa00e2c52b080b20a7550cab52e21b8b8c71b38bb13b6b01b3aceb6d4",
+      {
+        input: {
+          image: imageData
+        }
+      }
+    );
     
-    // Create assets directory for V2 pipeline
+    // 1C: Generate segmentation masks using SAM
+    console.log('Generating segmentation masks...');
+    const segmentation = await replicate.run(
+      "facebookresearch/segment-anything:6bcc945c97e7b98bfcd8a56c8d0dafebde28aa5d8e7b3df8a54de9d0f006c09c",
+      {
+        input: {
+          image: imageData,
+          model_type: "vit_h"
+        }
+      }
+    );
+    
+    // Download and save assets
     const assetsDir = path.join('uploads', 'v2_assets', jobId);
     fs.mkdirSync(assetsDir, { recursive: true });
     
-    // Save enhanced image
-    const enhancedUrl = Array.isArray(enhancedImage) ? enhancedImage[0] : String(enhancedImage);
-    const enhancedResponse = await fetch(enhancedUrl);
-    const enhancedBuffer = Buffer.from(await enhancedResponse.arrayBuffer());
-    const enhancedPath = path.join(assetsDir, 'enhanced.png');
-    fs.writeFileSync(enhancedPath, enhancedBuffer);
+    // Save edge detection
+    const edgeUrl = Array.isArray(edgeDetection) ? edgeDetection[0] : String(edgeDetection);
+    const edgeResponse = await fetch(edgeUrl);
+    const edgeBuffer = Buffer.from(await edgeResponse.arrayBuffer());
+    const edgePath = path.join(assetsDir, 'edge.png');
+    fs.writeFileSync(edgePath, edgeBuffer);
     
-    // Generate structured mask URIs for architectural elements
+    // Save depth map
+    const depthUrl = Array.isArray(depthMap) ? depthMap[0] : String(depthMap);
+    const depthResponse = await fetch(depthUrl);
+    const depthBuffer = Buffer.from(await depthResponse.arrayBuffer());
+    const depthPath = path.join(assetsDir, 'depth.png');
+    fs.writeFileSync(depthPath, depthBuffer);
+    
+    // Save segmentation masks
     const maskURIs: string[] = [];
-    maskRegions.forEach((region, index) => {
-      // Create placeholder mask files for each architectural element
-      const maskPath = path.join(assetsDir, `${region}.png`);
-      fs.copyFileSync(imagePath, maskPath); // Use original as mask template
-      maskURIs.push(`/uploads/v2_assets/${jobId}/${region}.png`);
-    });
+    if (Array.isArray(segmentation)) {
+      for (let i = 0; i < segmentation.length; i++) {
+        const maskResponse = await fetch(segmentation[i]);
+        const maskBuffer = Buffer.from(await maskResponse.arrayBuffer());
+        const maskPath = path.join(assetsDir, `mask_${i}.png`);
+        fs.writeFileSync(maskPath, maskBuffer);
+        maskURIs.push(`/uploads/v2_assets/${jobId}/mask_${i}.png`);
+      }
+    }
     
     // Copy original image to assets directory
     const originalPath = path.join(assetsDir, 'original.jpg');
     fs.copyFileSync(imagePath, originalPath);
     
-    console.log(`V2 preprocessing completed: ${maskURIs.length} element masks created for job ${jobId}`);
+    console.log(`Preprocessing completed for job: ${jobId}`);
     
     return {
       jobId,
-      edgeURI: `/uploads/v2_assets/${jobId}/enhanced.png`,
-      depthURI: `/uploads/v2_assets/${jobId}/enhanced.png`,
+      edgeURI: `/uploads/v2_assets/${jobId}/edge.png`,
+      depthURI: `/uploads/v2_assets/${jobId}/depth.png`,
       maskURIs,
       originalImage: `/uploads/v2_assets/${jobId}/original.jpg`
     };
