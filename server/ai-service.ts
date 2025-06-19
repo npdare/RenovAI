@@ -421,8 +421,8 @@ OUTPUT SPECIFICATIONS:
     // Step 2: Apply ControlNet transformation with conservative settings
     console.log('Applying ControlNet transformation with edge preservation...');
     
-    // Use much lower strength for subtle, realistic changes
-    const conservativeStrength = Math.min(0.4, (transformationStrength / 200)); // More conservative than before
+    // Use extremely low strength for structural preservation
+    const conservativeStrength = Math.min(0.25, (transformationStrength / 400)); // Maximum structure preservation
     
     // Build intelligent material application prompt based on selected design elements
     let intelligentMaterialPrompt = '';
@@ -459,15 +459,15 @@ OUTPUT SPECIFICATIONS:
           negative_prompt: "cartoon, illustration, painting, drawing, art, sketch, anime, low quality, blurry, distorted, unrealistic, fake, artificial, stylized, dramatic changes, different building, altered structure, fantasy, concept art",
           num_inference_steps: 25,
           guidance_scale: 6.5,
-          controlnet_conditioning_scale: 0.9,  // High edge preservation
+          controlnet_conditioning_scale: 1.2,  // Maximum edge preservation
           strength: conservativeStrength,
           seed: Math.floor(Math.random() * 1000000)
         }
       }
     );
 
-    // Skip post-processing for SDXL as it already produces high-quality output
-    console.log('SDXL transformation complete');
+    // ControlNet transformation complete
+    console.log('ControlNet transformation complete');
     const enhancedImage = transformation;
 
     // Download and save the final enhanced image
