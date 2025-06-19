@@ -357,25 +357,10 @@ OUTPUT SPECIFICATIONS:
 - High-resolution clarity, magazine quality
 - NO cartoon, illustration, or artistic interpretation`;
 
-    // Step 1: Generate ControlNet edge detection for structure preservation
-    console.log('Generating ControlNet edge detection...');
+    // Use direct image-to-image transformation with SDXL for better compatibility
+    console.log('Applying SDXL transformation...');
     const base64ImageData = `data:image/jpeg;base64,${base64Image}`;
-    
-    const edgeDetection = await replicate.run(
-      "jagilley/controlnet-canny:aff48af9c68d162388d230a2ab003f68d2638d88307bdaf1c2f1ac95079c9613",
-      {
-        input: {
-          image: base64ImageData,
-          prompt: "architectural edge detection, clean lines, structural details",
-          low_threshold: 100,
-          high_threshold: 200
-        }
-      }
-    );
-
-    // Step 2: Apply ControlNet transformation with low denoising strength
-    console.log('Applying ControlNet transformation...');
-    const denoisingStrength = Math.max(0.3, (100 - transformationStrength) / 100);
+    const denoisingStrength = Math.max(0.3, (transformationStrength / 100));
     
     // Build prompt from dynamic categories or fallback to legacy parameters
     const designElements = parameters.detectedCategories?.length > 0 
@@ -385,34 +370,23 @@ OUTPUT SPECIFICATIONS:
     const architecturalPrompt = `Professional architectural ${parameters.spaceType || 'interior'} photography, ${parameters.style} design style, featuring ${designElements}, photorealistic, 8K resolution, professional lighting, architectural magazine quality, sharp focus, natural shadows`;
 
     const transformation = await replicate.run(
-      "rossjillian/controlnet:795433b19458d0f4fa172a7ccf93178d2adb1cb8ab2ad6c8faeee8dd8bfa2907",
+      "stability-ai/sdxl:39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b",
       {
         input: {
           image: base64ImageData,
-          control_image: edgeDetection,
           prompt: architecturalPrompt,
           negative_prompt: "cartoon, illustration, painting, drawing, art, sketch, anime, low quality, blurry, distorted, unrealistic, fake, artificial, stylized",
-          num_inference_steps: 50,
+          num_inference_steps: 30,
           guidance_scale: 7.5,
-          controlnet_conditioning_scale: 0.8,
           strength: denoisingStrength,
           seed: Math.floor(Math.random() * 1000000)
         }
       }
     );
 
-    // Step 3: Post-process for enhanced realism
-    console.log('Enhancing realism...');
-    const enhancedImage = await replicate.run(
-      "tencentarc/gfpgan:9283608cc6b7be6b65a8e44983db012355fde4132009bf99d976b2f0896856a3",
-      {
-        input: {
-          img: transformation,
-          version: "v1.4",
-          scale: 2
-        }
-      }
-    );
+    // Skip post-processing for SDXL as it already produces high-quality output
+    console.log('SDXL transformation complete');
+    const enhancedImage = transformation;
 
     // Download and save the final enhanced image
     const finalImageUrl = Array.isArray(enhancedImage) ? enhancedImage[0] : enhancedImage;
