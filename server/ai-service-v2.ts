@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import Replicate from "replicate";
 import fs from "fs";
 import path from "path";
+import sharp from "sharp";
 import { v4 as uuidv4 } from "uuid";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -15,6 +16,7 @@ export interface PreprocessingResult {
   depthURI: string;
   maskURIs: string[];
   originalImage: string;
+  boundingBoxes: Array<{ x: number; y: number; width: number; height: number }>;
 }
 
 export interface TransformRequest {
@@ -102,6 +104,10 @@ export async function preprocessImageV2(imagePath: string): Promise<Preprocessin
     
     // Save segmentation masks
     const maskURIs: string[] = [];
+    const boundingBoxes: Array<{ x: number; y: number; width: number; height: number }> = [];
+    const originalMeta = await sharp(imageBuffer).metadata();
+    const origWidth = originalMeta.width || 1;
+    const origHeight = originalMeta.height || 1;
     if (Array.isArray(segmentation)) {
       for (let i = 0; i < segmentation.length; i++) {
         const maskResponse = await fetch(segmentation[i]);
@@ -109,6 +115,41 @@ export async function preprocessImageV2(imagePath: string): Promise<Preprocessin
         const maskPath = path.join(assetsDir, `mask_${i}.png`);
         fs.writeFileSync(maskPath, maskBuffer);
         maskURIs.push(`/uploads/v2_assets/${jobId}/mask_${i}.png`);
+
+        // Calculate bounding box
+        try {
+          const { data, info } = await sharp(maskBuffer)
+            .ensureAlpha()
+            .raw()
+            .toBuffer({ resolveWithObject: true });
+          const { width, height, channels } = info;
+          let minX = width, minY = height, maxX = 0, maxY = 0;
+          for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+              const idx = (y * width + x) * channels;
+              const alpha = data[idx + channels - 1];
+              if (alpha > 0) {
+                if (x < minX) minX = x;
+                if (y < minY) minY = y;
+                if (x > maxX) maxX = x;
+                if (y > maxY) maxY = y;
+              }
+            }
+          }
+          if (maxX < minX || maxY < minY) {
+            boundingBoxes.push({ x: 0, y: 0, width: 0, height: 0 });
+          } else {
+            boundingBoxes.push({
+              x: minX / origWidth,
+              y: minY / origHeight,
+              width: (maxX - minX) / origWidth,
+              height: (maxY - minY) / origHeight,
+            });
+          }
+        } catch (bbErr) {
+          console.error('Bounding box calculation failed:', bbErr);
+          boundingBoxes.push({ x: 0, y: 0, width: 0, height: 0 });
+        }
       }
     }
     
@@ -123,7 +164,8 @@ export async function preprocessImageV2(imagePath: string): Promise<Preprocessin
       edgeURI: `/uploads/v2_assets/${jobId}/edge.png`,
       depthURI: `/uploads/v2_assets/${jobId}/depth.png`,
       maskURIs,
-      originalImage: `/uploads/v2_assets/${jobId}/original.jpg`
+      originalImage: `/uploads/v2_assets/${jobId}/original.jpg`,
+      boundingBoxes
     };
   } catch (error) {
     console.error('Error in preprocessing:', error);
@@ -133,8 +175,9 @@ export async function preprocessImageV2(imagePath: string): Promise<Preprocessin
 
 // Step 2: Enhanced architectural analysis with mask references
 export async function analyzeArchitecturalElementsV2(
-  jobId: string, 
-  maskURIs: string[]
+  jobId: string,
+  maskURIs: string[],
+  boundingBoxes: Array<{ x: number; y: number; width: number; height: number }>
 ): Promise<{
   elements: Array<{
     category: string;
@@ -142,6 +185,7 @@ export async function analyzeArchitecturalElementsV2(
     maskId: string;
     alternatives: string[];
     confidence: number;
+    boundingBox?: { x: number; y: number; width: number; height: number };
   }>;
   roomStructure: string;
   detectedFeatures: string[];
@@ -186,7 +230,17 @@ Identify ALL modifiable elements and link each to its corresponding mask.`;
       max_tokens: 1000,
     });
 
-    return JSON.parse(response.choices[0].message.content || '{}');
+    const analysis = JSON.parse(response.choices[0].message.content || '{}');
+    if (analysis.elements && Array.isArray(analysis.elements)) {
+      analysis.elements = analysis.elements.map((el: any) => {
+        const index = parseInt(String(el.maskId).replace('mask_', '').replace('.png', ''));
+        if (!isNaN(index) && boundingBoxes[index]) {
+          el.boundingBox = boundingBoxes[index];
+        }
+        return el;
+      });
+    }
+    return analysis;
   } catch (error) {
     console.error('Error in architectural analysis v2:', error);
     throw new Error('Failed to analyze architectural elements');

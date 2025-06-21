@@ -107,6 +107,7 @@ interface ArchitecturalElement {
   alternatives: string[]; // alternative options
   action: 'retain' | 'inspiration' | 'select'; // user's choice
   selectedStyle: string; // selected alternative
+  boundingBox?: { x: number; y: number; width: number; height: number };
 }
 
 interface ArchitecturalAnalysis {
@@ -176,6 +177,7 @@ export default function AIVisualization() {
   const [useV2Pipeline, setUseV2Pipeline] = useState(false);
   const [v2JobId, setV2JobId] = useState<string | null>(null);
   const [v2Masks, setV2Masks] = useState<string[]>([]);
+  const [v2BoundingBoxes, setV2BoundingBoxes] = useState<{ x: number; y: number; width: number; height: number }[]>([]);
   const [selectedMasks, setSelectedMasks] = useState<number[]>([]);
   const [v2PreprocessingResult, setV2PreprocessingResult] = useState<any>(null);
   const [showMaskEditor, setShowMaskEditor] = useState(false);
@@ -314,6 +316,7 @@ export default function AIVisualization() {
       setV2PreprocessingResult(data);
       setV2JobId(data.jobId);
       setV2Masks(data.maskURIs);
+      setV2BoundingBoxes(data.boundingBoxes || []);
       toast({
         title: "V2 Preprocessing Complete",
         description: "Masks and control images generated successfully",
@@ -337,7 +340,8 @@ export default function AIVisualization() {
         method: 'POST',
         body: JSON.stringify({
           jobId: v2JobId,
-          maskURIs: v2Masks
+          maskURIs: v2Masks,
+          boundingBoxes: v2BoundingBoxes
         }),
         headers: {
           'Content-Type': 'application/json'
@@ -1029,6 +1033,20 @@ export default function AIVisualization() {
                     alt="Space under analysis"
                     className="w-full h-48 object-cover rounded-xl border border-gray-200 shadow-sm"
                   />
+                  {editableArchitecture.elements.map((el, i) => (
+                    el.boundingBox ? (
+                      <div
+                        key={i}
+                        className="absolute border-2 border-red-500"
+                        style={{
+                          left: `${el.boundingBox.x * 100}%`,
+                          top: `${el.boundingBox.y * 100}%`,
+                          width: `${el.boundingBox.width * 100}%`,
+                          height: `${el.boundingBox.height * 100}%`,
+                        }}
+                      />
+                    ) : null
+                  ))}
                   <div className="absolute top-4 left-4">
                     <Badge className="bg-black/80 text-white border-0 backdrop-blur-sm">
                       <Eye className="w-3 h-3 mr-1" />
@@ -1117,6 +1135,11 @@ export default function AIVisualization() {
                             {element.quantity && (
                               <p className="text-xs text-gray-500 luxury-text">
                                 Quantity: {element.quantity}
+                              </p>
+                            )}
+                            {element.boundingBox && (
+                              <p className="text-xs text-gray-500 luxury-text">
+                                Box: {`${(element.boundingBox.x * 100).toFixed(1)}%, ${(element.boundingBox.y * 100).toFixed(1)}%, ${(element.boundingBox.width * 100).toFixed(1)}%, ${(element.boundingBox.height * 100).toFixed(1)}%`}
                               </p>
                             )}
                           </div>

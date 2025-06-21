@@ -309,14 +309,14 @@ Return JSON:
   // V2 Architectural analysis endpoint
   app.post('/api/v2/architectural-analysis', async (req: Request, res: Response) => {
     try {
-      const { jobId, maskURIs } = req.body;
+      const { jobId, maskURIs, boundingBoxes } = req.body;
       
       if (!jobId || !maskURIs) {
         return res.status(400).json({ error: 'Job ID and mask URIs are required' });
       }
 
       const { analyzeArchitecturalElementsV2 } = await import('./ai-service-v2');
-      const analysis = await analyzeArchitecturalElementsV2(jobId, maskURIs);
+      const analysis = await analyzeArchitecturalElementsV2(jobId, maskURIs, boundingBoxes || []);
       res.json(analysis);
     } catch (error) {
       console.error('V2 architectural analysis error:', error);
