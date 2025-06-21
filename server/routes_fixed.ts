@@ -378,3 +378,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { budget } = req.body;
       const products = await generateProductRecommendations(req.file.path, budget);
+      res.json(products);
+    } catch (error) {
+      console.error('Product recommendation error:', error);
+      res.status(500).json({ error: 'Failed to get product recommendations' });
+    }
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
