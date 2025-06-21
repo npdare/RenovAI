@@ -2,6 +2,7 @@ import OpenAI from "openai";
 import Replicate from "replicate";
 import fs from "fs";
 import path from "path";
+import { PNG } from "pngjs";
 import { v4 as uuidv4 } from "uuid";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -9,12 +10,19 @@ const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
 });
 
+export interface MaskInfo {
+  maskId: string;
+  label: string;
+  confidence: number;
+}
+
 export interface PreprocessingResult {
   jobId: string;
   edgeURI: string;
   depthURI: string;
   maskURIs: string[];
   originalImage: string;
+  maskInfo: MaskInfo[];
 }
 
 export interface TransformRequest {
@@ -37,71 +45,92 @@ export interface TransformResult {
 }
 
 // Step 1: Preprocess image for multi-ControlNet pipeline
-export async function preprocessImageV2(imagePath: string): Promise<PreprocessingResult> {
+export async function preprocessImageV2(
+  imagePath: string,
+): Promise<PreprocessingResult> {
   try {
     const jobId = uuidv4();
     const imageBuffer = fs.readFileSync(imagePath);
-    const base64Image = imageBuffer.toString('base64');
+    const base64Image = imageBuffer.toString("base64");
     const imageData = `data:image/jpeg;base64,${base64Image}`;
-    
+
     console.log(`Starting preprocessing job: ${jobId}`);
-    
+
     // 1A: Generate Canny edge detection
-    console.log('Generating edge detection...');
+    console.log("Generating edge detection...");
     const edgeDetection = await replicate.run(
       "jagilley/controlnet-canny:aff48af9c68d162388d230a2ab003f68d2638d88307bdaf1c2f1ac95079c9613",
       {
         input: {
           image: imageData,
           low_threshold: 100,
-          high_threshold: 200
-        }
-      }
+          high_threshold: 200,
+        },
+      },
     );
-    
+
     // 1B: Generate depth map using MiDaS
-    console.log('Generating depth map...');
+    console.log("Generating depth map...");
     const depthMap = await replicate.run(
       "andreasjansson/midas:4d7626efa00e2c52b080b20a7550cab52e21b8b8c71b38bb13b6b01b3aceb6d4",
       {
         input: {
-          image: imageData
-        }
-      }
+          image: imageData,
+        },
+      },
     );
-    
+
     // 1C: Generate segmentation masks using SAM
-    console.log('Generating segmentation masks...');
+    console.log("Generating segmentation masks...");
     const segmentation = await replicate.run(
       "facebookresearch/segment-anything:6bcc945c97e7b98bfcd8a56c8d0dafebde28aa5d8e7b3df8a54de9d0f006c09c",
       {
         input: {
           image: imageData,
-          model_type: "vit_h"
-        }
-      }
+          model_type: "vit_h",
+        },
+      },
     );
-    
+
     // Download and save assets
-    const assetsDir = path.join('uploads', 'v2_assets', jobId);
+    const assetsDir = path.join("uploads", "v2_assets", jobId);
     fs.mkdirSync(assetsDir, { recursive: true });
-    
+
     // Save edge detection
-    const edgeUrl = Array.isArray(edgeDetection) ? edgeDetection[0] : String(edgeDetection);
+    const edgeUrl = Array.isArray(edgeDetection)
+      ? edgeDetection[0]
+      : String(edgeDetection);
     const edgeResponse = await fetch(edgeUrl);
     const edgeBuffer = Buffer.from(await edgeResponse.arrayBuffer());
-    const edgePath = path.join(assetsDir, 'edge.png');
+    const edgePath = path.join(assetsDir, "edge.png");
     fs.writeFileSync(edgePath, edgeBuffer);
-    
+
     // Save depth map
     const depthUrl = Array.isArray(depthMap) ? depthMap[0] : String(depthMap);
     const depthResponse = await fetch(depthUrl);
     const depthBuffer = Buffer.from(await depthResponse.arrayBuffer());
-    const depthPath = path.join(assetsDir, 'depth.png');
+    const depthPath = path.join(assetsDir, "depth.png");
     fs.writeFileSync(depthPath, depthBuffer);
-    
-    // Save segmentation masks
+
+    // 1D: Run object detection (YOLOv8)
+    console.log("Running object detection...");
+    const detections = await replicate.run("ultralytics/yolov8", {
+      input: { image: imageData },
+    });
+
+    // Save segmentation masks and collect metadata
     const maskURIs: string[] = [];
+    const maskInfo: MaskInfo[] = [];
+    const detectionMapping: Record<string, string> = {
+      window: "windows",
+      door: "doors",
+      light: "lighting fixtures",
+      lamp: "lighting fixtures",
+      ceiling: "ceilings",
+      floor: "flooring",
+      wall: "walls",
+    };
+
     if (Array.isArray(segmentation)) {
       for (let i = 0; i < segmentation.length; i++) {
         const maskResponse = await fetch(segmentation[i]);
@@ -109,32 +138,87 @@ export async function preprocessImageV2(imagePath: string): Promise<Preprocessin
         const maskPath = path.join(assetsDir, `mask_${i}.png`);
         fs.writeFileSync(maskPath, maskBuffer);
         maskURIs.push(`/uploads/v2_assets/${jobId}/mask_${i}.png`);
+
+        // Determine bounding box of mask
+        const png = PNG.sync.read(maskBuffer);
+        let minX = png.width,
+          minY = png.height,
+          maxX = 0,
+          maxY = 0;
+        for (let y = 0; y < png.height; y++) {
+          for (let x = 0; x < png.width; x++) {
+            const idx = (png.width * y + x) * 4 + 3;
+            if (png.data[idx] > 0) {
+              if (x < minX) minX = x;
+              if (y < minY) minY = y;
+              if (x > maxX) maxX = x;
+              if (y > maxY) maxY = y;
+            }
+          }
+        }
+        const maskBox = { x1: minX, y1: minY, x2: maxX, y2: maxY };
+
+        // Find best matching detection
+        let bestLabel = "unknown";
+        let bestConf = 0;
+        if (Array.isArray(detections)) {
+          for (const det of detections as any[]) {
+            const label: string = (det.class || det.label || "")
+              .toString()
+              .toLowerCase();
+            const mapped = detectionMapping[label];
+            if (!mapped) continue;
+            const box = det.box || det.bbox || [det.x1, det.y1, det.x2, det.y2];
+            const dBox = {
+              x1: box[0],
+              y1: box[1],
+              x2: box[2] || box[0] + box[2],
+              y2: box[3] || box[1] + box[3],
+            };
+            const iou = computeIoU(maskBox, dBox);
+            if (iou > 0.1 && (det.confidence || det.score || 0) > bestConf) {
+              bestLabel = mapped;
+              bestConf = det.confidence || det.score || 0;
+            }
+          }
+        }
+
+        maskInfo.push({
+          maskId: `mask_${i}.png`,
+          label: bestLabel,
+          confidence: bestConf,
+        });
       }
     }
-    
+
     // Copy original image to assets directory
-    const originalPath = path.join(assetsDir, 'original.jpg');
+    const originalPath = path.join(assetsDir, "original.jpg");
     fs.copyFileSync(imagePath, originalPath);
-    
+
+    // Save metadata including mask labels
+    saveJobMetadata(jobId, { maskInfo });
+
     console.log(`Preprocessing completed for job: ${jobId}`);
-    
+
     return {
       jobId,
       edgeURI: `/uploads/v2_assets/${jobId}/edge.png`,
       depthURI: `/uploads/v2_assets/${jobId}/depth.png`,
       maskURIs,
-      originalImage: `/uploads/v2_assets/${jobId}/original.jpg`
+      originalImage: `/uploads/v2_assets/${jobId}/original.jpg`,
+      maskInfo,
     };
   } catch (error) {
-    console.error('Error in preprocessing:', error);
-    throw new Error('Failed to preprocess image');
+    console.error("Error in preprocessing:", error);
+    throw new Error("Failed to preprocess image");
   }
 }
 
 // Step 2: Enhanced architectural analysis with mask references
 export async function analyzeArchitecturalElementsV2(
-  jobId: string, 
-  maskURIs: string[]
+  jobId: string,
+  maskURIs: string[],
+  maskInfo?: MaskInfo[],
 ): Promise<{
   elements: Array<{
     category: string;
@@ -147,9 +231,17 @@ export async function analyzeArchitecturalElementsV2(
   detectedFeatures: string[];
 }> {
   try {
+    const metadata =
+      maskInfo || (loadJobMetadata(jobId)?.maskInfo as MaskInfo[]) || [];
+    const labelSummary = metadata
+      .map((m) => `${m.maskId}:${m.label}`)
+      .join(", ");
+
     const prompt = `Analyze architectural elements with mask reference IDs.
-    
-Available segmentation masks: ${maskURIs.map((uri, i) => `mask_${i}.png`).join(', ')}
+
+Available segmentation masks: ${maskURIs.map((uri, i) => `mask_${i}.png`).join(", ")}
+
+Pre-labeled classes: ${labelSummary}
 
 For each architectural element you identify, reference the specific mask ID that corresponds to that element.
 
@@ -175,59 +267,68 @@ Identify ALL modifiable elements and link each to its corresponding mask.`;
       messages: [
         {
           role: "system",
-          content: "You are an expert architectural analyst. Analyze structural elements and provide mask-linked modification alternatives."
+          content:
+            "You are an expert architectural analyst. Analyze structural elements and provide mask-linked modification alternatives.",
         },
         {
           role: "user",
-          content: prompt
-        }
+          content: prompt,
+        },
       ],
       response_format: { type: "json_object" },
       max_tokens: 1000,
     });
 
-    return JSON.parse(response.choices[0].message.content || '{}');
+    return JSON.parse(response.choices[0].message.content || "{}");
   } catch (error) {
-    console.error('Error in architectural analysis v2:', error);
-    throw new Error('Failed to analyze architectural elements');
+    console.error("Error in architectural analysis v2:", error);
+    throw new Error("Failed to analyze architectural elements");
   }
 }
 
 // Step 3: Multi-ControlNet transformation with enhanced pipeline
-export async function transformImageV2(request: TransformRequest): Promise<TransformResult> {
+export async function transformImageV2(
+  request: TransformRequest,
+): Promise<TransformResult> {
   try {
     const startTime = Date.now();
-    const assetsDir = path.join('uploads', 'v2_assets', request.jobId);
-    
+    const assetsDir = path.join("uploads", "v2_assets", request.jobId);
+
     // Load control images
-    const edgePath = path.join(assetsDir, 'edge.png');
-    const depthPath = path.join(assetsDir, 'depth.png');
-    const originalPath = path.join(assetsDir, 'original.jpg');
-    
+    const edgePath = path.join(assetsDir, "edge.png");
+    const depthPath = path.join(assetsDir, "depth.png");
+    const originalPath = path.join(assetsDir, "original.jpg");
+
     const edgeBuffer = fs.readFileSync(edgePath);
     const depthBuffer = fs.readFileSync(depthPath);
     const originalBuffer = fs.readFileSync(originalPath);
-    
-    const edgeData = `data:image/png;base64,${edgeBuffer.toString('base64')}`;
-    const depthData = `data:image/png;base64,${depthBuffer.toString('base64')}`;
-    const originalData = `data:image/jpeg;base64,${originalBuffer.toString('base64')}`;
-    
+
+    const edgeData = `data:image/png;base64,${edgeBuffer.toString("base64")}`;
+    const depthData = `data:image/png;base64,${depthBuffer.toString("base64")}`;
+    const originalData = `data:image/jpeg;base64,${originalBuffer.toString("base64")}`;
+
     // Create combined segmentation mask from selected masks
     let combinedMask = null;
     if (request.selectedMasks.length > 0) {
       // For now, use the first selected mask - in full implementation,
       // we'd combine multiple masks using image processing
-      const maskPath = path.join('uploads', 'v2_assets', request.jobId, 
-        request.selectedMasks[0].split('/').pop() || 'mask_0.png');
-      
+      const maskPath = path.join(
+        "uploads",
+        "v2_assets",
+        request.jobId,
+        request.selectedMasks[0].split("/").pop() || "mask_0.png",
+      );
+
       if (fs.existsSync(maskPath)) {
         const maskBuffer = fs.readFileSync(maskPath);
-        combinedMask = `data:image/png;base64,${maskBuffer.toString('base64')}`;
+        combinedMask = `data:image/png;base64,${maskBuffer.toString("base64")}`;
       }
     }
-    
-    console.log(`Starting multi-ControlNet transformation for job: ${request.jobId}`);
-    
+
+    console.log(
+      `Starting multi-ControlNet transformation for job: ${request.jobId}`,
+    );
+
     // Enhanced transformation using SDXL with multiple ControlNets
     const transformation = await replicate.run(
       "andreasjansson/stable-diffusion-xl-controlnet:9b98f6ac55be50b3b05ad35c4b2dd4dd30d8f2ed2d57eebbfbee5e11d132ce6e",
@@ -238,68 +339,93 @@ export async function transformImageV2(request: TransformRequest): Promise<Trans
           control_image_2: depthData,
           control_image_3: combinedMask || edgeData, // Use edge as fallback
           prompt: request.positivePrompt,
-          negative_prompt: request.negativePrompt || 
+          negative_prompt:
+            request.negativePrompt ||
             "cartoon, illustration, painting, drawing, art, sketch, anime, low quality, blurry, distorted",
           num_inference_steps: 30,
           guidance_scale: 7.5,
           controlnet_conditioning_scale: request.controlnetWeights?.[0] || 1.2,
-          controlnet_conditioning_scale_2: request.controlnetWeights?.[1] || 1.1,
-          controlnet_conditioning_scale_3: request.controlnetWeights?.[2] || 1.0,
-          seed: request.seed || Math.floor(Math.random() * 1000000)
-        }
-      }
+          controlnet_conditioning_scale_2:
+            request.controlnetWeights?.[1] || 1.1,
+          controlnet_conditioning_scale_3:
+            request.controlnetWeights?.[2] || 1.0,
+          seed: request.seed || Math.floor(Math.random() * 1000000),
+        },
+      },
     );
-    
+
     // Enhanced upscaling with Real-ESRGAN
-    console.log('Enhancing image quality...');
+    console.log("Enhancing image quality...");
     const enhanced = await replicate.run(
       "nightmareai/real-esrgan:42fed1c4974146d4d2414e2be2c5277c7fcf05fcc3a73abf41610695738c1d7b",
       {
         input: {
           image: transformation,
           scale: 2,
-          face_enhance: false
-        }
-      }
+          face_enhance: false,
+        },
+      },
     );
-    
+
     // Download and save final result
-    const enhancedUrl = Array.isArray(enhanced) ? enhanced[0] : String(enhanced);
+    const enhancedUrl = Array.isArray(enhanced)
+      ? enhanced[0]
+      : String(enhanced);
     const resultResponse = await fetch(enhancedUrl);
     const resultBuffer = Buffer.from(await resultResponse.arrayBuffer());
-    const resultPath = path.join(assetsDir, 'result.png');
+    const resultPath = path.join(assetsDir, "result.png");
     fs.writeFileSync(resultPath, resultBuffer);
-    
+
     const processingTime = Date.now() - startTime;
-    
+
     // Basic quality assessment (simplified IoU calculation)
     const iouScore = await calculateSimpleIoU(originalPath, resultPath);
-    
-    console.log(`Transformation completed for job: ${request.jobId} in ${processingTime}ms`);
-    
+
+    console.log(
+      `Transformation completed for job: ${request.jobId} in ${processingTime}ms`,
+    );
+
     return {
       resultURI: `/uploads/v2_assets/${request.jobId}/result.png`,
       processingTime,
       quality: {
         iouScore,
-        geometryPreserved: iouScore > 0.85
-      }
+        geometryPreserved: iouScore > 0.85,
+      },
     };
   } catch (error) {
-    console.error('Error in transformation v2:', error);
-    throw new Error('Failed to transform image');
+    console.error("Error in transformation v2:", error);
+    throw new Error("Failed to transform image");
   }
 }
 
+// Helper function for intersection over union between two boxes
+function computeIoU(
+  a: { x1: number; y1: number; x2: number; y2: number },
+  b: { x1: number; y1: number; x2: number; y2: number },
+): number {
+  const x1 = Math.max(a.x1, b.x1);
+  const y1 = Math.max(a.y1, b.y1);
+  const x2 = Math.min(a.x2, b.x2);
+  const y2 = Math.min(a.y2, b.y2);
+  const inter = Math.max(0, x2 - x1) * Math.max(0, y2 - y1);
+  const areaA = Math.max(0, a.x2 - a.x1) * Math.max(0, a.y2 - a.y1);
+  const areaB = Math.max(0, b.x2 - b.x1) * Math.max(0, b.y2 - b.y1);
+  return inter === 0 ? 0 : inter / (areaA + areaB - inter);
+}
+
 // Helper function for basic IoU calculation
-async function calculateSimpleIoU(originalPath: string, resultPath: string): Promise<number> {
+async function calculateSimpleIoU(
+  originalPath: string,
+  resultPath: string,
+): Promise<number> {
   try {
     // Simplified IoU calculation - in full implementation would use
     // proper computer vision libraries for mask comparison
     // For now, return a reasonable score based on successful completion
     return 0.92;
   } catch (error) {
-    console.error('Error calculating IoU:', error);
+    console.error("Error calculating IoU:", error);
     return 0.85; // Fallback score
   }
 }
@@ -307,13 +433,44 @@ async function calculateSimpleIoU(originalPath: string, resultPath: string): Pro
 // Save job metadata for tracking and debugging
 export function saveJobMetadata(jobId: string, metadata: any): void {
   try {
-    const metadataPath = path.join('uploads', 'v2_assets', jobId, 'metadata.json');
-    fs.writeFileSync(metadataPath, JSON.stringify({
-      ...metadata,
-      timestamp: new Date().toISOString(),
-      pipelineVersion: "v2"
-    }, null, 2));
+    const metadataPath = path.join(
+      "uploads",
+      "v2_assets",
+      jobId,
+      "metadata.json",
+    );
+    fs.writeFileSync(
+      metadataPath,
+      JSON.stringify(
+        {
+          ...metadata,
+          timestamp: new Date().toISOString(),
+          pipelineVersion: "v2",
+        },
+        null,
+        2,
+      ),
+    );
   } catch (error) {
-    console.error('Error saving job metadata:', error);
+    console.error("Error saving job metadata:", error);
   }
+}
+
+// Load job metadata if available
+export function loadJobMetadata(jobId: string): any | null {
+  try {
+    const metadataPath = path.join(
+      "uploads",
+      "v2_assets",
+      jobId,
+      "metadata.json",
+    );
+    if (fs.existsSync(metadataPath)) {
+      const raw = fs.readFileSync(metadataPath, "utf-8");
+      return JSON.parse(raw);
+    }
+  } catch (error) {
+    console.error("Error loading job metadata:", error);
+  }
+  return null;
 }
