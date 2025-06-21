@@ -32,6 +32,11 @@ interface UploadedPhoto {
   type: 'interior' | 'exterior' | 'auto-detected';
 }
 
+interface ReferenceImage {
+  file: File;
+  preview: string;
+}
+
 // Step 2: Design Inspiration Types
 interface DesignInspiration {
   type: 'text' | 'images' | 'pinterest';
@@ -146,7 +151,23 @@ export default function AIVisualization() {
     type: 'text',
     textPrompt: ''
   });
-  const [referenceImages, setReferenceImages] = useState<File[]>([]);
+  const [referenceImages, setReferenceImages] = useState<ReferenceImage[]>([]);
+
+  // Clean up uploaded photo preview
+  useEffect(() => {
+    return () => {
+      if (uploadedPhoto) {
+        URL.revokeObjectURL(uploadedPhoto.preview);
+      }
+    };
+  }, [uploadedPhoto]);
+
+  // Clean up reference image previews
+  useEffect(() => {
+    return () => {
+      referenceImages.forEach(img => URL.revokeObjectURL(img.preview));
+    };
+  }, [referenceImages]);
   
   // Step 4: Design Parameters
   const [extractedParameters, setExtractedParameters] = useState<DesignParameters | null>(null);
@@ -218,7 +239,11 @@ export default function AIVisualization() {
     },
     maxFiles: 5,
     onDrop: (acceptedFiles) => {
-      setReferenceImages(prev => [...prev, ...acceptedFiles]);
+      const newImages = acceptedFiles.map(file => ({
+        file,
+        preview: URL.createObjectURL(file)
+      }));
+      setReferenceImages(prev => [...prev, ...newImages]);
     }
   });
 
@@ -422,7 +447,7 @@ export default function AIVisualization() {
       
       if (inspiration.type === 'images' && referenceImages.length > 0) {
         referenceImages.forEach((img, index) => {
-          formData.append(`referenceImage${index}`, img);
+          formData.append(`referenceImage${index}`, img.file);
         });
       }
       
@@ -1618,8 +1643,8 @@ export default function AIVisualization() {
                   <div className="grid grid-cols-3 gap-4 mt-4">
                     {referenceImages.map((img, index) => (
                       <div key={index} className="relative">
-                        <img 
-                          src={URL.createObjectURL(img)} 
+                        <img
+                          src={img.preview}
                           alt={`Reference ${index + 1}`}
                           className="w-full h-24 object-cover rounded-lg"
                         />
