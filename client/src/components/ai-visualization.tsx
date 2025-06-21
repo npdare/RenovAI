@@ -140,6 +140,18 @@ export default function AIVisualization() {
     action: 'retain' as 'retain' | 'inspiration' | 'select',
     selectedStyle: ''
   });
+
+  interface BoundingBox {
+    x: number; // percentage from left
+    y: number; // percentage from top
+    width: number; // percentage width
+    height: number; // percentage height
+    elementIndex: number; // index of architectural element
+  }
+
+  const [boundingBoxes, setBoundingBoxes] = useState<BoundingBox[] | null>(null);
+  const [selectedArchitectureIndex, setSelectedArchitectureIndex] = useState<number | null>(null);
+  const elementRefs = useRef<(HTMLDivElement | null)[]>([]);
   
   // Step 3: Design Inspiration
   const [inspiration, setInspiration] = useState<DesignInspiration>({
@@ -241,9 +253,17 @@ export default function AIVisualization() {
       
       return response.json();
     },
-    onSuccess: (data: ArchitecturalAnalysis) => {
+    onSuccess: (data: ArchitecturalAnalysis & { boundingBoxes?: BoundingBox[] }) => {
       setArchitecturalAnalysis(data);
       setEditableArchitecture(data);
+      if ((data as any).boundingBoxes) {
+        setBoundingBoxes((data as any).boundingBoxes);
+      } else if (Array.isArray((data as any).elements) && (data as any).elements[0]?.boundingBox) {
+        const boxes = (data as any).elements.map((el: any, idx: number) => ({ ...el.boundingBox, elementIndex: idx }));
+        setBoundingBoxes(boxes);
+      } else {
+        setBoundingBoxes(null);
+      }
       setCurrentStep('architecture');
       setProgress(20);
       
@@ -769,6 +789,8 @@ export default function AIVisualization() {
     setCurrentStep('upload');
     setProgress(0);
     setUploadedPhoto(null);
+    setBoundingBoxes(null);
+    setSelectedArchitectureIndex(null);
     setInspiration({ type: 'text', textPrompt: '' });
     setReferenceImages([]);
     setExtractedParameters(null);
@@ -1002,8 +1024,8 @@ export default function AIVisualization() {
             <div className="grid lg:grid-cols-5 gap-8 items-start">
               <div className="lg:col-span-2">
                 <div className="relative">
-                  <img 
-                    src={uploadedPhoto?.preview} 
+                  <img
+                    src={uploadedPhoto?.preview}
                     alt="Space under analysis"
                     className="w-full h-48 object-cover rounded-xl border border-gray-200 shadow-sm"
                   />
@@ -1013,6 +1035,23 @@ export default function AIVisualization() {
                       Analyzed
                     </Badge>
                   </div>
+                  {boundingBoxes &&
+                    boundingBoxes.map((box, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setSelectedArchitectureIndex(box.elementIndex);
+                          elementRefs.current[box.elementIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }}
+                        className={`absolute border-2 rounded-md cursor-pointer ${selectedArchitectureIndex === box.elementIndex ? 'border-blue-600 ring-2 ring-blue-400/50' : 'border-blue-500'} bg-blue-500/10`}
+                        style={{
+                          left: `${box.x}%`,
+                          top: `${box.y}%`,
+                          width: `${box.width}%`,
+                          height: `${box.height}%`,
+                        }}
+                      />
+                    ))}
                 </div>
               </div>
               
@@ -1058,7 +1097,11 @@ export default function AIVisualization() {
             <div className="space-y-4">
               {/* Detected Elements */}
               {editableArchitecture.elements.map((element, index) => (
-                <div key={index} className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
+                <div
+                  key={index}
+                  ref={el => (elementRefs.current[index] = el)}
+                  className={`bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border ${selectedArchitectureIndex === index ? 'border-blue-600 ring-2 ring-blue-400/50' : 'border-gray-200'}`}
+                >
                   <div className="p-6">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                       {/* Element Info */}
