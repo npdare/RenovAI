@@ -19,6 +19,12 @@ export interface PreprocessingResult {
   boundingBoxes: Array<{ x: number; y: number; width: number; height: number }>;
 }
 
+export interface YoloDetection {
+  bbox: number[];
+  label: string;
+  confidence: number;
+}
+
 export interface TransformRequest {
   jobId: string;
   selectedMasks: string[];
@@ -83,6 +89,9 @@ export async function preprocessImageV2(imagePath: string): Promise<Preprocessin
         }
       }
     );
+
+    // Placeholder for object detection results
+    const detections: YoloDetection[] = [];
     
     // Download and save assets
     const assetsDir = path.join('uploads', 'v2_assets', jobId);
